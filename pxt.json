@@ -1,6 +1,6 @@
 {
-    "name": "microbit-robot",
-    "version": "2.7.4",
+    "name": "Luis Puntoriero",
+    "version": "2.7.5",
     "dependencies": {
         "core": "*",
         "radio": "*",
