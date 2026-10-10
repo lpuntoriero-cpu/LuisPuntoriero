@@ -1,0 +1,16 @@
+DRIFT MASTERS – PWA PARA ANDROID
+
+Contenido:
+- index.html: interfaz original con instalación PWA.
+- manifest.webmanifest: nombre, colores e iconos.
+- sw.js: caché básica para abrir la interfaz sin conexión.
+- icons/: iconos SVG y PNG.
+
+PUBLICACIÓN:
+1. Subí todos los archivos y carpetas manteniendo esta estructura al repositorio GitHub Pages.
+2. Activá GitHub Pages desde Settings > Pages, si todavía no está activo.
+3. Abrí la URL publicada con Chrome para Android usando HTTPS.
+4. Menú ⋮ > Instalar aplicación / Añadir a pantalla principal.
+
+IMPORTANTE:
+La conexión Bluetooth Web requiere un navegador compatible (Chrome Android) y contexto HTTPS. El firmware BLE incluido aparte es una integración inicial que hay que compilar y probar en MakeCode con tu placa y extensiones; no se afirma que esté verificado en hardware. El proyecto MakeCode debe tener disponible la extensión Bluetooth/UART y modo sin emparejamiento compatible con Web Bluetooth.
