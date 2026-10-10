@@ -42,10 +42,12 @@
 
   <script>
     const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-    const UART_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+    const UART_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // Escritura hacia micro:bit
+    const UART_RX_CHARACTERISTIC = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // Notificaciones desde micro:bit
     
     let gattServer = null;
     let txCharacteristic = null;
+    let enviandoComando = false;
 
     function log(msg) {
       const c = document.getElementById("console");
@@ -64,11 +66,19 @@
         log("Conectando...");
         gattServer = await device.gatt.connect();
 
-        log("Buscando servicio UART...");
+        log("Obteniendo servicio UART...");
         const service = await gattServer.getPrimaryService(UART_SERVICE_UUID);
-        
-        log("Buscando canal de transmisión...");
+
+        log("Configurando canales...");
         txCharacteristic = await service.getCharacteristic(UART_TX_CHARACTERISTIC);
+        
+        // OBLIGATORIO EN ANDROID: Activar notificaciones en RX para destrabar la seguridad GATT
+        const rxCharacteristic = await service.getCharacteristic(UART_RX_CHARACTERISTIC);
+        await rxCharacteristic.startNotifications();
+        rxCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
+          const decoder = new TextDecoder();
+          log("Placa: " + decoder.decode(event.target.value));
+        });
 
         document.getElementById("lblEstado").innerText = "Conectado";
         document.getElementById("lblEstado").classList.add("connected");
@@ -76,41 +86,37 @@
         document.getElementById("btnLargada1").disabled = false;
         document.getElementById("btnReset").disabled = false;
 
-        log("¡Conectado con éxito!");
+        log("¡Conexión y canal listos!");
         device.addEventListener('gattserverdisconnected', onDisconnected);
 
       } catch (error) {
-        log("Error de conexión: " + error.message);
+        log("Error: " + error.message);
       }
     }
 
     async function enviarComando(cmd) {
       if (!txCharacteristic) {
-        log("Error: No hay conexión");
+        log("Error: Sin conexión");
         return;
       }
+      
+      if (enviandoComando) return;
+      enviandoComando = true;
 
       try {
-        // Codificar el comando agregando retorno de carro para la consola serial de la placa
         const encoder = new TextEncoder();
-        const buffer = encoder.encode(cmd + "\n");
-
-        // Forzar escritura con respuesta explícita gestionada por la pila GATT
-        await txCharacteristic.writeValueWithResponse(buffer);
+        const data = encoder.encode(cmd + "\n");
+        
+        // Escritura limpia forzando el método sin respuesta autorizado por el canal abierto
+        await txCharacteristic.writeValueWithoutResponse(data);
         log("Enviado: " + cmd);
 
       } catch (error) {
-        log("GATT Fail: " + error.message);
-        
-        // Intento de recuperación de emergencia por canal sin respuesta si el anterior falla
-        try {
-          const encoder = new TextEncoder();
-          const buffer = encoder.encode(cmd + "\n");
-          await txCharacteristic.writeValueWithoutResponse(buffer);
-          log("Enviado (Alt): " + cmd);
-        } catch (err2) {
-          log("Error crítico de envío");
-        }
+        log("Falla GATT: " + error.message);
+      } finally {
+        setTimeout(() => {
+          enviandoComando = false;
+        }, 200);
       }
     }
 
