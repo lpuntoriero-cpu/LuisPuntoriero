@@ -87,15 +87,25 @@
     }
 
     async function enviarComando(cmd) {
-      if (!txCharacteristic) return;
-      try {
-        const encoder = new TextEncoder();
-        await txCharacteristic.writeValue(encoder.encode(cmd + "\n"));
-        log("Enviado: " + cmd);
-      } catch (error) {
-        log("Error al enviar: " + error.message);
-      }
+  if (!txCharacteristic) {
+    log("Error: No hay conexión activa");
+    return;
+  }
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(cmd + "\n");
+    
+    // Envío seguro compatible con la pila BLE de la Micro:bit
+    if (txCharacteristic.properties.writeWithoutResponse) {
+      await txCharacteristic.writeValueWithoutResponse(data);
+    } else {
+      await txCharacteristic.writeValueWithResponse(data);
     }
+    log("Enviado: " + cmd);
+  } catch (error) {
+    log("Error al enviar: " + error.message);
+  }
+}
 
     function onDisconnected() {
       document.getElementById("lblEstado").innerText = "Desconectado";
