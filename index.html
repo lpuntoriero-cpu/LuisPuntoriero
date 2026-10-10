@@ -1,95 +1,136 @@
-const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const UART_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
-const UART_RX_CHARACTERISTIC = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drift Masters</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00e676">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #121212; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; }
+    h1 { color: #00e676; margin-bottom: 5px; font-size: 2rem; letter-spacing: 2px; }
+    p.subtitle { color: #aaa; margin-bottom: 25px; font-size: 0.9rem; }
+    .status-card { background: #1e1e1e; border: 2px solid #333; border-radius: 12px; width: 100%; max-width: 350px; padding: 15px; margin-bottom: 25px; }
+    .status-text { font-size: 1.1rem; font-weight: bold; color: #ff5252; }
+    .status-text.connected { color: #00e676; }
+    .btn { background: #2c2c2c; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; width: 100%; max-width: 350px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    .btn:active { transform: scale(0.98); }
+    .btn-connect { background: #00e676; color: #000; }
+    .btn-largada2 { background: #29b6f6; color: #000; }
+    .btn-largada1 { background: #ab47bc; color: #fff; }
+    .btn-reset { background: #ff5252; color: #fff; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .console { background: #000; color: #00ff66; font-family: monospace; padding: 10px; border-radius: 8px; width: 100%; max-width: 350px; height: 100px; overflow-y: auto; text-align: left; font-size: 0.8rem; border: 1px solid #333; margin-top: 15px; }
+  </style>
+</head>
+<body>
 
-let gattServer = null;
-let txCharacteristic = null;
+  <h1>DRIFT MASTERS</h1>
+  <p class="subtitle">Control de Pista Micro:bit</p>
 
-function log(msg) {
-  const c = document.getElementById("console");
-  c.innerHTML += "<br>> " + msg;
-  c.scrollTop = c.scrollHeight;
-}
+  <div class="status-card">
+    Estado: <span id="lblEstado" class="status-text">Desconectado</span>
+  </div>
 
-async function conectarBLE() {
-  try {
-    log("Buscando Micro:bit...");
-    const device = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: 'BBC micro:bit' }],
-      optionalServices: [UART_SERVICE_UUID]
-    });
+  <button id="btnConectar" class="btn btn-connect" onclick="conectarBLE()">Buscar Pista Bluetooth</button>
+  <button id="btnLargada2" class="btn btn-largada2" onclick="enviarComando('A')" disabled>Largar 2 Autos (A)</button>
+  <button id="btnLargada1" class="btn btn-largada1" onclick="enviarComando('S')" disabled>Largar 1 Auto (S)</button>
+  <button id="btnReset" class="btn btn-reset" onclick="enviarComando('B')" disabled>RESET / Arcoíris (B)</button>
 
-    log("Conectando...");
-    gattServer = await device.gatt.connect();
+  <div id="console" class="console">> Listo para conectar...</div>
 
-    const service = await gattServer.getPrimaryService(UART_SERVICE_UUID);
-    txCharacteristic = await service.getCharacteristic(UART_TX_CHARACTERISTIC);
+  <script>
+    const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+    const UART_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+    const UART_RX_CHARACTERISTIC = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
     
-    // Intentar habilitar notificaciones RX si la placa las soporta
-    try {
-      const rxCharacteristic = await service.getCharacteristic(UART_RX_CHARACTERISTIC);
-      await rxCharacteristic.startNotifications();
-      rxCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
-        const decoder = new TextDecoder();
-        log("Microbit: " + decoder.decode(event.target.value));
-      });
-    } catch (e) {
-      // Ignorar si RX no está activo para evitar bloqueos
+    let gattServer = null;
+    let txCharacteristic = null;
+    let enviandoComando = false;
+
+    function log(msg) {
+      const c = document.getElementById("console");
+      c.innerHTML += "<br>> " + msg;
+      c.scrollTop = c.scrollHeight;
     }
 
-    document.getElementById("lblEstado").innerText = "Conectado";
-    document.getElementById("lblEstado").classList.add("connected");
-    document.getElementById("btnLargada2").disabled = false;
-    document.getElementById("btnLargada1").disabled = false;
-    document.getElementById("btnReset").disabled = false;
+    async function conectarBLE() {
+      try {
+        log("Buscando Micro:bit...");
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: 'BBC micro:bit' }],
+          optionalServices: [UART_SERVICE_UUID]
+        });
 
-    log("¡Conexión establecida!");
-    device.addEventListener('gattserverdisconnected', onDisconnected);
+        log("Conectando...");
+        gattServer = await device.gatt.connect();
 
-  } catch (error) {
-    log("Error: " + error.message);
-  }
-}
+        const service = await gattServer.getPrimaryService(UART_SERVICE_UUID);
+        txCharacteristic = await service.getCharacteristic(UART_TX_CHARACTERISTIC);
+        
+        try {
+          const rxCharacteristic = await service.getCharacteristic(UART_RX_CHARACTERISTIC);
+          await rxCharacteristic.startNotifications();
+          rxCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
+            const decoder = new TextDecoder();
+            log("Microbit: " + decoder.decode(event.target.value));
+          });
+        } catch (e) {
+          // Ignorar si RX no está activo
+        }
 
-let enviandoComando = false;
+        document.getElementById("lblEstado").innerText = "Conectado";
+        document.getElementById("lblEstado").classList.add("connected");
+        document.getElementById("btnLargada2").disabled = false;
+        document.getElementById("btnLargada1").disabled = false;
+        document.getElementById("btnReset").disabled = false;
 
-async function enviarComando(cmd) {
-  if (!txCharacteristic) {
-    log("Error: Sin conexión");
-    return;
-  }
-  
-  // Evitar que se encabriten múltiples clics seguidos
-  if (enviandoComando) return;
-  enviandoComando = true;
+        log("¡Conexión establecida!");
+        device.addEventListener('gattserverdisconnected', onDisconnected);
 
-  try {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(cmd + "\n");
-    
-    // Intentar primero con writeValueWithoutResponse (es más fluido en BLE)
-    try {
-      await txCharacteristic.writeValueWithoutResponse(data);
-    } catch (err) {
-      // Si falla, usar el método con respuesta segura
-      await txCharacteristic.writeValueWithResponse(data);
+      } catch (error) {
+        log("Error: " + error.message);
+      }
     }
 
-    log("Enviado: " + cmd);
-  } catch (error) {
-    log("Falla GATT: " + error.message);
-  } finally {
-    // Dar un pequeño respiro al buffer de la placa
-    setTimeout(() => {
-      enviandoComando = false;
-    }, 150);
-  }
-}
-function onDisconnected() {
-  document.getElementById("lblEstado").innerText = "Desconectado";
-  document.getElementById("lblEstado").classList.remove("connected");
-  document.getElementById("btnLargada2").disabled = true;
-  document.getElementById("btnLargada1").disabled = true;
-  document.getElementById("btnReset").disabled = true;
-  log("Desconectado de la placa");
-}
+    async function enviarComando(cmd) {
+      if (!txCharacteristic) {
+        log("Error: Sin conexión");
+        return;
+      }
+      
+      if (enviandoComando) return;
+      enviandoComando = true;
+
+      try {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(cmd + "\n");
+        
+        try {
+          await txCharacteristic.writeValueWithoutResponse(data);
+        } catch (err) {
+          await txCharacteristic.writeValueWithResponse(data);
+        }
+
+        log("Enviado: " + cmd);
+      } catch (error) {
+        log("Falla GATT: " + error.message);
+      } finally {
+        setTimeout(() => {
+          enviandoComando = false;
+        }, 150);
+      }
+    }
+
+    function onDisconnected() {
+      document.getElementById("lblEstado").innerText = "Desconectado";
+      document.getElementById("lblEstado").classList.remove("connected");
+      document.getElementById("btnLargada2").disabled = true;
+      document.getElementById("btnLargada1").disabled = true;
+      document.getElementById("btnReset").disabled = true;
+      log("Desconectado de la placa");
+    }
+  </script>
+</body>
+</html>
