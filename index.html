@@ -42,8 +42,7 @@
 
   <script>
     const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-    const UART_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // Escritura hacia micro:bit
-    const UART_RX_CHARACTERISTIC = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // Notificaciones desde micro:bit
+    const UART_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
     
     let gattServer = null;
     let txCharacteristic = null;
@@ -58,27 +57,20 @@
     async function conectarBLE() {
       try {
         log("Buscando Micro:bit...");
+        // Aceptamos cualquier dispositivo para evitar filtros estrictos de nombre
         const device = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: 'BBC micro:bit' }],
+          acceptAllDevices: true,
           optionalServices: [UART_SERVICE_UUID]
         });
 
-        log("Conectando...");
+        log("Conectando a " + (device.name || "Micro:bit") + "...");
         gattServer = await device.gatt.connect();
 
         log("Obteniendo servicio UART...");
         const service = await gattServer.getPrimaryService(UART_SERVICE_UUID);
 
-        log("Configurando canales...");
+        log("Configurando canal de escritura...");
         txCharacteristic = await service.getCharacteristic(UART_TX_CHARACTERISTIC);
-        
-        // OBLIGATORIO EN ANDROID: Activar notificaciones en RX para destrabar la seguridad GATT
-        const rxCharacteristic = await service.getCharacteristic(UART_RX_CHARACTERISTIC);
-        await rxCharacteristic.startNotifications();
-        rxCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
-          const decoder = new TextDecoder();
-          log("Placa: " + decoder.decode(event.target.value));
-        });
 
         document.getElementById("lblEstado").innerText = "Conectado";
         document.getElementById("lblEstado").classList.add("connected");
@@ -86,7 +78,7 @@
         document.getElementById("btnLargada1").disabled = false;
         document.getElementById("btnReset").disabled = false;
 
-        log("¡Conexión y canal listos!");
+        log("¡Conexión establecida!");
         device.addEventListener('gattserverdisconnected', onDisconnected);
 
       } catch (error) {
@@ -107,16 +99,23 @@
         const encoder = new TextEncoder();
         const data = encoder.encode(cmd + "\n");
         
-        // Escritura limpia forzando el método sin respuesta autorizado por el canal abierto
         await txCharacteristic.writeValueWithoutResponse(data);
         log("Enviado: " + cmd);
 
       } catch (error) {
-        log("Falla GATT: " + error.message);
+        // Si falla sin respuesta, intentamos con respuesta por seguridad
+        try {
+          const encoder = new TextEncoder();
+          const data = encoder.encode(cmd + "\n");
+          await txCharacteristic.writeValueWithResponse(data);
+          log("Enviado (con resp): " + cmd);
+        } catch (err2) {
+          log("Falla GATT: " + err2.message);
+        }
       } finally {
         setTimeout(() => {
           enviandoComando = false;
-        }, 200);
+        }, 150);
       }
     }
 
