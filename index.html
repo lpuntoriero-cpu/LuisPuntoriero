@@ -45,7 +45,6 @@
     const UART_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
     
     let gattServer = null;
-    let txCharacteristic = null;
 
     function log(msg) {
       const c = document.getElementById("console");
@@ -64,19 +63,16 @@
         log("Conectando...");
         gattServer = await device.gatt.connect();
 
-        log("Obteniendo servicio UART...");
-        const service = await gattServer.getPrimaryService(UART_SERVICE_UUID);
+        // Validar que el servidor esté activo
+        if (gattServer.connected) {
+          document.getElementById("lblEstado").innerText = "Conectado";
+          document.getElementById("lblEstado").classList.add("connected");
+          document.getElementById("btnLargada2").disabled = false;
+          document.getElementById("btnLargada1").disabled = false;
+          document.getElementById("btnReset").disabled = false;
+          log("¡Conexión exitosa!");
+        }
 
-        log("Obteniendo característica...");
-        txCharacteristic = await service.getCharacteristic(UART_TX_CHARACTERISTIC);
-
-        document.getElementById("lblEstado").innerText = "Conectado";
-        document.getElementById("lblEstado").classList.add("connected");
-        document.getElementById("btnLargada2").disabled = false;
-        document.getElementById("btnLargada1").disabled = false;
-        document.getElementById("btnReset").disabled = false;
-
-        log("¡Conexión exitosa!");
         device.addEventListener('gattserverdisconnected', onDisconnected);
 
       } catch (error) {
@@ -85,17 +81,31 @@
     }
 
     async function enviarComando(cmd) {
-      if (!txCharacteristic) {
-        log("Error: Sin conexión");
+      if (!gattServer || !gattServer.connected) {
+        log("Error: Sin conexión activa");
+        onDisconnected();
         return;
       }
+      
       try {
+        // Refrescar en caliente el servicio y característica para eludir la caché de Android
+        const service = await gattServer.getPrimaryService(UART_SERVICE_UUID);
+        const characteristic = await service.getCharacteristic(UART_TX_CHARACTERISTIC);
+
         const encoder = new TextEncoder();
-        // Usar writeValueWithResponse para forzar a la pila Bluetooth de Android a procesar el paquete
-        await txCharacteristic.writeValueWithResponse(encoder.encode(cmd + "\n"));
-        log("Enviado: " + cmd);
+        const data = encoder.encode(cmd + "\n");
+
+        try {
+          await characteristic.writeValueWithResponse(data);
+          log("Enviado: " + cmd);
+        } catch (err1) {
+          // Si falla con respuesta, intentamos sin respuesta
+          await characteristic.writeValueWithoutResponse(data);
+          log("Enviado (Alt): " + cmd);
+        }
+
       } catch (error) {
-        log("Error al enviar: " + error.message);
+        log("Falla GATT: " + error.message);
       }
     }
 
@@ -105,7 +115,7 @@
       document.getElementById("btnLargada2").disabled = true;
       document.getElementById("btnLargada1").disabled = true;
       document.getElementById("btnReset").disabled = true;
-      log("Micro:bit desconectada");
+      log("Placa desconectada");
     }
   </script>
 </body>
