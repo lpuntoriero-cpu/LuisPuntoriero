@@ -51,23 +51,40 @@ async function conectarBLE() {
   }
 }
 
+let enviandoComando = false;
+
 async function enviarComando(cmd) {
   if (!txCharacteristic) {
     log("Error: Sin conexión");
     return;
   }
+  
+  // Evitar que se encabriten múltiples clics seguidos
+  if (enviandoComando) return;
+  enviandoComando = true;
+
   try {
     const encoder = new TextEncoder();
     const data = encoder.encode(cmd + "\n");
     
-    // Envío seguro forzando escritura con respuesta controlada
-    await txCharacteristic.writeValueWithResponse(data);
+    // Intentar primero con writeValueWithoutResponse (es más fluido en BLE)
+    try {
+      await txCharacteristic.writeValueWithoutResponse(data);
+    } catch (err) {
+      // Si falla, usar el método con respuesta segura
+      await txCharacteristic.writeValueWithResponse(data);
+    }
+
     log("Enviado: " + cmd);
   } catch (error) {
     log("Falla GATT: " + error.message);
+  } finally {
+    // Dar un pequeño respiro al buffer de la placa
+    setTimeout(() => {
+      enviandoComando = false;
+    }, 150);
   }
 }
-
 function onDisconnected() {
   document.getElementById("lblEstado").innerText = "Desconectado";
   document.getElementById("lblEstado").classList.remove("connected");
