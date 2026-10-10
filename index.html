@@ -46,7 +46,6 @@
     
     let gattServer = null;
     let txCharacteristic = null;
-    let enviandoComando = false;
 
     function log(msg) {
       const c = document.getElementById("console");
@@ -57,19 +56,18 @@
     async function conectarBLE() {
       try {
         log("Buscando Micro:bit...");
-        // Aceptamos cualquier dispositivo para evitar filtros estrictos de nombre
         const device = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
+          filters: [{ namePrefix: 'BBC micro:bit' }],
           optionalServices: [UART_SERVICE_UUID]
         });
 
-        log("Conectando a " + (device.name || "Micro:bit") + "...");
+        log("Conectando...");
         gattServer = await device.gatt.connect();
 
         log("Obteniendo servicio UART...");
         const service = await gattServer.getPrimaryService(UART_SERVICE_UUID);
 
-        log("Configurando canal de escritura...");
+        log("Obteniendo característica...");
         txCharacteristic = await service.getCharacteristic(UART_TX_CHARACTERISTIC);
 
         document.getElementById("lblEstado").innerText = "Conectado";
@@ -78,7 +76,7 @@
         document.getElementById("btnLargada1").disabled = false;
         document.getElementById("btnReset").disabled = false;
 
-        log("¡Conexión establecida!");
+        log("¡Conexión exitosa!");
         device.addEventListener('gattserverdisconnected', onDisconnected);
 
       } catch (error) {
@@ -91,31 +89,12 @@
         log("Error: Sin conexión");
         return;
       }
-      
-      if (enviandoComando) return;
-      enviandoComando = true;
-
       try {
         const encoder = new TextEncoder();
-        const data = encoder.encode(cmd + "\n");
-        
-        await txCharacteristic.writeValueWithoutResponse(data);
+        await txCharacteristic.writeValueWithoutResponse(encoder.encode(cmd + "\n"));
         log("Enviado: " + cmd);
-
       } catch (error) {
-        // Si falla sin respuesta, intentamos con respuesta por seguridad
-        try {
-          const encoder = new TextEncoder();
-          const data = encoder.encode(cmd + "\n");
-          await txCharacteristic.writeValueWithResponse(data);
-          log("Enviado (con resp): " + cmd);
-        } catch (err2) {
-          log("Falla GATT: " + err2.message);
-        }
-      } finally {
-        setTimeout(() => {
-          enviandoComando = false;
-        }, 150);
+        log("Error al enviar: " + error.message);
       }
     }
 
@@ -125,7 +104,7 @@
       document.getElementById("btnLargada2").disabled = true;
       document.getElementById("btnLargada1").disabled = true;
       document.getElementById("btnReset").disabled = true;
-      log("Placa desconectada");
+      log("Micro:bit desconectada");
     }
   </script>
 </body>
