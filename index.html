@@ -1,207 +1,110 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#15181d">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-<title>Drift Masters – Control</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap">
-<style>
-:root{
-  --asfalto:#15181d; --pista:#1e232b; --linea:#e9e6dc; --apagado:#4a515c;
-  --azul:#3d7bff; --rojo:#ff4a3d; --ok:#35c46b; --alerta:#ffb020;
-  --display:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
-  --texto:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-}
-*{box-sizing:border-box;margin:0}
-body{background:var(--asfalto);color:var(--linea);font-family:var(--texto);min-height:100vh;padding:16px;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-h1{font-family:var(--display);font-size:2rem;line-height:1;letter-spacing:.02em}
-#conectar{font:600 1rem var(--texto);padding:10px 16px;border-radius:999px;border:2px solid var(--linea);background:transparent;color:var(--linea)}
-#conectar.activo{border-color:var(--ok);color:var(--ok)}
-#aviso{font-size:.9rem;color:var(--alerta);min-height:1.2em}
-.pista{display:grid;grid-template-columns:1fr 1fr;background:var(--pista);border-radius:14px;position:relative;overflow:hidden}
-.pista::after{content:"";position:absolute;top:10px;bottom:10px;left:50%;border-left:3px dashed var(--apagado)}
-.carril{padding:18px 12px 20px;text-align:center;transition:opacity .2s}
-.carril h2{font-family:var(--display);font-size:1.6rem;letter-spacing:.04em}
-.carril .estado{font-family:var(--display);font-size:2.6rem;line-height:1.1;margin-top:6px;color:var(--apagado)}
-#carrilAzul h2{color:var(--azul)} #carrilRojo h2{color:var(--rojo)}
-.carril.ok .estado{color:var(--ok)} .carril.falta .estado{color:var(--alerta)}
-.carril.fuera{opacity:.3}
-#fase{font-family:var(--display);font-size:2.4rem;text-align:center;padding:6px 0}
-#resultado{min-height:118px;border-radius:14px;background:var(--pista);padding:16px;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:4px}
-#resultado .grande{font-family:var(--display);font-size:2.8rem;line-height:1}
-#resultado .chico{font-size:.95rem;color:var(--apagado)}
-#resultado.alerta .grande{color:var(--alerta)}
-#resultado.gana .grande{color:var(--ok)}
-.botones{display:grid;gap:10px}
-.botones button{min-height:68px;border-radius:14px;border:0;font:700 1.5rem var(--display);letter-spacing:.03em;color:var(--asfalto);background:var(--linea)}
-#btnA{background:var(--ok)} #btnB{background:var(--rojo);color:#fff}
-.colores{background:var(--pista);border-radius:14px;padding:14px}
-.colores h2{font-family:var(--display);font-size:1.4rem;margin-bottom:10px}
-.muestras{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.muestras button,.muestras input{width:48px;height:48px;border-radius:50%;border:3px solid var(--linea);padding:0;min-height:0}
-.muestras input{background:none;cursor:pointer}
-.muestras input:disabled{opacity:.35}
-button:disabled{opacity:.35}
-button:focus-visible{outline:3px solid var(--alerta);outline-offset:3px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drift Masters</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00e676">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #121212; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; }
+    h1 { color: #00e676; margin-bottom: 5px; font-size: 2rem; letter-spacing: 2px; }
+    p.subtitle { color: #aaa; margin-bottom: 25px; font-size: 0.9rem; }
+    .status-card { background: #1e1e1e; border: 2px solid #333; border-radius: 12px; width: 100%; max-width: 350px; padding: 15px; margin-bottom: 25px; }
+    .status-text { font-size: 1.1rem; font-weight: bold; color: #ff5252; }
+    .status-text.connected { color: #00e676; }
+    .btn { background: #2c2c2c; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; width: 100%; max-width: 350px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    .btn:active { transform: scale(0.98); }
+    .btn-connect { background: #00e676; color: #000; }
+    .btn-largada2 { background: #29b6f6; color: #000; }
+    .btn-largada1 { background: #ab47bc; color: #fff; }
+    .btn-reset { background: #ff5252; color: #fff; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .console { background: #000; color: #00ff66; font-family: monospace; padding: 10px; border-radius: 8px; width: 100%; max-width: 350px; height: 100px; overflow-y: auto; text-align: left; font-size: 0.8rem; border: 1px solid #333; margin-top: 15px; }
+  </style>
 </head>
 <body>
-<header>
-  <h1>Drift Masters</h1>
-  <button id="conectar">Conectar</button>
-</header>
-<p id="aviso" role="status"></p>
 
-<section class="pista" aria-label="Autos en la línea">
-  <div class="carril" id="carrilAzul"><h2>Azul</h2><div class="estado">—</div></div>
-  <div class="carril" id="carrilRojo"><h2>Rojo</h2><div class="estado">—</div></div>
-</section>
+  <h1>DRIFT MASTERS</h1>
+  <p class="subtitle">Control de Pista Micro:bit</p>
 
-<p id="fase">Sin conexión</p>
-
-<section id="resultado" aria-live="polite">
-  <div class="grande">Sin resultados</div>
-  <div class="chico">Acá aparece el ganador y su tiempo.</div>
-</section>
-
-<section class="botones">
-  <button id="btnA" disabled>Largar con 2 autos</button>
-  <button id="btnS" disabled>Largar con 1 auto</button>
-  <button id="btnB" disabled>Reset</button>
-</section>
-
-<section class="colores">
-  <h2>Color de la tira P2</h2>
-  <div class="muestras">
-    <button data-rgb="0,0,255" style="background:#2f5bff" aria-label="Azul" disabled></button>
-    <button data-rgb="255,0,0" style="background:#ff2a2a" aria-label="Rojo" disabled></button>
-    <button data-rgb="0,255,0" style="background:#35c46b" aria-label="Verde" disabled></button>
-    <button data-rgb="255,110,20" style="background:#ff8a3a" aria-label="Blanco cálido" disabled></button>
-    <button data-rgb="160,0,255" style="background:#a000ff" aria-label="Violeta" disabled></button>
-    <button data-rgb="255,255,255" style="background:#ffffff" aria-label="Blanco" disabled></button>
-    <button data-rgb="0,0,0" style="background:#15181d" aria-label="Apagar" disabled></button>
-    <input type="color" id="colorLibre" value="#3d7bff" aria-label="Elegir otro color" disabled>
+  <div class="status-card">
+    Estado: <span id="lblEstado" class="status-text">Desconectado</span>
   </div>
-</section>
 
-<script>
-const SVC = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const RX  = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // celular -> micro:bit
-const TX  = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // micro:bit -> celular
+  <button id="btnConectar" class="btn btn-connect" onclick="conectarBLE()">Buscar Pista Bluetooth</button>
+  <button id="btnLargada2" class="btn btn-largada2" onclick="enviarComando('A')" disabled>Largar 2 Autos (A)</button>
+  <button id="btnLargada1" class="btn btn-largada1" onclick="enviarComando('S')" disabled>Largar 1 Auto (S)</button>
+  <button id="btnReset" class="btn btn-reset" onclick="enviarComando('B')" disabled>RESET / Arcoíris (B)</button>
 
-const $ = id => document.getElementById(id);
-let dispositivo, canalRX, buffer = "", soloUnAuto = false;
+  <div id="console" class="console">> Listo para conectar...</div>
 
-function setCarril(id, estado){
-  const el = $(id);
-  el.classList.remove("ok","falta");
-  const txt = el.querySelector(".estado");
-  if(estado === "OK"){ el.classList.add("ok"); txt.textContent = "Listo"; }
-  else if(estado === "FALTA"){ el.classList.add("falta"); txt.textContent = "Falta"; }
-  else txt.textContent = "—";
-}
-function setModo(solo){
-  soloUnAuto = solo;
-  $("carrilRojo").classList.toggle("fuera", solo);
-}
-function setFase(t){ $("fase").textContent = t; }
-function setResultado(clase, grande, chico){
-  const r = $("resultado");
-  r.className = clase;
-  r.querySelector(".grande").textContent = grande;
-  r.querySelector(".chico").textContent = chico;
-}
-function setConectado(si){
-  ["btnA","btnS","btnB"].forEach(id => $(id).disabled = !si);
-  document.querySelectorAll(".muestras button, .muestras input").forEach(el => el.disabled = !si);
-  $("conectar").textContent = si ? "Conectado" : "Conectar";
-  $("conectar").classList.toggle("activo", si);
-  if(!si){ setFase("Sin conexión"); setCarril("carrilAzul"); setCarril("carrilRojo"); }
-}
+  <script>
+    const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+    const UART_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+    
+    let gattServer = null;
+    let txCharacteristic = null;
 
-function procesar(m){
-  m = m.trim();
-  if(!m) return;
-  if(m === "CONECTADO" || m === "REPOSO"){ setFase("En reposo"); setCarril("carrilAzul"); setCarril("carrilRojo"); }
-  else if(m === "POSICIONAR"){ setFase("Posicionar autos"); setCarril("carrilAzul"); setCarril("carrilRojo"); }
-  else if(m.startsWith("AZUL:") || m.startsWith("ROJO:")){
-    if($("fase").textContent === "En reposo") setFase("Posicionar autos");
-    setCarril(m.startsWith("AZUL") ? "carrilAzul" : "carrilRojo", m.split(":")[1]);
-  }
-  else if(m === "AUTOS LISTOS"){ setModo(false); setFase("Autos listos: tocá Largar"); }
-  else if(m === "AUTO LISTO"){ setModo(true); setFase("Auto listo: tocá Largar"); }
-  else if(m === "CUENTA"){ setFase("Cuenta regresiva"); setResultado("", "Carrera en curso", "Esperando al ganador."); }
-  else if(m === "GO"){ setFase("¡Largaron!"); }
-  else if(m.startsWith("SALIDA FALSA:")){
-    setResultado("alerta", "Salida en falso", "Se adelantó el auto " + m.split(":")[1].toLowerCase() + ".");
-  }
-  else if(m.startsWith("GANA:")){
-    const [, nombre, tiempo] = m.match(/^GANA:(\S+)\s+(.+)$/) || [];
-    setModo(false);
-    setResultado("gana", "Ganó " + (nombre || ""), "Tiempo: " + (tiempo || ""));
-  }
-  else if(m.startsWith("TIEMPO:")){
-    setModo(true);
-    setResultado("gana", m.slice(7), "Tiempo de carrera");
-  }
-}
+    function log(msg) {
+      const c = document.getElementById("console");
+      c.innerHTML += "<br>> " + msg;
+      c.scrollTop = c.scrollHeight;
+    }
 
-function alRecibir(ev){
-  buffer += new TextDecoder().decode(ev.target.value);
-  const lineas = buffer.split("\n");
-  buffer = lineas.pop();
-  lineas.forEach(procesar);
-}
+    async function conectarBLE() {
+      try {
+        log("Buscando Micro:bit...");
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: 'BBC micro:bit' }],
+          optionalServices: [UART_SERVICE_UUID]
+        });
 
-async function conectar(){
-  $("aviso").textContent = "";
-  if(!navigator.bluetooth){
-    $("aviso").textContent = "Este navegador no soporta Bluetooth web. Abrí la página en Chrome para Android, con https.";
-    return;
-  }
-  try{
-    dispositivo = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: "BBC micro:bit" }],
-      optionalServices: [SVC]
-    });
-    dispositivo.addEventListener("gattserverdisconnected", () => setConectado(false));
-    const servidor = await dispositivo.gatt.connect();
-    const servicio = await servidor.getPrimaryService(SVC);
-    canalRX = await servicio.getCharacteristic(RX);
-    const canalTX = await servicio.getCharacteristic(TX);
-    await canalTX.startNotifications();
-    canalTX.addEventListener("characteristicvaluechanged", alRecibir);
-    setConectado(true);
-    setFase("En reposo");
-  }catch(e){
-    $("aviso").textContent = "No se pudo conectar: " + (e.message || e) + ". Revisá que el micro:bit esté encendido y que el proyecto tenga activado \"Sin emparejamiento\".";
-  }
-}
+        log("Conectando a " + device.name + "...");
+        gattServer = await device.gatt.connect();
 
-async function enviar(cmd){
-  if(!canalRX) return;
-  try{ await canalRX.writeValue(new TextEncoder().encode(cmd + "\n")); }
-  catch(e){ $("aviso").textContent = "No se pudo enviar el comando: " + (e.message || e); }
-}
+        log("Obteniendo servicio UART...");
+        const service = await gattServer.getPrimaryService(UART_SERVICE_UUID);
 
-$("conectar").onclick = () => dispositivo && dispositivo.gatt.connected ? dispositivo.gatt.disconnect() : conectar();
-$("btnA").onclick = () => { setModo(false); enviar("A"); };
-$("btnS").onclick = () => { setModo(true); enviar("S"); };
-$("btnB").onclick = () => enviar("B");
-document.querySelectorAll(".muestras button").forEach(b => b.onclick = () => enviar("C:" + b.dataset.rgb));
-$("colorLibre").onchange = e => {
-  const h = e.target.value;
-  enviar("C:" + [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)).join(","));
-};
-</script>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
-}
-</script>
+        log("Obteniendo característica TX...");
+        txCharacteristic = await service.getCharacteristic(UART_TX_CHARACTERISTIC);
+
+        document.getElementById("lblEstado").innerText = "Conectado";
+        document.getElementById("lblEstado").classList.add("connected");
+        
+        document.getElementById("btnLargada2").disabled = false;
+        document.getElementById("btnLargada1").disabled = false;
+        document.getElementById("btnReset").disabled = false;
+
+        log("¡Conexión exitosa!");
+
+        device.addEventListener('gattserverdisconnected', onDisconnected);
+
+      } catch (error) {
+        log("Error: " + error.message);
+      }
+    }
+
+    async function enviarComando(cmd) {
+      if (!txCharacteristic) return;
+      try {
+        const encoder = new TextEncoder();
+        await txCharacteristic.writeValue(encoder.encode(cmd + "\n"));
+        log("Enviado: " + cmd);
+      } catch (error) {
+        log("Error al enviar: " + error.message);
+      }
+    }
+
+    function onDisconnected() {
+      document.getElementById("lblEstado").innerText = "Desconectado";
+      document.getElementById("lblEstado").classList.remove("connected");
+      document.getElementById("btnLargada2").disabled = true;
+      document.getElementById("btnLargada1").disabled = true;
+      document.getElementById("btnReset").disabled = true;
+      log("Micro:bit desconectada");
+    }
+  </script>
 </body>
 </html>
