@@ -1,12 +1,27 @@
 {
-  "background_color": "#080000",
-  "dir": "ltr",
-  "display": "standalone",
-  "name": "Drift Masters",
-  "orientation": "any",
-  "scope": "/",
-  "short_name": "DriftMasters",
+  "id": "/LuisPuntoriero/",
+  "name": "Drift Masters 2",
+  "short_name": "Drift Masters",
+  "description": "Sistema de largada y cronometraje para autos RC con micro:bit V2 y Bluetooth",
   "start_url": "/LuisPuntoriero/",
-  "theme_color": "#ffffff",
-  "id": "app.driftmasters.racing"
+  "scope": "/LuisPuntoriero/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#030918",
+  "theme_color": "#030918",
+  "lang": "es-AR",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }
