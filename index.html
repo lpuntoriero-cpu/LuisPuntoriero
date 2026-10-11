@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,147 +7,361 @@
   <title>Drift Masters</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#00e676">
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #121212; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; }
-    h1 { color: #00e676; margin-bottom: 5px; font-size: 2rem; letter-spacing: 2px; }
-    p.subtitle { color: #aaa; margin-bottom: 25px; font-size: 0.9rem; }
-    .status-card { background: #1e1e1e; border: 2px solid #333; border-radius: 12px; width: 100%; max-width: 350px; padding: 15px; margin-bottom: 25px; }
-    .status-text { font-size: 1.1rem; font-weight: bold; color: #ff5252; }
-    .status-text.connected { color: #00e676; }
-    .btn { background: #2c2c2c; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; width: 100%; max-width: 350px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-    .btn:active { transform: scale(0.98); }
-    .btn-connect { background: #00e676; color: #000; }
-    .btn-largada2 { background: #29b6f6; color: #000; }
-    .btn-largada1 { background: #ab47bc; color: #fff; }
-    .btn-reset { background: #ff5252; color: #fff; }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .console { background: #000; color: #00ff66; font-family: monospace; padding: 10px; border-radius: 8px; width: 100%; max-width: 350px; height: 100px; overflow-y: auto; text-align: left; font-size: 0.8rem; border: 1px solid #333; margin-top: 15px; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #00e676;
+      margin-bottom: 5px;
+      font-size: 2rem;
+      letter-spacing: 2px;
+    }
+
+    p.subtitle {
+      color: #aaa;
+      margin-bottom: 25px;
+      font-size: 0.9rem;
+    }
+
+    .status-card {
+      background: #1e1e1e;
+      border: 2px solid #333;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 350px;
+      padding: 15px;
+      margin-bottom: 25px;
+    }
+
+    .status-text {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #ff5252;
+    }
+
+    .status-text.connected {
+      color: #00e676;
+    }
+
+    .btn {
+      background: #2c2c2c;
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      width: 100%;
+      max-width: 350px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-connect {
+      background: #00e676;
+      color: #000;
+    }
+
+    .btn-largada2 {
+      background: #29b6f6;
+      color: #000;
+    }
+
+    .btn-largada1 {
+      background: #ab47bc;
+      color: #fff;
+    }
+
+    .btn-reset {
+      background: #ff5252;
+      color: #fff;
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .console {
+      background: #000;
+      color: #00ff66;
+      font-family: monospace;
+      padding: 10px;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 350px;
+      height: 130px;
+      overflow-y: auto;
+      text-align: left;
+      font-size: 0.8rem;
+      border: 1px solid #333;
+      margin-top: 15px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
   </style>
 </head>
+
 <body>
 
   <h1>DRIFT MASTERS</h1>
   <p class="subtitle">Control de Pista Micro:bit</p>
 
   <div class="status-card">
-    Estado: <span id="lblEstado" class="status-text">Desconectado</span>
+    Estado:
+    <span id="lblEstado" class="status-text">Desconectado</span>
   </div>
 
-  <button id="btnConectar" class="btn btn-connect" onclick="conectarBLE()">Buscar Pista Bluetooth</button>
-  <button id="btnLargada2" class="btn btn-largada2" onclick="enviarComando('A')" disabled>Largar 2 Autos (A)</button>
-  <button id="btnLargada1" class="btn btn-largada1" onclick="enviarComando('S')" disabled>Largar 1 Auto (S)</button>
-  <button id="btnReset" class="btn btn-reset" onclick="enviarComando('B')" disabled>RESET / Arcoíris (B)</button>
+  <button
+    id="btnConectar"
+    class="btn btn-connect"
+    onclick="conectarBLE()">
+    Buscar Pista Bluetooth
+  </button>
+
+  <button
+    id="btnLargada2"
+    class="btn btn-largada2"
+    onclick="enviarComando('A')"
+    disabled>
+    Largar 2 Autos (A)
+  </button>
+
+  <button
+    id="btnLargada1"
+    class="btn btn-largada1"
+    onclick="enviarComando('S')"
+    disabled>
+    Largar 1 Auto (S)
+  </button>
+
+  <button
+    id="btnReset"
+    class="btn btn-reset"
+    onclick="enviarComando('B')"
+    disabled>
+    RESET / Arcoíris (B)
+  </button>
 
   <div id="console" class="console">> Listo para conectar...</div>
 
   <script>
-    const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-    const UART_TX_CHARACTERISTIC = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
-    
+    // Servicio Bluetooth UART de la micro:bit.
+    const UART_SERVICE_UUID =
+      "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+
+    // RX de la micro:bit: aquí se escriben los comandos.
+    const UART_RX_CHARACTERISTIC =
+      "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+
     let gattServer = null;
     let txCharacteristic = null;
+    let dispositivo = null;
+
+    let colaEnvio = [];
+    let enviando = false;
 
     function log(msg) {
-      const c = document.getElementById("console");
-      c.innerHTML += "<br>> " + msg;
-      c.scrollTop = c.scrollHeight;
+      const consola = document.getElementById("console");
+      consola.textContent += "\n> " + msg;
+      consola.scrollTop = consola.scrollHeight;
+    }
+
+    function actualizarEstado(conectado) {
+      const estado = document.getElementById("lblEstado");
+
+      estado.textContent =
+        conectado ? "Conectado" : "Desconectado";
+
+      estado.classList.toggle("connected", conectado);
+
+      document.getElementById("btnLargada2").disabled = !conectado;
+      document.getElementById("btnLargada1").disabled = !conectado;
+      document.getElementById("btnReset").disabled = !conectado;
     }
 
     async function conectarBLE() {
+      if (!navigator.bluetooth) {
+        log("Este navegador no admite Web Bluetooth.");
+        return;
+      }
+
       try {
+        document.getElementById("btnConectar").disabled = true;
+
         log("Buscando Micro:bit...");
-        const device = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: 'BBC micro:bit' }],
+
+        dispositivo = await navigator.bluetooth.requestDevice({
+          filters: [
+            { namePrefix: "BBC micro:bit" }
+          ],
           optionalServices: [UART_SERVICE_UUID]
         });
 
-        log("Conectando...");
-        gattServer = await device.gatt.connect();
+        dispositivo.removeEventListener(
+          "gattserverdisconnected",
+          onDisconnected
+        );
 
-        log("Abriendo canal UART...");
-        const service = await gattServer.getPrimaryService(UART_SERVICE_UUID);
-        txCharacteristic = await service.getCharacteristic(UART_TX_CHARACTERISTIC);
+        dispositivo.addEventListener(
+          "gattserverdisconnected",
+          onDisconnected
+        );
 
-        document.getElementById("lblEstado").innerText = "Conectado";
-        document.getElementById("lblEstado").classList.add("connected");
-        document.getElementById("btnLargada2").disabled = false;
-        document.getElementById("btnLargada1").disabled = false;
-        document.getElementById("btnReset").disabled = false;
+        log("Conectando con " + dispositivo.name + "...");
 
-        log("¡Conexión exitosa!");
-        device.addEventListener('gattserverdisconnected', onDisconnected);
+        gattServer = await dispositivo.gatt.connect();
+
+        log("Buscando servicio UART...");
+
+        const servicio =
+          await gattServer.getPrimaryService(UART_SERVICE_UUID);
+
+        log("Buscando característica RX...");
+
+        txCharacteristic =
+          await servicio.getCharacteristic(
+            UART_RX_CHARACTERISTIC
+          );
+
+        const propiedades = txCharacteristic.properties;
+
+        log(
+          "Escritura con respuesta: " +
+          propiedades.write
+        );
+
+        log(
+          "Escritura sin respuesta: " +
+          propiedades.writeWithoutResponse
+        );
+
+        colaEnvio = [];
+
+        actualizarEstado(true);
+
+        log("¡Conexión UART lista!");
 
       } catch (error) {
-        log("Error: " + error.message);
+        txCharacteristic = null;
+        gattServer = null;
+
+        actualizarEstado(false);
+
+        log(
+          "Error al conectar: " +
+          error.name + " - " + error.message
+        );
+
+      } finally {
+        document.getElementById("btnConectar").disabled = false;
       }
     }
 
-   let colaEnvio = [];
-    let enviando = false;
-
-    async function enviarComando(cmd) {
-      if (!txCharacteristic) {
-        log("Error: Sin conexión");
+    function enviarComando(cmd) {
+      if (
+        !txCharacteristic ||
+        !gattServer ||
+        !gattServer.connected
+      ) {
+        log("No hay conexión Bluetooth activa.");
         return;
       }
-      
-      // Metemos el comando en una fila para que nunca se amontonen
+
       colaEnvio.push(cmd);
+
       procesarFila();
     }
 
-    
-async function procesarFila() {
-    if (enviando || colaEnvio.length === 0) return;
+    async function procesarFila() {
+      if (enviando || colaEnvio.length === 0) {
+        return;
+      }
 
-    enviando = true;
-    const cmd = colaEnvio.shift();
+      enviando = true;
 
-    try {
-        if (!txCharacteristic) {
-            throw new Error("Característica UART TX no encontrada");
+      const cmd = colaEnvio.shift();
+
+      try {
+        if (
+          !txCharacteristic ||
+          !gattServer ||
+          !gattServer.connected
+        ) {
+          throw new Error("La conexión GATT no está activa");
         }
 
-        const data = new TextEncoder().encode(cmd + "\n");
-        const props = txCharacteristic.properties;
+        // Enviamos el comando con salto de línea.
+        const datos = new TextEncoder().encode(cmd + "\n");
 
-        if (props.writeWithoutResponse) {
-            await txCharacteristic.writeValueWithoutResponse(data);
-        } else if (props.write) {
-            await txCharacteristic.writeValueWithResponse(data);
+        const propiedades = txCharacteristic.properties;
+
+        if (propiedades.writeWithoutResponse) {
+          await txCharacteristic.writeValueWithoutResponse(datos);
+
+        } else if (propiedades.write) {
+          await txCharacteristic.writeValueWithResponse(datos);
+
         } else {
-            throw new Error("TX no admite escritura");
+          throw new Error(
+            "La característica RX no admite escritura"
+          );
         }
 
-        log("Enviado: " + cmd);
+        log("Enviado correctamente: " + cmd);
 
-    } catch (error) {
-        log("Error Bluetooth: " + error.name + " - " + error.message);
-        colaEnvio.unshift(cmd);
-    } finally {
+      } catch (error) {
+        log(
+          "ERROR GATT: " +
+          error.name + " - " + error.message
+        );
+
+      } finally {
+        // Evitamos enviar varios comandos simultáneamente.
         setTimeout(() => {
-            enviando = false;
-            if (colaEnvio.length > 0) procesarFila();
-        }, 250);
-    }
-}
+          enviando = false;
 
-      // Pausa obligatoria entre toque y toque para que el Bluetooth del celu no colapse
-      setTimeout(() => {
-        enviando = false;
-        procesarFila();
-      }, 250);
+          if (colaEnvio.length > 0) {
+            procesarFila();
+          }
+        }, 250);
+      }
     }
 
     function onDisconnected() {
-      document.getElementById("lblEstado").innerText = "Desconectado";
-      document.getElementById("lblEstado").classList.remove("connected");
-      document.getElementById("btnLargada2").disabled = true;
-      document.getElementById("btnLargada1").disabled = true;
-      document.getElementById("btnReset").disabled = true;
-      log("Placa desconectada");
+      txCharacteristic = null;
+      gattServer = null;
+      colaEnvio = [];
+
+      actualizarEstado(false);
+
+      log("Placa desconectada. Volvé a conectarla.");
     }
   </script>
+
 </body>
 </html>
