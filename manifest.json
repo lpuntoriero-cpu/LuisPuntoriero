@@ -1,11 +1,27 @@
 {
-  "background_color": "#ffffff",
-  "dir": "ltr",
+  "id": "./",
+  "name": "Drift Masters 2",
+  "short_name": "Drift Masters",
+  "description": "Control de carreras de dos autos RC con micro:bit V2, Bluetooth, tiempos, semaforo e historial.",
+  "lang": "es-AR",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "name": "lpuntoriero-cpu.github",
+  "background_color": "#030918",
+  "theme_color": "#030918",
   "orientation": "any",
-  "scope": "/",
-  "short_name": "lpuntoriero-cpu.github",
-  "start_url": "/",
-  "theme_color": "#ffffff"
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
