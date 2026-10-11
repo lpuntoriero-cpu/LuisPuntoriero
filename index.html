@@ -4,330 +4,329 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Drift Masters | Race Control</title>
+<title>Drift Masters - Race Control</title>
 
 <style>
 :root {
-  --bg: #080c13;
-  --panel: #141d2b;
-  --border: #304052;
-  --blue: #27aaff;
-  --red: #ff4359;
-  --green: #31e49a;
-  --gold: #ffd16b;
-  --muted: #a5b5c7;
+  --bg:#090e17;
+  --panel:#151f2e;
+  --border:#304158;
+  --blue:#28aaff;
+  --red:#ff4058;
+  --green:#35e997;
+  --muted:#a2b1c4;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing:border-box; }
 
 body {
-  margin: 0;
+  margin:0;
+  color:#f3f7ff;
   background:
-    radial-gradient(circle at top left, #15314a, transparent 45%),
+    radial-gradient(circle at top left,#163b56,transparent 40%),
     var(--bg);
-  color: #f4f7fb;
-  font: 15px system-ui, Arial, sans-serif;
+  font:15px system-ui,Arial,sans-serif;
 }
 
 main {
-  max-width: 1100px;
-  margin: auto;
-  padding: 16px;
+  max-width:1050px;
+  margin:auto;
+  padding:16px;
 }
 
 header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:16px;
+  padding-bottom:18px;
+  border-bottom:1px solid var(--border);
 }
 
 h1 {
-  font-size: 30px;
-  letter-spacing: 2px;
-  margin: 0;
+  margin:0;
+  font-size:30px;
+  letter-spacing:2px;
 }
 
 h2 {
-  font-size: 15px;
-  letter-spacing: 1px;
-  margin: 0 0 14px;
+  margin:0 0 14px;
+  font-size:15px;
+  letter-spacing:1px;
 }
 
-.subtitle, .muted {
-  color: var(--muted);
-  font-size: 12px;
+small,.muted {
+  color:var(--muted);
 }
 
 .panel {
-  background: linear-gradient(140deg, #182438, #101720);
-  border: 1px solid var(--border);
-  border-radius: 13px;
-  padding: 17px;
-  margin-top: 14px;
+  background:linear-gradient(130deg,#192639,#111925);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:17px;
+  margin-top:15px;
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
 }
 
 button {
-  padding: 12px 15px;
-  border-radius: 8px;
-  background: #263950;
-  border: 1px solid #49617a;
-  color: white;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
+  background:#263e58;
+  color:white;
+  border:1px solid #486581;
+  border-radius:9px;
+  padding:12px 15px;
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
 }
 
 button:disabled {
-  opacity: .4;
-  cursor: not-allowed;
+  opacity:.4;
+  cursor:not-allowed;
 }
 
-.primary { background: #116ba5; }
-.danger { background: #962a40; }
-.green { color: var(--green); }
-.warning { color: var(--gold); }
-.error { color: var(--red); }
+.primary { background:#0872b2; }
+.danger { background:#96293d; }
 
 .buttons {
-  display: flex;
-  gap: 9px;
-  flex-wrap: wrap;
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
 }
 
 .status {
-  margin-top: 14px;
-  padding: 11px;
-  background: #253248;
-  border-radius: 8px;
+  background:#223149;
+  padding:12px;
+  margin-top:13px;
+  border-radius:9px;
 }
 
 .track {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
+  overflow:hidden;
+  border-radius:10px;
+  border:1px solid var(--border);
 }
 
 .lane {
-  min-height: 128px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  padding: 15px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height:125px;
+  gap:10px;
+  padding:17px;
 }
 
 .lane.blue {
-  background: linear-gradient(90deg, #103251, #101c2b);
+  background:#122e48;
 }
 
 .lane.red {
-  background: linear-gradient(90deg, #431824, #21141c);
-  border-top: 4px solid #080c13;
+  background:#391b29;
+  border-top:4px solid #090e17;
 }
 
-.lane-name {
-  font-size: 23px;
-  font-weight: 900;
+.name {
+  font-size:21px;
+  font-weight:900;
 }
 
-.blue .lane-name { color: var(--blue); }
-.red .lane-name { color: var(--red); }
+.blue .name { color:var(--blue); }
+.red .name { color:var(--red); }
 
 .time {
-  font-size: 26px;
-  font-weight: 900;
-  font-variant-numeric: tabular-nums;
+  font-size:23px;
+  font-weight:900;
+  font-variant-numeric:tabular-nums;
 }
 
 .car {
-  position: relative;
-  width: 90px;
-  height: 37px;
-  border-radius: 12px 24px 7px 7px;
-  background: linear-gradient(#7ed6ff, #0065bb);
-  border: 2px solid #b6e9ff;
-  transition: transform .4s;
+  width:95px;
+  height:35px;
+  border-radius:12px 25px 6px 6px;
+  background:linear-gradient(#8ddfff,#0964b4);
+  border:2px solid #b6eaff;
+  position:relative;
+  transition:transform .35s;
 }
 
 .red .car {
-  background: linear-gradient(#ffa1b4, #c51638);
-  border-color: #ffb8c8;
+  background:linear-gradient(#ffb1bd,#c71536);
+  border-color:#ffd4dc;
 }
 
-.car::before, .car::after {
-  content: "";
-  position: absolute;
-  bottom: -7px;
-  width: 18px;
-  height: 13px;
-  background: #080a0f;
-  border: 2px solid #7d8998;
-  border-radius: 5px;
+.car:before,.car:after {
+  content:"";
+  position:absolute;
+  bottom:-7px;
+  width:18px;
+  height:12px;
+  background:#07090e;
+  border-radius:4px;
+  border:2px solid #687587;
 }
 
-.car::before { left: 9px; }
-.car::after { right: 9px; }
+.car:before { left:12px; }
+.car:after { right:12px; }
 
-.car.go { transform: translateX(20px); }
+.car.go { transform:translateX(20px); }
 
 .signal {
-  text-align: center;
+  text-align:center;
 }
 
-.lights {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin: 15px auto;
+.signal-row {
+  margin:14px 0;
 }
 
-.light {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid #536175;
-  background: #293240;
+.signal-label {
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  margin-bottom:8px;
+  color:var(--muted);
+  font-weight:700;
 }
 
-.light.redon {
-  background: #ff3652;
-  box-shadow: 0 0 17px #ff3652;
+.leds {
+  display:flex;
+  gap:6px;
 }
 
-.light.yellowon {
-  background: #ffd05b;
-  box-shadow: 0 0 17px #ffd05b;
+.led {
+  flex:1;
+  height:27px;
+  border-radius:6px;
+  background:#303b49;
+  border:1px solid #596779;
 }
 
-.light.greenon {
-  background: #36ec92;
-  box-shadow: 0 0 17px #36ec92;
+.led.on-red {
+  background:#ff3854;
+  box-shadow:0 0 12px #ff385480;
 }
 
-.countdown {
-  font-size: 57px;
-  font-weight: 900;
+.led.on-green {
+  background:#31e88f;
+  box-shadow:0 0 12px #31e88f80;
 }
 
-.p2-controls {
-  display: flex;
-  gap: 18px;
-  align-items: center;
-  flex-wrap: wrap;
+.count {
+  font-size:55px;
+  font-weight:900;
+  margin-top:12px;
+}
+
+.p2-row {
+  display:flex;
+  align-items:center;
+  gap:18px;
+  flex-wrap:wrap;
 }
 
 input[type=color] {
-  width: 75px;
-  height: 48px;
+  width:75px;
+  height:48px;
 }
 
 input[type=range] {
-  width: 185px;
+  width:170px;
 }
 
 #p2Preview {
-  width: 70px;
-  height: 39px;
-  background: blue;
-  border-radius: 9px;
+  width:75px;
+  height:40px;
+  background:blue;
+  border-radius:8px;
 }
 
 .presets {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 16px;
-}
-
-.presets button {
-  padding: 9px 13px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
 }
 
 .records {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
 }
 
 .record {
-  padding: 14px;
-  border-radius: 10px;
-  background: #101c2b;
-  border: 1px solid var(--border);
+  background:#111d2c;
+  border:1px solid var(--border);
+  padding:13px;
+  border-radius:10px;
 }
 
 .record .value {
-  font-size: 25px;
-  font-weight: 900;
-  margin-top: 7px;
+  font-size:24px;
+  font-weight:900;
+  margin-top:7px;
 }
 
-.record.blue { border-top: 3px solid var(--blue); }
-.record.red { border-top: 3px solid var(--red); }
-.record.best { border-top: 3px solid var(--gold); }
+.record:nth-child(1) {
+  border-top:3px solid var(--blue);
+}
+
+.record:nth-child(2) {
+  border-top:3px solid var(--red);
+}
+
+.record:nth-child(3) {
+  border-top:3px solid #efc768;
+}
 
 .table-wrap {
-  overflow-x: auto;
-  margin-top: 15px;
+  overflow-x:auto;
+  margin-top:15px;
 }
 
 table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 610px;
-  font-size: 12px;
+  width:100%;
+  min-width:610px;
+  border-collapse:collapse;
+  font-size:12px;
 }
 
-th, td {
-  padding: 12px 9px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
+th,td {
+  padding:11px;
+  text-align:left;
+  border-bottom:1px solid var(--border);
 }
 
-th {
-  color: var(--muted);
-  letter-spacing: 1px;
-}
+th { color:var(--muted); }
 
 #log {
-  max-height: 180px;
-  overflow-y: auto;
-  font-size: 12px;
+  max-height:180px;
+  overflow:auto;
+  font-size:12px;
 }
 
-.log-entry {
-  padding: 7px 0;
-  border-bottom: 1px solid var(--border);
+.entry {
+  padding:7px;
+  border-bottom:1px solid var(--border);
 }
 
 #aviso {
-  color: var(--gold);
-  font-size: 12px;
-  white-space: pre-wrap;
+  white-space:pre-wrap;
+  color:#ffd070;
+  font-size:12px;
 }
 
-@media(max-width: 700px) {
-  .grid { grid-template-columns: 1fr; }
-  .records { grid-template-columns: 1fr 1fr; }
-  .lane-name { font-size: 17px; }
-  .time { font-size: 19px; }
-  .car { transform: scale(.75); }
-  .car.go { transform: scale(.75) translateX(20px); }
-}
-
-@media(max-width: 390px) {
-  .car { display: none; }
-  .records { grid-template-columns: 1fr; }
+@media(max-width:650px) {
+  .grid { grid-template-columns:1fr; }
+  .records { grid-template-columns:1fr 1fr; }
+  .lane { padding:12px; }
+  .name { font-size:17px; }
+  .time { font-size:18px; }
+  .car { transform:scale(.7); }
+  .car.go { transform:scale(.7) translateX(20px); }
 }
 </style>
 </head>
@@ -337,13 +336,18 @@ th {
 
 <header>
   <div>
-    <div class="subtitle">RC RACING SYSTEM</div>
+    <small>RC RACING SYSTEM</small>
     <h1>DRIFT MASTERS</h1>
-    <div class="subtitle">DUAL LANE · RACE CONTROL</div>
+    <small>DUAL LANE · RACE CONTROL</small>
   </div>
+
   <div>
-    <div id="btText" class="muted">MICRO:BIT DESCONECTADA</div>
-    <button id="connectBtn">CONECTAR BLUETOOTH</button>
+    <div id="btText" class="muted">
+      MICRO:BIT DESCONECTADA
+    </div>
+    <button id="connectBtn">
+      CONECTAR BLUETOOTH
+    </button>
   </div>
 </header>
 
@@ -351,70 +355,117 @@ th {
 
 <section class="panel">
   <h2>PISTA EN VIVO</h2>
-  <p id="trackStatus" class="muted">Esperando largada</p>
+
+  <p id="trackStatus" class="muted">
+    Esperando largada
+  </p>
 
   <div class="track">
+
     <div class="lane blue">
       <div>
-        <div class="lane-name">AZUL · 01</div>
-        <div id="blueState" class="muted">LISTO PARA SALIR</div>
+        <div class="name">AZUL · 01</div>
+        <small id="blueState">LISTO PARA SALIR</small>
       </div>
+
       <div class="car" id="blueCar"></div>
+
       <div>
-        <div id="blueTime" class="time">--.- s</div>
-        <div id="blueResult" class="muted">Sin registro</div>
+        <div class="time" id="blueTime">--.- s</div>
+        <small id="blueResult">Sin registro</small>
       </div>
     </div>
 
     <div class="lane red" id="redLane">
       <div>
-        <div class="lane-name">ROJO · 02</div>
-        <div id="redState" class="muted">LISTO PARA SALIR</div>
+        <div class="name">ROJO · 02</div>
+        <small id="redState">LISTO PARA SALIR</small>
       </div>
+
       <div class="car" id="redCar"></div>
+
       <div>
-        <div id="redTime" class="time">--.- s</div>
-        <div id="redResult" class="muted">Sin registro</div>
+        <div class="time" id="redTime">--.- s</div>
+        <small id="redResult">Sin registro</small>
       </div>
     </div>
+
   </div>
 </section>
 
 <div class="grid">
+
   <section class="panel">
     <h2>CONTROL DE CARRERA</h2>
+
     <div class="buttons">
-      <button id="dualBtn" class="primary" disabled>DOS AUTOS</button>
-      <button id="soloBtn" class="danger" disabled>SOLO AZUL</button>
-      <button id="resetBtn" disabled>REINICIAR</button>
+      <button id="dualBtn" class="primary" disabled>
+        DOS AUTOS
+      </button>
+
+      <button id="soloBtn" class="danger" disabled>
+        SOLO AZUL
+      </button>
+
+      <button id="resetBtn" disabled>
+        REINICIAR
+      </button>
     </div>
-    <div id="statusMessage" class="status">Esperando conexión</div>
-    <p id="sensorNote" class="muted">Sensores P14 azul · P15 rojo</p>
+
+    <p id="statusMessage" class="status">
+      Esperando conexión
+    </p>
+
+    <small>
+      Sensores P14 azul · P15 rojo
+    </small>
   </section>
 
   <section class="panel signal">
-    <h2>SEMÁFORO</h2>
-    <div class="lights">
-      <div class="light" id="light1"></div>
-      <div class="light" id="light2"></div>
-      <div class="light" id="light3"></div>
+    <h2>SEMÁFORO · 16 LED</h2>
+
+    <div class="signal-row">
+      <div class="signal-label">
+        <span>CARRIL AZUL</span>
+        <span>LED 1–8</span>
+      </div>
+      <div class="leds" id="signalBlue"></div>
     </div>
-    <div class="countdown" id="countdown">—</div>
-    <div id="signalMessage" class="muted">Sistema preparado</div>
+
+    <div class="signal-row">
+      <div class="signal-label">
+        <span>CARRIL ROJO</span>
+        <span>LED 9–16</span>
+      </div>
+      <div class="leds" id="signalRed"></div>
+    </div>
+
+    <div id="countdown" class="count">—</div>
+
+    <small id="signalMessage">
+      Sistema preparado
+    </small>
   </section>
+
 </div>
 
 <section class="panel">
   <h2>ILUMINACIÓN NEOPIXEL P2</h2>
-  <p class="muted">Color y brillo de los 8 LED controlados desde Chrome.</p>
 
-  <div class="p2-controls">
-    <input type="color" id="colorLibre" value="#0000ff" disabled>
+  <p class="muted">
+    Control de color y brillo desde el celular.
+  </p>
+
+  <div class="p2-row">
+    <input id="colorLibre" type="color"
+           value="#0000ff" disabled>
+
     <label>
       Brillo <b id="brightnessText">100%</b>
-      <input type="range" id="brightness" min="0" max="100"
-             value="100" disabled>
+      <input id="brightness" type="range"
+             min="0" max="100" value="100" disabled>
     </label>
+
     <div id="p2Preview"></div>
     <b id="p2Hex">#0000FF</b>
   </div>
@@ -428,48 +479,69 @@ th {
     <button data-rgb="255,255,255" disabled>Blanco</button>
     <button data-rgb="0,0,0" disabled>Apagar</button>
   </div>
-  <p id="p2Feedback" class="muted">Conectá la micro:bit.</p>
+
+  <p id="p2Feedback" class="muted">
+    Conectá la micro:bit
+  </p>
 </section>
 
 <div class="grid">
+
   <section class="panel">
     <h2>ÚLTIMO RESULTADO</h2>
-    <div id="winner" style="font-size:26px;font-weight:900">
+
+    <div id="winner"
+         style="font-size:26px;font-weight:900">
       A LA ESPERA
     </div>
-    <div id="winnerTime" class="green">Sin tiempo oficial</div>
-    <p id="resultNote" class="muted">Esperando una carrera.</p>
+
+    <div id="winnerTime" style="color:var(--green)">
+      Sin tiempo oficial
+    </div>
+
+    <p id="resultNote" class="muted">
+      Esperando carrera
+    </p>
   </section>
 
   <section class="panel">
     <h2>REGISTRO DE EVENTOS</h2>
     <div id="log"></div>
   </section>
+
 </div>
 
 <section class="panel">
   <h2>RÉCORDS DE PISTA</h2>
+
   <div class="records">
-    <div class="record blue">
-      <div class="muted">RÉCORD AZUL</div>
-      <div class="value" id="recordBlue">—</div>
+
+    <div class="record">
+      <small>RÉCORD AZUL</small>
+      <div id="recordBlue" class="value">—</div>
     </div>
-    <div class="record red">
-      <div class="muted">RÉCORD ROJO</div>
-      <div class="value" id="recordRed">—</div>
+
+    <div class="record">
+      <small>RÉCORD ROJO</small>
+      <div id="recordRed" class="value">—</div>
     </div>
-    <div class="record best">
-      <div class="muted">RÉCORD ABSOLUTO</div>
-      <div class="value" id="recordTrack">—</div>
+
+    <div class="record">
+      <small>RÉCORD ABSOLUTO</small>
+      <div id="recordTrack" class="value">—</div>
     </div>
+
   </div>
 </section>
 
 <section class="panel">
   <h2>HISTORIAL DE CARRERAS</h2>
+
   <div class="buttons">
     <button id="exportCsv">EXPORTAR CSV</button>
-    <button id="clearHistory" class="danger">BORRAR HISTORIAL</button>
+    <button id="clearHistory" class="danger">
+      BORRAR HISTORIAL
+    </button>
   </div>
 
   <div class="table-wrap">
@@ -487,8 +559,9 @@ th {
       <tbody id="historyBody"></tbody>
     </table>
   </div>
+
   <p id="storageNote" class="muted">
-    Los resultados se guardan en este navegador.
+    Los datos se guardan en este navegador.
   </p>
 </section>
 
@@ -502,11 +575,11 @@ th {
 const SERVICE =
   "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 
-// 003: Chrome escribe a micro:bit
+// 003 = enviar comandos
 const WRITE_UUID =
   "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
-// 002: Chrome recibe de micro:bit
+// 002 = recibir notificaciones
 const NOTIFY_UUID =
   "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
@@ -516,29 +589,31 @@ let device = null;
 let writer = null;
 let notifier = null;
 let buffer = "";
-let solo = false;
-let conectado = false;
-let p2Timer = null;
 
-let carreraActiva = false;
+let conectado = false;
+let solo = false;
+let ganadorAnunciado = "";
+
 let resultadoGuardado = false;
 let conservarResultado = false;
-let ganadorAnunciado = "";
+let p2Timer = null;
 
 const STORAGE_KEY = "driftMastersHistoryV1";
 let historial = [];
 
 // ============================================
-// FUNCIONES GENERALES
+// FUNCIONES VISUALES
 // ============================================
 
 function logEvent(tipo, mensaje) {
-  const e = document.createElement("div");
-  e.className = "log-entry";
-  e.textContent =
+  const div = document.createElement("div");
+  div.className = "entry";
+
+  div.textContent =
     new Date().toLocaleTimeString("es-AR") +
     " · " + tipo + " · " + mensaje;
-  $("log").prepend(e);
+
+  $("log").prepend(div);
 
   while ($("log").children.length > 40) {
     $("log").lastChild.remove();
@@ -547,21 +622,6 @@ function logEvent(tipo, mensaje) {
 
 function status(mensaje) {
   $("statusMessage").textContent = mensaje;
-}
-
-function luces(tipo) {
-  ["light1", "light2", "light3"].forEach(id => {
-    $(id).className = "light";
-  });
-
-  if (tipo === "red" || tipo === "yellow")
-    $("light1").classList.add("redon");
-
-  if (tipo === "yellow")
-    $("light2").classList.add("yellowon");
-
-  if (tipo === "green")
-    $("light3").classList.add("greenon");
 }
 
 function setConnected(ok) {
@@ -575,8 +635,10 @@ function setConnected(ok) {
     ? "DESCONECTAR"
     : "CONECTAR BLUETOOTH";
 
-  ["dualBtn", "soloBtn", "resetBtn",
-   "colorLibre", "brightness"].forEach(id => {
+  [
+    "dualBtn","soloBtn","resetBtn",
+    "colorLibre","brightness"
+  ].forEach(id => {
     $(id).disabled = !ok;
   });
 
@@ -586,57 +648,101 @@ function setConnected(ok) {
   if (!ok) status("Micro:bit desconectada");
 }
 
+// ============================================
+// SEMÁFORO 16 LED
+// ============================================
+
+function crearSemaforo() {
+  for (const id of ["signalBlue","signalRed"]) {
+    const fila = $(id);
+
+    for (let i = 0; i < 8; i++) {
+      const led = document.createElement("span");
+      led.className = "led";
+      fila.appendChild(led);
+    }
+  }
+}
+
+function setSignal(n, modo = "red") {
+  for (const id of ["signalBlue","signalRed"]) {
+    const fila = $(id);
+
+    for (let i = 0; i < 8; i++) {
+      const led = fila.children[i];
+
+      led.className = "led";
+
+      if (modo === "green") {
+        led.classList.add("on-green");
+      } else if (modo === "red" && i < n) {
+        led.classList.add("on-red");
+      }
+    }
+  }
+}
+
+function resetSignal() {
+  setSignal(0,"off");
+}
+
 function resetDisplay() {
-  luces("");
+  resetSignal();
+
   $("countdown").textContent = "—";
   $("signalMessage").textContent = "Sistema preparado";
   $("trackStatus").textContent = "Esperando largada";
+
   $("blueState").textContent = "LISTO PARA SALIR";
   $("redState").textContent = "LISTO PARA SALIR";
+
   $("blueTime").textContent = "--.- s";
   $("redTime").textContent = "--.- s";
+
   $("blueResult").textContent = "Sin registro";
   $("redResult").textContent = "Sin registro";
+
   $("winner").textContent = "A LA ESPERA";
   $("winnerTime").textContent = "Sin tiempo oficial";
-  $("resultNote").textContent = "Esperando una carrera.";
+  $("resultNote").textContent = "Esperando carrera";
+
   $("blueCar").classList.remove("go");
   $("redCar").classList.remove("go");
+
   $("redLane").style.opacity = "1";
 }
 
-function empezarCarrera(modoSolo) {
-  solo = modoSolo;
-  carreraActiva = true;
+function empezarCarrera(esSolo) {
+  solo = esSolo;
+  ganadorAnunciado = "";
   resultadoGuardado = false;
   conservarResultado = false;
-  ganadorAnunciado = "";
 
   resetDisplay();
 
   if (solo) {
-    $("redLane").style.opacity = ".35";
     $("winner").textContent = "CONTRARRELOJ";
+    $("redLane").style.opacity = ".35";
   } else {
     $("winner").textContent = "DOS AUTOS";
   }
 }
 
 // ============================================
-// TIEMPOS E HISTORIAL
+// HISTORIAL Y RÉCORDS
 // ============================================
 
 function convertirTiempo(valor) {
   if (!valor || valor === "-") return null;
 
   const n = parseFloat(
-    String(valor).replace(",", ".")
+    String(valor).replace(",",".")
   );
 
   return Number.isFinite(n) && n >= 0 ? n : null;
 }
 
-function mostrarTiempo(n) {
+function tiempoTexto(n) {
   return n === null ? "—" : n.toFixed(1) + " s";
 }
 
@@ -645,8 +751,9 @@ function cargarHistorial() {
     const datos = JSON.parse(
       localStorage.getItem(STORAGE_KEY) || "[]"
     );
+
     historial = Array.isArray(datos) ? datos : [];
-  } catch (e) {
+  } catch(e) {
     historial = [];
   }
 }
@@ -657,26 +764,28 @@ function guardarHistorial() {
       STORAGE_KEY,
       JSON.stringify(historial)
     );
+
     $("storageNote").textContent =
-      historial.length +
-      " carreras guardadas en este navegador.";
-  } catch (e) {
+      historial.length + " carreras guardadas.";
+  } catch(e) {
     $("storageNote").textContent =
-      "No se pudo guardar: " + e.message;
+      "Error guardando historial: " + e.message;
   }
 }
 
 function renderHistorial() {
-  const cuerpo = $("historyBody");
-  cuerpo.replaceChildren();
+  const tbody = $("historyBody");
+  tbody.replaceChildren();
 
-  if (historial.length === 0) {
+  if (!historial.length) {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
+
     td.colSpan = 6;
-    td.textContent = "Todavía no hay carreras registradas.";
-    tr.append(td);
-    cuerpo.append(tr);
+    td.textContent = "Todavía no hay carreras.";
+
+    tr.appendChild(td);
+    tbody.appendChild(tr);
   }
 
   for (const x of historial.slice().reverse()) {
@@ -686,18 +795,18 @@ function renderHistorial() {
       new Date(x.fecha).toLocaleString("es-AR"),
       x.modo,
       x.ganador,
-      mostrarTiempo(x.azul),
-      mostrarTiempo(x.rojo),
-      mostrarTiempo(x.diferencia)
+      tiempoTexto(x.azul),
+      tiempoTexto(x.rojo),
+      tiempoTexto(x.diferencia)
     ];
 
     for (const valor of valores) {
       const td = document.createElement("td");
       td.textContent = valor;
-      tr.append(td);
+      tr.appendChild(td);
     }
 
-    cuerpo.append(tr);
+    tbody.appendChild(tr);
   }
 
   let mejorAzul = null;
@@ -707,53 +816,50 @@ function renderHistorial() {
     if (Number.isFinite(x.azul)) {
       mejorAzul = mejorAzul === null
         ? x.azul
-        : Math.min(mejorAzul, x.azul);
+        : Math.min(mejorAzul,x.azul);
     }
 
     if (Number.isFinite(x.rojo)) {
       mejorRojo = mejorRojo === null
         ? x.rojo
-        : Math.min(mejorRojo, x.rojo);
+        : Math.min(mejorRojo,x.rojo);
     }
   }
 
-  const mejores = [mejorAzul, mejorRojo]
+  const validos = [mejorAzul,mejorRojo]
     .filter(v => v !== null);
 
-  const absoluto = mejores.length
-    ? Math.min(...mejores)
-    : null;
+  $("recordBlue").textContent =
+    tiempoTexto(mejorAzul);
 
-  $("recordBlue").textContent = mostrarTiempo(mejorAzul);
-  $("recordRed").textContent = mostrarTiempo(mejorRojo);
-  $("recordTrack").textContent = mostrarTiempo(absoluto);
+  $("recordRed").textContent =
+    tiempoTexto(mejorRojo);
+
+  $("recordTrack").textContent =
+    tiempoTexto(
+      validos.length ? Math.min(...validos) : null
+    );
 }
 
-function registrarCarrera(modo, ganador, azul, rojo) {
+function registrarCarrera(modo,ganador,azul,rojo) {
   if (resultadoGuardado) return;
 
   resultadoGuardado = true;
-  carreraActiva = false;
   conservarResultado = true;
 
-  const diferencia =
-    azul !== null && rojo !== null
-      ? Math.abs(azul - rojo)
-      : null;
-
   historial.push({
-    fecha: new Date().toISOString(),
-    modo,
-    ganador,
-    azul,
-    rojo,
-    diferencia
+    fecha:new Date().toISOString(),
+    modo:modo,
+    ganador:ganador,
+    azul:azul,
+    rojo:rojo,
+    diferencia:azul !== null && rojo !== null
+      ? Math.abs(azul-rojo)
+      : null
   });
 
   guardarHistorial();
   renderHistorial();
-
-  logEvent("HISTORIAL", "Carrera registrada");
 }
 
 // ============================================
@@ -782,10 +888,10 @@ function procesarResultados(datos) {
   }
 
   $("blueTime").textContent =
-    azul === null ? "SIN LLEGADA" : mostrarTiempo(azul);
+    azul === null ? "SIN LLEGADA" : tiempoTexto(azul);
 
   $("redTime").textContent =
-    rojo === null ? "SIN LLEGADA" : mostrarTiempo(rojo);
+    rojo === null ? "SIN LLEGADA" : tiempoTexto(rojo);
 
   $("blueResult").textContent =
     azul === null ? "SIN LLEGADA" :
@@ -801,56 +907,56 @@ function procesarResultados(datos) {
       : "GANÓ " + ganador;
 
   $("winnerTime").textContent =
-    "Azul: " + mostrarTiempo(azul) +
-    " · Rojo: " + mostrarTiempo(rojo);
+    "Azul: " + tiempoTexto(azul) +
+    " · Rojo: " + tiempoTexto(rojo);
 
   $("resultNote").textContent =
     azul !== null && rojo !== null
       ? "Diferencia: " +
-        mostrarTiempo(Math.abs(azul - rojo))
+        tiempoTexto(Math.abs(azul-rojo))
       : "Uno o ambos autos no completaron la carrera.";
 
   $("countdown").textContent = "FIN";
   $("trackStatus").textContent = "Carrera finalizada";
 
-  luces(ganador === "SIN GANADOR" ? "red" : "green");
+  if (ganador === "SIN GANADOR") {
+    setSignal(8,"red");
+  } else {
+    setSignal(8,"green");
+  }
 
   if (ganador === "AZUL") {
     $("blueCar").classList.add("go");
-  } else if (ganador === "ROJO") {
+  }
+
+  if (ganador === "ROJO") {
     $("redCar").classList.add("go");
   }
 
   status("Resultado oficial registrado");
 
-  registrarCarrera(
-    "DOS AUTOS",
-    ganador,
-    azul,
-    rojo
-  );
+  registrarCarrera("DOS AUTOS",ganador,azul,rojo);
 }
 
 // ============================================
-// MENSAJES DESDE MICRO:BIT
+// MENSAJES BLUETOOTH
 // ============================================
 
 function processMessage(raw) {
   const m = raw.trim();
   if (!m) return;
 
-  logEvent("RX", m);
+  logEvent("RX",m);
+
   const u = m.toUpperCase();
 
   if (u === "REPOSO" || u === "CONECTADO") {
-    carreraActiva = false;
-
-    // Mantener el último resultado en pantalla.
-    if (!conservarResultado) resetDisplay();
-
-    $("trackStatus").textContent = conservarResultado
-      ? "Lista para otra carrera · último resultado conservado"
-      : "Esperando largada";
+    if (!conservarResultado) {
+      resetDisplay();
+    } else {
+      $("trackStatus").textContent =
+        "Lista para otra carrera · último resultado conservado";
+    }
 
     status("Sistema preparado");
     return;
@@ -872,22 +978,27 @@ function processMessage(raw) {
     return;
   }
 
-  if (u === "AUTO LISTO" || u === "AUTOS LISTOS") {
+  if (u === "AUTOS LISTOS" || u === "AUTO LISTO") {
     status(u);
     return;
   }
+
+  // Cuenta regresiva del puente físico:
+  // 8 rojos por carril, apagándose uno a uno.
 
   const cuenta = u.match(/^COUNT:(\d+)$/);
 
   if (cuenta) {
     const n = Number(cuenta[1]);
+
     $("countdown").textContent = n;
     $("signalMessage").textContent =
       n <= 3 ? "¡ATENCIÓN!" : "PREPARADOS";
-    $("trackStatus").textContent = "Largada en " + n;
 
-    // Semáforo virtual; el físico no cambia.
-    luces(n <= 3 ? "yellow" : "red");
+    $("trackStatus").textContent =
+      "Largada en " + n;
+
+    setSignal(n,"red");
     return;
   }
 
@@ -895,10 +1006,15 @@ function processMessage(raw) {
     $("countdown").textContent = "GO!";
     $("signalMessage").textContent = "¡LARGADA!";
     $("trackStatus").textContent = "Carrera en curso";
+
     $("blueState").textContent = "EN CARRERA";
-    if (!solo) $("redState").textContent = "EN CARRERA";
-    luces("green");
-    status("¡Largada!");
+
+    if (!solo) {
+      $("redState").textContent = "EN CARRERA";
+    }
+
+    setSignal(8,"green");
+    status("¡Largada confirmada!");
     return;
   }
 
@@ -907,21 +1023,26 @@ function processMessage(raw) {
 
     $("countdown").textContent = "FALSA";
     $("signalMessage").textContent = "SALIDA FALSA";
+
     $("winner").textContent = "SALIDA FALSA";
     $("winnerTime").textContent = "Auto " + carril;
-    $("resultNote").textContent =
-      "Carrera anulada. No se registra en el historial.";
-    $("trackStatus").textContent = "Salida anulada";
 
-    carreraActiva = false;
-    conservarResultado = true;
-    luces("red");
+    $("trackStatus").textContent = "Salida anulada";
+    $("resultNote").textContent =
+      "La salida falsa no se guarda como récord.";
+
+    setSignal(8,"red");
     status("Salida falsa: " + carril);
+
+    conservarResultado = true;
     return;
   }
 
   if (u.startsWith("GANA:")) {
-    const match = m.match(/^GANA:(Azul|Rojo)\s+(.+)$/i);
+    const match = m.match(
+      /^GANA:(Azul|Rojo)\s+(.+)$/i
+    );
+
     if (!match) return;
 
     ganadorAnunciado = match[1].toUpperCase();
@@ -942,10 +1063,11 @@ function processMessage(raw) {
     const esAzul = ganadorAnunciado === "AZUL";
 
     $(esAzul ? "blueTime" : "redTime").textContent = t;
+
     $(esAzul ? "blueResult" : "redResult").textContent =
       "GANADOR";
 
-    status("Ganador anunciado; esperando segundo auto");
+    status("Ganador registrado; esperando segundo auto");
     return;
   }
 
@@ -962,44 +1084,52 @@ function processMessage(raw) {
 
     $("blueTime").textContent = t;
     $("blueResult").textContent = "TIEMPO REGISTRADO";
+
     $("winner").textContent = "TIEMPO AZUL";
     $("winnerTime").textContent = t;
+
     $("resultNote").textContent =
-      "Carrera individual finalizada.";
+      "Carrera individual finalizada";
+
     $("countdown").textContent = "FIN";
     $("trackStatus").textContent = "Contrarreloj finalizado";
 
-    luces("green");
-    status("Tiempo registrado: " + t);
+    setSignal(8,"green");
 
-    registrarCarrera("SOLO AZUL", "AZUL", valor, null);
+    registrarCarrera("SOLO AZUL","AZUL",valor,null);
     return;
   }
 
   if (u.startsWith("STATUS:")) {
     const mensaje = m.substring(7);
+
     status(mensaje);
     $("trackStatus").textContent = mensaje;
   }
 }
 
 // ============================================
-// BLUETOOTH
+// RECEPCIÓN BLE
 // ============================================
 
 function onNotify(e) {
   buffer += new TextDecoder().decode(e.target.value);
 
   const lineas = buffer.split(/\r?\n/);
+
   buffer = lineas.pop() || "";
 
   lineas.forEach(processMessage);
 }
 
+// ============================================
+// CONEXIÓN BLUETOOTH
+// ============================================
+
 async function connect() {
   if (!navigator.bluetooth) {
     $("aviso").textContent =
-      "Usá Chrome Android y una página HTTPS.";
+      "Usá Chrome Android con HTTPS.";
     return;
   }
 
@@ -1008,28 +1138,35 @@ async function connect() {
     $("aviso").textContent = "";
 
     device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: [SERVICE]
+      acceptAllDevices:true,
+      optionalServices:[SERVICE]
     });
 
-    device.addEventListener("gattserverdisconnected", () => {
-      writer = null;
-      notifier = null;
-      buffer = "";
-      setConnected(false);
-      logEvent("BLE", "Desconectado");
-    });
+    device.addEventListener(
+      "gattserverdisconnected",
+      () => {
+        writer = null;
+        notifier = null;
+        buffer = "";
+
+        setConnected(false);
+        logEvent("BLE","Desconectado");
+      }
+    );
 
     const server = await device.gatt.connect();
-    const service = await server.getPrimaryService(SERVICE);
 
-    // 003: escritura
-    writer = await service.getCharacteristic(WRITE_UUID);
+    const service =
+      await server.getPrimaryService(SERVICE);
 
-    // 002: recepción
-    notifier = await service.getCharacteristic(NOTIFY_UUID);
+    writer =
+      await service.getCharacteristic(WRITE_UUID);
+
+    notifier =
+      await service.getCharacteristic(NOTIFY_UUID);
 
     await notifier.startNotifications();
+
     notifier.addEventListener(
       "characteristicvaluechanged",
       onNotify
@@ -1037,13 +1174,17 @@ async function connect() {
 
     setConnected(true);
     status("Bluetooth conectado");
-    logEvent("BLE", "Conectado a " + (device.name || "micro:bit"));
 
-  } catch (e) {
+    logEvent(
+      "BLE",
+      "Conectado a " + (device.name || "micro:bit")
+    );
+
+  } catch(e) {
     $("aviso").textContent =
       "No se pudo conectar: " + e.message;
 
-    logEvent("ERROR", e.message);
+    logEvent("ERROR",e.message);
 
     if (device && device.gatt.connected) {
       device.gatt.disconnect();
@@ -1063,6 +1204,10 @@ function disconnect() {
   }
 }
 
+// ============================================
+// ENVIAR COMANDOS A MICRO:BIT
+// ============================================
+
 async function send(cmd) {
   if (!writer || !device || !device.gatt.connected) {
     status("Conectá primero la micro:bit");
@@ -1077,22 +1222,27 @@ async function send(cmd) {
     } else if (writer.properties.writeWithoutResponse) {
       await writer.writeValueWithoutResponse(data);
     } else {
-      throw new Error("La característica 003 no permite escritura");
+      throw new Error("Característica 003 sin escritura");
     }
 
-    logEvent("TX", cmd);
-  } catch (e) {
-    $("aviso").textContent = "Error de envío: " + e.message;
+    logEvent("TX",cmd);
+
+  } catch(e) {
+    $("aviso").textContent =
+      "Error de envío: " + e.message;
   }
 }
 
 // ============================================
-// BOTONES DE CARRERA
+// CONTROLES
 // ============================================
 
 $("connectBtn").onclick = () => {
-  if (device && device.gatt.connected) disconnect();
-  else connect();
+  if (device && device.gatt.connected) {
+    disconnect();
+  } else {
+    connect();
+  }
 };
 
 $("dualBtn").onclick = () => {
@@ -1106,24 +1256,24 @@ $("soloBtn").onclick = () => {
 };
 
 $("resetBtn").onclick = () => {
-  carreraActiva = false;
   conservarResultado = false;
   resultadoGuardado = false;
   solo = false;
+
   resetDisplay();
   send("B");
 };
 
 // ============================================
-// CONTROL DEL COLOR DE P2
+// CONTROL DE COLOR P2
 // ============================================
 
 function actualizarP2() {
   const hex = $("colorLibre").value;
   const brillo = Number($("brightness").value);
 
-  const rgb = [1, 3, 5].map(i =>
-    parseInt(hex.slice(i, i + 2), 16)
+  const rgb = [1,3,5].map(i =>
+    parseInt(hex.slice(i,i+2),16)
   );
 
   const ajustado = rgb.map(v =>
@@ -1137,38 +1287,52 @@ function actualizarP2() {
     "rgb(" + ajustado.join(",") + ")";
 
   if (!conectado) {
-    $("p2Feedback").textContent = "Conectá la micro:bit";
+    $("p2Feedback").textContent =
+      "Conectá la micro:bit";
     return;
   }
 
   clearTimeout(p2Timer);
+
   p2Timer = setTimeout(() => {
     send("C:" + ajustado.join(","));
     $("p2Feedback").textContent = "Color enviado";
-  }, 150);
+  },150);
 }
 
-document.querySelectorAll(".presets button").forEach(b => {
-  b.onclick = () => {
-    const rgb = b.dataset.rgb.split(",").map(Number);
+document.querySelectorAll(".presets button")
+  .forEach(b => {
+    b.onclick = () => {
+      const rgb = b.dataset.rgb
+        .split(",")
+        .map(Number);
 
-    $("colorLibre").value = "#" +
-      rgb.map(v => v.toString(16).padStart(2, "0")).join("");
+      $("colorLibre").value = "#" +
+        rgb.map(v =>
+          v.toString(16).padStart(2,"0")
+        ).join("");
 
-    $("brightness").value = 100;
-    actualizarP2();
-  };
-});
+      $("brightness").value = 100;
+      actualizarP2();
+    };
+  });
 
-$("colorLibre").addEventListener("input", actualizarP2);
-$("brightness").addEventListener("input", actualizarP2);
+$("colorLibre").addEventListener(
+  "input",actualizarP2
+);
+
+$("brightness").addEventListener(
+  "input",actualizarP2
+);
 
 // ============================================
-// EXPORTACIÓN CSV
+// EXPORTAR HISTORIAL CSV
 // ============================================
 
-function celdaCsv(valor) {
-  return '"' + String(valor ?? "").replace(/"/g, '""') + '"';
+function csvCelda(valor) {
+  return '"' +
+    String(valor ?? "").replace(/"/g,'""') +
+    '"';
 }
 
 $("exportCsv").onclick = () => {
@@ -1178,9 +1342,10 @@ $("exportCsv").onclick = () => {
   }
 
   const filas = [
-    ["Fecha", "Modo", "Ganador",
-     "Azul (s)", "Rojo (s)", "Diferencia (s)"],
-
+    [
+      "Fecha","Modo","Ganador",
+      "Azul (s)","Rojo (s)","Diferencia (s)"
+    ],
     ...historial.map(x => [
       new Date(x.fecha).toLocaleString("es-AR"),
       x.modo,
@@ -1193,21 +1358,21 @@ $("exportCsv").onclick = () => {
 
   const csv = "\uFEFF" +
     filas.map(f =>
-      f.map(celdaCsv).join(";")
+      f.map(csvCelda).join(";")
     ).join("\r\n");
 
-  const blob = new Blob([csv], {
-    type: "text/csv;charset=utf-8"
+  const blob = new Blob([csv],{
+    type:"text/csv;charset=utf-8"
   });
 
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
 
+  const a = document.createElement("a");
   a.href = url;
   a.download = "drift-masters-historial.csv";
   a.click();
 
-  setTimeout(() => URL.revokeObjectURL(url), 3000);
+  setTimeout(() => URL.revokeObjectURL(url),3000);
 };
 
 // ============================================
@@ -1216,10 +1381,11 @@ $("exportCsv").onclick = () => {
 
 $("clearHistory").onclick = () => {
   if (!confirm(
-    "¿Borrar todos los récords e historial de este navegador?"
+    "¿Borrar todos los récords y carreras guardadas?"
   )) return;
 
   historial = [];
+
   guardarHistorial();
   renderHistorial();
 
@@ -1227,9 +1393,10 @@ $("clearHistory").onclick = () => {
 };
 
 // ============================================
-// INICIALIZACIÓN DE LA PÁGINA
+// INICIALIZACIÓN
 // ============================================
 
+crearSemaforo();
 cargarHistorial();
 renderHistorial();
 resetDisplay();
