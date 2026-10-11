@@ -1,27 +1,12 @@
 {
-  "id": "./",
-  "name": "Drift Masters 2",
-  "short_name": "Drift Masters",
-  "description": "Control de carreras de dos autos RC con micro:bit V2, Bluetooth, tiempos, semaforo e historial.",
-  "lang": "es-AR",
-  "start_url": "./",
-  "scope": "./",
+  "background_color": "#080000",
+  "dir": "ltr",
   "display": "standalone",
-  "background_color": "#030918",
-  "theme_color": "#030918",
+  "name": "Drift Masters",
   "orientation": "any",
-  "icons": [
-    {
-      "src": "./icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
+  "scope": "/",
+  "short_name": "DriftMasters",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "id": "app.driftmasters.racing"
 }
