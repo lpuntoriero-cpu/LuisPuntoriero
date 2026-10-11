@@ -96,28 +96,41 @@
       procesarFila();
     }
 
-    async function procesarFila() {
-      if (enviando || colaEnvio.length === 0) return;
-      enviando = true;
+    
+async function procesarFila() {
+    if (enviando || colaEnvio.length === 0) return;
 
-      const cmd = colaEnvio.shift();
-      const encoder = new TextEncoder();
-      const data = encoder.encode(cmd + "\n");
+    enviando = true;
+    const cmd = colaEnvio.shift();
 
-      try {
-        // Intentamos primero con respuesta controlada (más estable en Android moderno)
-        await txCharacteristic.writeValueWithResponse(data);
-        log("Enviado: " + cmd);
-      } catch (error) {
-        // Si la pila de Android tira el GATT fallido, le damos un respiro de 100ms y reintentamos sin respuesta
-        try {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          await txCharacteristic.writeValueWithoutResponse(data);
-          log("Enviado (alt): " + cmd);
-        } catch (err2) {
-          log("GATT Error: Desconecta y reconecta la placa");
+    try {
+        if (!txCharacteristic) {
+            throw new Error("Característica UART TX no encontrada");
         }
-      }
+
+        const data = new TextEncoder().encode(cmd + "\n");
+        const props = txCharacteristic.properties;
+
+        if (props.writeWithoutResponse) {
+            await txCharacteristic.writeValueWithoutResponse(data);
+        } else if (props.write) {
+            await txCharacteristic.writeValueWithResponse(data);
+        } else {
+            throw new Error("TX no admite escritura");
+        }
+
+        log("Enviado: " + cmd);
+
+    } catch (error) {
+        log("Error Bluetooth: " + error.name + " - " + error.message);
+        colaEnvio.unshift(cmd);
+    } finally {
+        setTimeout(() => {
+            enviando = false;
+            if (colaEnvio.length > 0) procesarFila();
+        }, 250);
+    }
+}
 
       // Pausa obligatoria entre toque y toque para que el Bluetooth del celu no colapse
       setTimeout(() => {
