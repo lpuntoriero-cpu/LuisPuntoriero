@@ -1,15 +1,11 @@
 {
-  "name": "Drift Masters",
-  "short_name": "DriftMasters",
-  "start_url": "./index.html",
+  "background_color": "#ffffff",
+  "dir": "ltr",
   "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#00e676",
-  "icons": [
-    {
-      "src": "https://via.placeholder.com/512.png?text=DM",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+  "name": "lpuntoriero-cpu.github",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "lpuntoriero-cpu.github",
+  "start_url": "/",
+  "theme_color": "#ffffff"
 }
