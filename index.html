@@ -5,647 +5,474 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Drift Masters - Race Control</title>
-
 <style>
 :root {
-  --bg: #080d15;
-  --panel: #141e2d;
-  --border: #2c4058;
-  --blue: #24aaff;
-  --red: #ff4058;
-  --green: #39ed9c;
-  --text: #f0f5fc;
-  --muted: #9eafc5;
+  --bg:#080b11;
+  --panel:#121b29;
+  --border:#2c3b4c;
+  --blue:#28aaff;
+  --red:#ff4058;
+  --green:#3cf2a0;
+  --muted:#9dacbf;
 }
-
-* { box-sizing: border-box; }
-
+* {box-sizing:border-box}
 body {
-  margin: 0;
-  background: radial-gradient(circle at top, #17304b, var(--bg) 65%);
-  color: var(--text);
-  font-family: Arial, sans-serif;
+  margin:0;
+  background:radial-gradient(circle at top left,#112f47,transparent 40%),var(--bg);
+  color:#f3f7fb;
+  font:15px system-ui,Arial,sans-serif;
 }
-
-.container {
-  max-width: 1200px;
-  margin: auto;
-  padding: 20px;
-}
-
+main {max-width:1100px;margin:auto;padding:18px}
 header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 15px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:15px;border-bottom:1px solid var(--border);
+  padding-bottom:18px;
 }
-
-h1 {
-  font-size: clamp(28px, 5vw, 45px);
-  margin: 0;
-  font-style: italic;
-  letter-spacing: 2px;
-}
-
-.subtitle {
-  color: var(--muted);
-  font-size: 12px;
-  letter-spacing: 2px;
-  margin-top: 7px;
-}
-
-h2 {
-  font-size: 17px;
-  margin-top: 0;
-  letter-spacing: 1px;
-}
-
-h3 {
-  font-size: 14px;
-  color: var(--muted);
-  margin: 0 0 14px;
-}
-
+h1 {margin:0;font-size:32px;letter-spacing:2px}
+h2 {font-size:15px;margin:0 0 14px;letter-spacing:1px}
+.sub {font-size:11px;color:var(--muted);letter-spacing:2px}
 .panel {
-  background: linear-gradient(145deg, #172337, #101722);
-  border: 1px solid var(--border);
-  border-radius: 13px;
-  padding: 20px;
-  margin-top: 18px;
+  background:linear-gradient(135deg,#152030,#0e1520);
+  border:1px solid var(--border);
+  border-radius:13px;padding:18px;margin-top:14px;
 }
-
 button {
-  background: #23344b;
-  color: white;
-  border: 1px solid #42617e;
-  border-radius: 9px;
-  padding: 13px 18px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
+  background:#243750;color:white;border:1px solid #416080;
+  border-radius:9px;padding:13px 17px;font:inherit;font-weight:700;
+  cursor:pointer;
 }
-
-button:hover:not(:disabled) {
-  filter: brightness(1.2);
-}
-
-button:disabled {
-  opacity: .4;
-  cursor: not-allowed;
-}
-
-.connect {
-  background: #146b9d;
-}
-
+button:disabled {opacity:.4;cursor:not-allowed}
+button.primary {background:#0876b8}
+button.danger {background:#98283e}
+button.reset {background:#323e52}
+button.connect {background:#17547a}
 .status {
-  color: var(--muted);
-  font-size: 13px;
-  margin-top: 10px;
+  padding:10px 14px;border-radius:8px;
+  background:#202e40;font-weight:700;
 }
-
-.connected { color: var(--green); }
-.error { color: var(--red); }
-
-.track {
-  display: grid;
-  gap: 12px;
-}
-
+.good {color:var(--green)}
+.bad {color:var(--red)}
+.warn {color:#ffd070}
+.grid {display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.track {overflow:hidden;border-radius:12px;border:1px solid var(--border)}
 .lane {
-  border-radius: 12px;
-  padding: 25px;
-  min-height: 135px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  position: relative;
-  overflow: hidden;
+  padding:22px;background:#11273b;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:12px;min-height:135px;
 }
-
-.lane.blue {
-  background: linear-gradient(100deg, #073f70, #111d2b);
-  border: 1px solid #17699e;
-}
-
-.lane.red {
-  background: linear-gradient(100deg, #752033, #21151d);
-  border: 1px solid #a73a4d;
-}
-
-.lane-name {
-  font-size: 25px;
-  font-weight: 900;
-}
-
-.lane-state {
-  font-size: 12px;
-  margin-top: 8px;
-}
-
-.lane-time {
-  font-size: clamp(22px, 4vw, 34px);
-  font-weight: 900;
-  font-variant-numeric: tabular-nums;
-}
-
+.lane.red {background:#351921;border-top:4px solid #080b11}
+.lane-name {font-weight:900;font-size:22px}
+.lane.blue .lane-name {color:var(--blue)}
+.lane.red .lane-name {color:var(--red)}
 .car {
-  font-size: 45px;
-  transition: transform .4s;
+  position:relative;width:100px;height:42px;border-radius:15px 25px 8px 8px;
+  background:linear-gradient(#6dcdff,#086abd);
+  border:2px solid #b1e9ff;
+  transition:transform .5s;
 }
-
-.controls {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+.red .car {background:linear-gradient(#ffa1ae,#d51d3b);border-color:#ffc0c9}
+.car:before,.car:after {
+  content:"";position:absolute;bottom:-7px;width:20px;height:13px;
+  border-radius:5px;background:#090b10;border:2px solid #798698;
 }
-
-.controls button {
-  width: 100%;
-  min-height: 65px;
-}
-
-.blue-button {
-  background: #075eaa;
-}
-
-.red-button {
-  background: #9d243d;
-}
-
-.reset-button {
-  background: #383e4a;
-}
-
-.signal {
-  text-align: center;
-  padding: 25px;
-}
-
-.lights {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin: 18px 0;
-}
-
-.light {
-  width: 38px;
-  height: 38px;
-  background: #293341;
-  border: 2px solid #526074;
-  border-radius: 50%;
-}
-
-.light.red-on {
-  background: #ff334c;
-  box-shadow: 0 0 20px #ff334c;
-}
-
-.light.yellow-on {
-  background: #ffc73d;
-  box-shadow: 0 0 20px #ffc73d;
-}
-
-.light.green-on {
-  background: #2fff94;
-  box-shadow: 0 0 20px #2fff94;
-}
-
-.countdown {
-  font-size: 65px;
-  font-weight: 900;
-}
-
-.result {
-  text-align: center;
-}
-
-.winner {
-  font-size: 30px;
-  font-weight: 900;
-  margin: 15px 0;
-}
-
-.result-time {
-  color: var(--green);
-  font-size: 24px;
-  font-weight: bold;
-}
-
-/* CONTROL LED P2 */
-
-.p2-panel {
-  border: 1px solid #3286b5;
-}
-
-.p2-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-}
-
-.p2-preview {
-  width: 115px;
-  height: 45px;
-  border-radius: 10px;
-  background: blue;
-  box-shadow: 0 0 25px #0000ff66;
-}
-
-.p2-controls {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 20px;
-  align-items: center;
-  margin-top: 20px;
-}
-
-.p2-controls label {
-  display: block;
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 10px;
-}
-
-input[type="color"] {
-  width: 100%;
-  max-width: 140px;
-  height: 55px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-input[type="range"] {
-  width: 100%;
-  accent-color: #28aaff;
-}
-
-.presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.presets button {
-  flex: 1 1 110px;
-}
-
-.p2-info {
-  margin-top: 15px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.log {
-  max-height: 160px;
-  overflow-y: auto;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.log div {
-  padding: 7px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-@media(max-width: 650px) {
-  .container { padding: 12px; }
-  .controls { grid-template-columns: 1fr; }
-  .p2-controls { grid-template-columns: 1fr; }
-  .lane { padding: 16px; }
-  .lane-name { font-size: 19px; }
-  .car { font-size: 30px; }
-  .p2-preview { width: 75px; }
+.car:before {left:12px}
+.car:after {right:12px}
+.car.go {transform:translateX(25px)}
+.lane-time {font-size:25px;font-weight:900;font-variant-numeric:tabular-nums}
+.muted {font-size:12px;color:var(--muted)}
+.buttons {display:flex;flex-wrap:wrap;gap:10px}
+.signal {text-align:center;padding:20px}
+.lights {display:flex;justify-content:center;gap:12px;margin:12px}
+.light {height:32px;width:32px;border-radius:50%;background:#293342;border:2px solid #586575}
+.light.onred {background:#ff304f;box-shadow:0 0 20px #f34965}
+.light.onyellow {background:#ffc857;box-shadow:0 0 20px #ffc857}
+.light.ongreen {background:#35ed93;box-shadow:0 0 20px #35ed93}
+.count {font-size:56px;font-weight:900}
+#log {max-height:200px;overflow:auto;font-size:12px}
+.entry {padding:7px;border-bottom:1px solid #293747}
+.color-row {display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+input[type=color] {width:70px;height:48px}
+input[type=range] {width:190px}
+.swatches {display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.swatches button {padding:10px 14px}
+#p2Preview {width:70px;height:40px;background:blue;border-radius:8px}
+#aviso {color:#ffcf71;white-space:pre-wrap;font-size:12px}
+@media(max-width:650px) {
+  .grid {grid-template-columns:1fr}
+  h1 {font-size:24px}
+  .lane {padding:13px}
+  .lane-name {font-size:17px}
+  .car {transform:scale(.7)}
+  .car.go {transform:scale(.7) translateX(25px)}
+  .lane-time {font-size:18px}
 }
 </style>
 </head>
-
 <body>
-
-<div class="container">
-
+<main>
 <header>
   <div>
+    <div class="sub">RC RACING SYSTEM</div>
     <h1>DRIFT MASTERS</h1>
-    <div class="subtitle">RC RACING · CONTROL CENTER</div>
+    <div class="sub">DUAL LANE · RACE CONTROL</div>
   </div>
-
   <div>
-    <button class="connect" id="connectBtn">
-      CONECTAR MICRO:BIT
-    </button>
-    <div id="btStatus" class="status">
-      ● Desconectada
-    </div>
+    <div id="btText" class="muted">MICRO:BIT DESCONECTADA</div>
+    <button id="connectBtn" class="connect">CONECTAR BLUETOOTH</button>
   </div>
 </header>
 
+<p id="aviso"></p>
+
 <section class="panel">
   <h2>PISTA EN VIVO</h2>
-
-  <div class="track">
-
+  <div id="trackStatus" class="muted">Esperando largada</div>
+  <div class="track" style="margin-top:12px">
     <div class="lane blue">
       <div>
-        <div class="lane-name">AZUL</div>
-        <div class="lane-state" id="blueState">
-          ESPERANDO
-        </div>
+        <div class="lane-name">AZUL · 01</div>
+        <div id="blueState" class="muted">LISTO PARA SALIR</div>
       </div>
-
-      <div class="car" id="blueCar">🏎️</div>
-
-      <div class="lane-time" id="blueTime">
-        --.-s
+      <div id="blueCar" class="car"></div>
+      <div>
+        <div id="blueTime" class="lane-time">--.- s</div>
+        <div id="blueResult" class="muted">Sin registro</div>
       </div>
     </div>
-
     <div class="lane red" id="redLane">
       <div>
-        <div class="lane-name">ROJO</div>
-        <div class="lane-state" id="redState">
-          ESPERANDO
-        </div>
+        <div class="lane-name">ROJO · 02</div>
+        <div id="redState" class="muted">LISTO PARA SALIR</div>
       </div>
-
-      <div class="car" id="redCar">🏎️</div>
-
-      <div class="lane-time" id="redTime">
-        --.-s
+      <div id="redCar" class="car"></div>
+      <div>
+        <div id="redTime" class="lane-time">--.- s</div>
+        <div id="redResult" class="muted">Sin registro</div>
       </div>
     </div>
-
   </div>
 </section>
 
-<section class="panel">
-  <h2>CONTROL DE CARRERA</h2>
-
-  <div class="controls">
-    <button class="blue-button" id="dualBtn" disabled>
-      CARRERA 2 AUTOS
-    </button>
-
-    <button class="red-button" id="soloBtn" disabled>
-      CONTRARRELOJ AZUL
-    </button>
-
-    <button class="reset-button" id="resetBtn" disabled>
-      RESET
-    </button>
-  </div>
-</section>
-
-<section class="panel signal">
-  <h2>SEMÁFORO DE LARGADA</h2>
-
-  <div class="lights">
-    <div class="light" id="light1"></div>
-    <div class="light" id="light2"></div>
-    <div class="light" id="light3"></div>
-  </div>
-
-  <div class="countdown" id="countdown">—</div>
-
-  <div class="status" id="raceStatus">
-    Sistema en espera
-  </div>
-</section>
-
-<section class="panel result">
-  <h2>RESULTADO OFICIAL</h2>
-
-  <div class="winner" id="winner">
-    ESPERANDO CARRERA
-  </div>
-
-  <div class="result-time" id="winnerTime">
-    --.-s
-  </div>
-</section>
-
-<section class="panel p2-panel">
-
-  <div class="p2-header">
-    <div>
-      <h2>ILUMINACIÓN RGB · STRIP P2</h2>
-      <div class="status">
-        Control de los 8 LED conectados al pin P2
-      </div>
+<div class="grid">
+  <section class="panel">
+    <h2>CONTROL DE CARRERA</h2>
+    <div class="buttons">
+      <button id="dualBtn" class="primary" disabled>DOS AUTOS</button>
+      <button id="soloBtn" class="danger" disabled>SOLO AZUL</button>
+      <button id="resetBtn" class="reset" disabled>REINICIAR</button>
     </div>
+    <p id="statusMessage" class="status warn">Micro:bit desconectada</p>
+    <div id="sensorNote" class="muted">Sensores: P14 azul · P15 rojo</div>
+  </section>
 
-    <div class="p2-preview" id="p2Preview"></div>
-  </div>
-
-  <div class="p2-controls">
-
-    <div>
-      <label for="p2Color">COLOR PERSONALIZADO</label>
-      <input type="color" id="p2Color"
-             value="#0000ff" disabled>
-      <div id="p2Hex">#0000FF</div>
+  <section class="panel signal">
+    <h2>SEMÁFORO DE LARGADA</h2>
+    <div class="lights">
+      <div class="light" id="light1"></div>
+      <div class="light" id="light2"></div>
+      <div class="light" id="light3"></div>
     </div>
-
-    <div>
-      <label for="p2Brightness">
-        BRILLO:
-        <span id="brightnessText">100%</span>
-      </label>
-
-      <input type="range"
-             id="p2Brightness"
-             min="0"
-             max="100"
-             value="100"
-             disabled>
-    </div>
-
-  </div>
-
-  <h3 style="margin-top:25px">COLORES RÁPIDOS</h3>
-
-  <div class="presets">
-    <button data-color="#ff0000" disabled>🔴 ROJO</button>
-    <button data-color="#00ff00" disabled>🟢 VERDE</button>
-    <button data-color="#0000ff" disabled>🔵 AZUL</button>
-    <button data-color="#ffffff" disabled>⚪ BLANCO</button>
-    <button data-color="#ff6e14" disabled>🟠 NARANJA</button>
-    <button data-color="#a000ff" disabled>🟣 VIOLETA</button>
-    <button data-color="#ffff00" disabled>🟡 AMARILLO</button>
-    <button data-color="#000000" disabled>APAGAR</button>
-  </div>
-
-  <div class="p2-info" id="p2Feedback">
-    Conectá la micro:bit para cambiar el color.
-  </div>
-
-</section>
-
-<section class="panel">
-  <h2>REGISTRO DE EVENTOS</h2>
-  <div class="log" id="eventLog"></div>
-</section>
-
+    <div id="countdown" class="count">—</div>
+    <div id="signalMessage" class="muted">Sistema preparado</div>
+  </section>
 </div>
 
+<section class="panel">
+  <h2>ILUMINACIÓN NEOPIXEL P2</h2>
+  <p class="muted">Seleccioná el color y brillo de los 8 LED de P2.</p>
+  <div class="color-row">
+    <input type="color" id="colorLibre" value="#0000ff" disabled>
+    <label>
+      Brillo <b id="p2BrightnessText">100%</b>
+      <input type="range" id="p2Brightness" min="0" max="100" value="100" disabled>
+    </label>
+    <div id="p2Preview"></div>
+    <b id="p2Hex">#0000FF</b>
+  </div>
+  <div class="swatches">
+    <button data-rgb="0,0,255" disabled>Azul</button>
+    <button data-rgb="255,0,0" disabled>Rojo</button>
+    <button data-rgb="0,255,0" disabled>Verde</button>
+    <button data-rgb="255,110,20" disabled>Cálido</button>
+    <button data-rgb="160,0,255" disabled>Violeta</button>
+    <button data-rgb="255,255,255" disabled>Blanco</button>
+    <button data-rgb="0,0,0" disabled>Apagar</button>
+  </div>
+  <p id="p2Feedback" class="muted">Conectá la micro:bit.</p>
+</section>
+
+<div class="grid">
+  <section class="panel">
+    <h2>RESULTADO</h2>
+    <div style="font-size:26px;font-weight:900" id="winner">A LA ESPERA</div>
+    <div id="winnerTime" class="good">Sin tiempo oficial</div>
+    <p id="resultNote" class="muted">Esperando una carrera.</p>
+  </section>
+  <section class="panel">
+    <h2>REGISTRO DE EVENTOS</h2>
+    <div id="log"></div>
+  </section>
+</div>
+</main>
+
 <script>
-"use strict";
-
-// UUID del servicio UART BLE de la micro:bit.
-// Estas características corresponden a tu dispositivo:
-// 0003: escritura desde la web
-// 0002: recepción mediante indicaciones
-
-const SERVICE_UUID =
-  "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-
-const WRITE_UUID =
-  "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
-
-const NOTIFY_UUID =
-  "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+// ===== MICRO:BIT BLE UART =====
+const SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const WRITE_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+const NOTIFY_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
 const $ = id => document.getElementById(id);
 
 let device = null;
-let writeCharacteristic = null;
-let notifyCharacteristic = null;
-let receiveBuffer = "";
-let soloMode = false;
-let colorTimer = null;
+let writer = null;
+let notifier = null;
+let buffer = "";
+let solo = false;
+let p2Timer = null;
 
-// ============================================
-// REGISTRO
-// ============================================
-
-function logEvent(message) {
-  const line = document.createElement("div");
-  const time = new Date().toLocaleTimeString("es-AR");
-
-  line.textContent = time + " · " + message;
-
-  $("eventLog").prepend(line);
-
-  while ($("eventLog").children.length > 40) {
-    $("eventLog").lastChild.remove();
-  }
+function logEvent(tipo, mensaje) {
+  const el = document.createElement("div");
+  el.className = "entry";
+  el.textContent = new Date().toLocaleTimeString("es-AR") +
+    " · " + tipo + " · " + mensaje;
+  $("log").prepend(el);
+  while ($("log").children.length > 40) $("log").lastChild.remove();
 }
 
-// ============================================
-// ESTADO DE CONEXIÓN
-// ============================================
+function status(mensaje, clase = "") {
+  $("statusMessage").textContent = mensaje;
+  $("statusMessage").className = "status " + clase;
+}
 
-function setConnected(connected) {
-  $("btStatus").textContent = connected
-    ? "● MICRO:BIT CONECTADA"
-    : "● MICRO:BIT DESCONECTADA";
-
-  $("btStatus").className = connected
-    ? "status connected"
-    : "status error";
-
-  $("connectBtn").textContent = connected
+function setConnected(ok) {
+  $("btText").textContent = ok
+    ? "MICRO:BIT CONECTADA"
+    : "MICRO:BIT DESCONECTADA";
+  $("connectBtn").textContent = ok
     ? "DESCONECTAR"
-    : "CONECTAR MICRO:BIT";
+    : "CONECTAR BLUETOOTH";
 
-  [
-    "dualBtn",
-    "soloBtn",
-    "resetBtn",
-    "p2Color",
-    "p2Brightness"
-  ].forEach(id => {
-    $(id).disabled = !connected;
+  ["dualBtn", "soloBtn", "resetBtn", "colorLibre", "p2Brightness"]
+    .forEach(id => $(id).disabled = !ok);
+
+  document.querySelectorAll(".swatches button")
+    .forEach(b => b.disabled = !ok);
+
+  if (!ok) status("Micro:bit desconectada", "warn");
+}
+
+function lights(tipo) {
+  ["light1", "light2", "light3"].forEach(id => {
+    $(id).className = "light";
   });
+  if (tipo === "red") $("light1").classList.add("onred");
+  if (tipo === "yellow") $("light2").classList.add("onyellow");
+  if (tipo === "green") $("light3").classList.add("ongreen");
+}
 
-  document.querySelectorAll(".presets button")
-    .forEach(button => {
-      button.disabled = !connected;
-    });
+function resetDisplay() {
+  lights("");
+  $("countdown").textContent = "—";
+  $("signalMessage").textContent = "Sistema preparado";
+  $("trackStatus").textContent = "Esperando largada";
+  $("blueState").textContent = "LISTO PARA SALIR";
+  $("redState").textContent = "LISTO PARA SALIR";
+  $("blueResult").textContent = "Sin registro";
+  $("redResult").textContent = "Sin registro";
+  $("blueTime").textContent = "--.- s";
+  $("redTime").textContent = "--.- s";
+  $("winner").textContent = "A LA ESPERA";
+  $("winnerTime").textContent = "Sin tiempo oficial";
+  $("blueCar").classList.remove("go");
+  $("redCar").classList.remove("go");
+  $("redLane").style.opacity = "1";
+}
 
-  if (!connected) {
-    $("p2Feedback").textContent =
-      "Conectá la micro:bit para cambiar el color.";
+function processMessage(raw) {
+  let m = raw.trim();
+  if (!m) return;
+
+  logEvent("RX", m);
+  let u = m.toUpperCase();
+
+  if (u === "REPOSO" || u === "CONECTADO") {
+    resetDisplay();
+    status("Sistema preparado", "good");
+    return;
+  }
+
+  if (u === "POSICIONAR") {
+    $("trackStatus").textContent = "Posicionando autos";
+    status("Colocá los autos frente a los sensores");
+    return;
+  }
+
+  if (u.startsWith("AZUL:") || u.startsWith("ROJO:")) {
+    let azul = u.startsWith("AZUL:");
+    let listo = u.endsWith(":OK");
+    $(azul ? "blueState" : "redState").textContent =
+      listo ? "POSICIONADO" : "FALTA AUTO";
+    $("sensorNote").textContent =
+      (azul ? "AZUL" : "ROJO") + ": " +
+      (listo ? "sensor ocupado" : "sensor libre");
+    return;
+  }
+
+  if (u === "AUTOS LISTOS" || u === "AUTO LISTO") {
+    status(u, "good");
+    $("trackStatus").textContent = u;
+    return;
+  }
+
+  if (u === "CUENTA") {
+    $("winner").textContent = "CARRERA EN CURSO";
+    $("trackStatus").textContent = "Cuenta regresiva";
+    lights("red");
+    return;
+  }
+
+  const cuenta = u.match(/^COUNT:(\d+)$/);
+  if (cuenta) {
+    let n = Number(cuenta[1]);
+    $("countdown").textContent = n;
+    $("signalMessage").textContent = n <= 3
+      ? "¡ATENCIÓN!"
+      : "PREPARADOS";
+    $("trackStatus").textContent = "Largada en " + n;
+    lights(n <= 3 ? "yellow" : "red");
+    return;
+  }
+
+  if (u === "GO") {
+    $("countdown").textContent = "GO!";
+    $("signalMessage").textContent = "¡LARGADA!";
+    $("trackStatus").textContent = "Carrera en curso";
+    $("blueState").textContent = "EN CARRERA";
+    if (!solo) $("redState").textContent = "EN CARRERA";
+    lights("green");
+    status("¡Largada confirmada!", "good");
+    return;
+  }
+
+  if (u.startsWith("SALIDA FALSA:")) {
+    let lane = m.split(":")[1] || "Desconocido";
+    $("countdown").textContent = "FALSA";
+    $("signalMessage").textContent = "SALIDA FALSA";
+    $("winner").textContent = "SALIDA FALSA";
+    $("winnerTime").textContent = "Auto " + lane;
+    $("trackStatus").textContent = "Salida anulada";
+    lights("red");
+    status("Salida falsa: " + lane, "bad");
+    return;
+  }
+
+  if (u.startsWith("GANA:")) {
+    let match = m.match(/^GANA:(Azul|Rojo)\s+(.+)$/i);
+    if (!match) return;
+
+    let ganador = match[1];
+    let tiempo = match[2];
+    let esAzul = ganador.toUpperCase() === "AZUL";
+
+    $("winner").textContent = "GANÓ " + ganador.toUpperCase();
+    $("winnerTime").textContent = "Tiempo oficial: " + tiempo;
+    $("countdown").textContent = "FIN";
+    $("trackStatus").textContent = "Carrera finalizada";
+    $(esAzul ? "blueTime" : "redTime").textContent = tiempo;
+    $(esAzul ? "blueResult" : "redResult").textContent = "GANADOR";
+    $(esAzul ? "blueCar" : "redCar").classList.add("go");
+
+    lights("green");
+    status("Ganó " + ganador + " · " + tiempo, "good");
+    return;
+  }
+
+  if (u.startsWith("TIEMPO:")) {
+    let t = m.substring(7);
+    $("blueTime").textContent = t;
+    $("blueResult").textContent = "TIEMPO REGISTRADO";
+    $("winner").textContent = "TIEMPO AZUL";
+    $("winnerTime").textContent = "Tiempo oficial: " + t;
+    $("countdown").textContent = "FIN";
+    lights("green");
+    status("Tiempo registrado: " + t, "good");
+    return;
+  }
+
+  if (u.startsWith("STATUS:")) {
+    status(m.substring(7));
   }
 }
 
-// ============================================
-// CONEXIÓN BLUETOOTH
-// ============================================
+function onNotify(e) {
+  buffer += new TextDecoder().decode(e.target.value);
+  const lineas = buffer.split(/\r?\n/);
+  buffer = lineas.pop() || "";
+  lineas.forEach(processMessage);
+}
 
-async function connectBluetooth() {
+// ===== CONEXIÓN BLUETOOTH CORREGIDA =====
+async function connect() {
   if (!navigator.bluetooth) {
-    alert(
-      "Web Bluetooth no está disponible. " +
-      "Usá Chrome o Edge y abrí la página mediante HTTPS."
-    );
+    $("aviso").textContent =
+      "Web Bluetooth no está disponible. Usá Chrome en Android con HTTPS.";
     return;
   }
 
   try {
     $("connectBtn").disabled = true;
+    $("aviso").textContent = "";
 
+    // CAMBIO PRINCIPAL:
+    // Permite ver dispositivos aunque no anuncien UART.
+    // optionalServices permite acceder al servicio después.
     device = await navigator.bluetooth.requestDevice({
-      filters: [
-        { services: [SERVICE_UUID] }
-      ],
-      optionalServices: [SERVICE_UUID]
+      acceptAllDevices: true,
+      optionalServices: [SERVICE]
     });
 
-    device.addEventListener(
-      "gattserverdisconnected",
-      () => {
-        writeCharacteristic = null;
-        notifyCharacteristic = null;
-        setConnected(false);
-        logEvent("Bluetooth desconectado");
-      }
-    );
+    device.addEventListener("gattserverdisconnected", () => {
+      writer = null;
+      notifier = null;
+      buffer = "";
+      setConnected(false);
+      logEvent("BLE", "Dispositivo desconectado");
+    });
 
     const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(SERVICE);
 
-    const service = await server.getPrimaryService(
-      SERVICE_UUID
-    );
+    // 003: enviar hacia micro:bit
+    writer = await service.getCharacteristic(WRITE_UUID);
 
-    writeCharacteristic = await service.getCharacteristic(
-      WRITE_UUID
-    );
+    // 002: recibir desde micro:bit
+    notifier = await service.getCharacteristic(NOTIFY_UUID);
 
-    notifyCharacteristic = await service.getCharacteristic(
-      NOTIFY_UUID
-    );
-
-    await notifyCharacteristic.startNotifications();
-
-    notifyCharacteristic.addEventListener(
+    await notifier.startNotifications();
+    notifier.addEventListener(
       "characteristicvaluechanged",
-      receiveData
+      onNotify
     );
 
-    receiveBuffer = "";
     setConnected(true);
+    $("aviso").textContent = "";
+    status("Bluetooth conectado", "good");
+    logEvent("BLE", "Conectado a " + (device.name || "micro:bit"));
 
-    logEvent("Bluetooth conectado");
-
-  } catch (error) {
-    logEvent("ERROR Bluetooth: " + error.message);
-    alert("No se pudo conectar: " + error.message);
-
+  } catch (e) {
+    $("aviso").textContent =
+      "No se pudo conectar: " + e.message +
+      "\nSi aparece la micro:bit pero falta el servicio 001, " +
+      "hay que corregir el firmware Bluetooth.";
+    logEvent("ERROR", e.message);
+    if (device && device.gatt.connected) device.gatt.disconnect();
+    setConnected(false);
   } finally {
     $("connectBtn").disabled = false;
   }
 }
 
-function disconnectBluetooth() {
+function disconnect() {
   if (device && device.gatt.connected) {
     device.gatt.disconnect();
   } else {
@@ -653,390 +480,103 @@ function disconnectBluetooth() {
   }
 }
 
-// ============================================
-// ENVÍO UART
-// ============================================
-
-async function sendCommand(command) {
-  if (
-    !writeCharacteristic ||
-    !device ||
-    !device.gatt.connected
-  ) {
-    logEvent("No hay conexión Bluetooth");
-    return false;
+async function send(cmd) {
+  if (!writer || !device || !device.gatt.connected) {
+    status("Conectá primero la micro:bit", "warn");
+    return;
   }
 
   try {
-    const bytes = new TextEncoder().encode(
-      command + "\n"
-    );
+    const data = new TextEncoder().encode(cmd + "\n");
 
-    if (writeCharacteristic.properties.write) {
-      await writeCharacteristic.writeValueWithResponse(
-        bytes
-      );
+    if (writer.properties.write) {
+      await writer.writeValueWithResponse(data);
+    } else if (writer.properties.writeWithoutResponse) {
+      await writer.writeValueWithoutResponse(data);
     } else {
-      await writeCharacteristic.writeValueWithoutResponse(
-        bytes
-      );
+      throw new Error("Característica 003 no permite escritura");
     }
 
-    logEvent("TX: " + command);
-    return true;
-
-  } catch (error) {
-    logEvent("ERROR TX: " + error.message);
-    return false;
+    logEvent("TX", cmd);
+  } catch (e) {
+    $("aviso").textContent = "Error de envío: " + e.message;
+    status("Error enviando comando", "bad");
   }
 }
 
-// ============================================
-// RECEPCIÓN UART
-// ============================================
+// ===== BOTONES =====
+$("connectBtn").onclick = () => {
+  if (device && device.gatt.connected) disconnect();
+  else connect();
+};
 
-function receiveData(event) {
-  const data = event.target.value;
-  const text = new TextDecoder().decode(data);
+$("dualBtn").onclick = () => {
+  solo = false;
+  resetDisplay();
+  $("winner").textContent = "DOS AUTOS";
+  send("A");
+};
 
-  receiveBuffer += text;
+$("soloBtn").onclick = () => {
+  solo = true;
+  resetDisplay();
+  $("redLane").style.opacity = ".35";
+  $("winner").textContent = "CONTRARRELOJ";
+  send("S");
+};
 
-  const lines = receiveBuffer.split(/\r?\n/);
-  receiveBuffer = lines.pop() || "";
+$("resetBtn").onclick = () => {
+  solo = false;
+  resetDisplay();
+  send("B");
+};
 
-  for (const line of lines) {
-    processMessage(line.trim());
-  }
-}
+// ===== CONTROL COLOR P2 =====
+function p2Update() {
+  const hex = $("colorLibre").value;
+  const brillo = Number($("p2Brightness").value);
 
-// ============================================
-// SEMÁFORO
-// ============================================
-
-function setLights(mode) {
-  ["light1", "light2", "light3"].forEach(id => {
-    $(id).className = "light";
-  });
-
-  if (mode === "red") {
-    $("light1").classList.add("red-on");
-  }
-
-  if (mode === "yellow") {
-    $("light1").classList.add("red-on");
-    $("light2").classList.add("yellow-on");
-  }
-
-  if (mode === "green") {
-    $("light3").classList.add("green-on");
-  }
-}
-
-// ============================================
-// ESTADO DE PISTA
-// ============================================
-
-function resetDisplay() {
-  soloMode = false;
-
-  $("redLane").style.opacity = "1";
-
-  $("blueState").textContent = "ESPERANDO";
-  $("redState").textContent = "ESPERANDO";
-
-  $("blueTime").textContent = "--.-s";
-  $("redTime").textContent = "--.-s";
-
-  $("blueCar").style.transform = "";
-  $("redCar").style.transform = "";
-
-  $("winner").textContent = "ESPERANDO CARRERA";
-  $("winnerTime").textContent = "--.-s";
-
-  $("countdown").textContent = "—";
-  $("raceStatus").textContent = "Sistema en espera";
-
-  setLights("");
-}
-
-// ============================================
-// MENSAJES DE LA MICRO:BIT
-// ============================================
-
-function processMessage(message) {
-  if (!message) return;
-
-  logEvent("RX: " + message);
-
-  const upper = message.toUpperCase();
-
-  if (upper === "REPOSO") {
-    resetDisplay();
-    return;
-  }
-
-  if (upper === "POSICIONAR") {
-    $("raceStatus").textContent =
-      "POSICIONAR AUTOS";
-    return;
-  }
-
-  if (upper.startsWith("AZUL:")) {
-    $("blueState").textContent =
-      upper.includes("OK")
-        ? "POSICIONADO"
-        : "FALTA AUTO";
-    return;
-  }
-
-  if (upper.startsWith("ROJO:")) {
-    $("redState").textContent =
-      upper.includes("OK")
-        ? "POSICIONADO"
-        : "FALTA AUTO";
-    return;
-  }
-
-  if (upper === "AUTOS LISTOS") {
-    $("blueState").textContent = "LISTO";
-    $("redState").textContent = "LISTO";
-    $("raceStatus").textContent =
-      "AMBOS AUTOS LISTOS";
-    return;
-  }
-
-  if (upper === "AUTO LISTO") {
-    $("blueState").textContent = "LISTO";
-    $("raceStatus").textContent =
-      "AUTO AZUL LISTO";
-    return;
-  }
-
-  if (upper === "CUENTA") {
-    $("winner").textContent = "CARRERA EN CURSO";
-    $("winnerTime").textContent = "--.-s";
-    $("raceStatus").textContent = "CUENTA REGRESIVA";
-    setLights("red");
-    return;
-  }
-
-  // Cuenta regresiva recibida desde la micro:bit.
-  const count = upper.match(/^COUNT:(\d+)$/);
-
-  if (count) {
-    const n = Number(count[1]);
-
-    $("countdown").textContent = n;
-    $("raceStatus").textContent =
-      "LARGADA EN " + n;
-
-    setLights(n <= 3 ? "yellow" : "red");
-    return;
-  }
-
-  if (upper === "GO") {
-    $("countdown").textContent = "GO!";
-    $("raceStatus").textContent =
-      "CARRERA EN CURSO";
-
-    $("blueState").textContent = "CORRIENDO";
-
-    if (!soloMode) {
-      $("redState").textContent = "CORRIENDO";
-    }
-
-    setLights("green");
-    return;
-  }
-
-  if (upper.startsWith("SALIDA FALSA:")) {
-    const lane = message.split(":")[1] || "AZUL";
-
-    $("countdown").textContent = "FALSA";
-    $("raceStatus").textContent =
-      "SALIDA FALSA";
-
-    $("winner").textContent = "SALIDA FALSA";
-    $("winnerTime").textContent = lane;
-
-    if (lane.toUpperCase() === "AZUL") {
-      $("blueState").textContent = "SALIDA FALSA";
-    } else {
-      $("redState").textContent = "SALIDA FALSA";
-    }
-
-    setLights("red");
-    return;
-  }
-
-  if (upper.startsWith("GANA:")) {
-    const result = message.match(
-      /^GANA:(Azul|Rojo)\s+(.+)$/i
-    );
-
-    if (!result) return;
-
-    const lane = result[1].toUpperCase();
-    const time = result[2];
-
-    $("winner").textContent = "GANÓ " + lane;
-    $("winnerTime").textContent = time;
-
-    $("countdown").textContent = "FIN";
-    $("raceStatus").textContent =
-      "CARRERA FINALIZADA";
-
-    if (lane === "AZUL") {
-      $("blueTime").textContent = time;
-      $("blueState").textContent = "GANADOR";
-      $("blueCar").style.transform = "translateX(30px)";
-    } else {
-      $("redTime").textContent = time;
-      $("redState").textContent = "GANADOR";
-      $("redCar").style.transform = "translateX(30px)";
-    }
-
-    setLights("green");
-    return;
-  }
-
-  if (upper.startsWith("TIEMPO:")) {
-    const time = message.substring(7).trim();
-
-    $("blueTime").textContent = time;
-    $("blueState").textContent = "FINALIZADO";
-
-    $("winner").textContent = "TIEMPO AZUL";
-    $("winnerTime").textContent = time;
-
-    $("countdown").textContent = "FIN";
-    $("raceStatus").textContent =
-      "CONTRARRELOJ FINALIZADO";
-
-    setLights("green");
-    return;
-  }
-}
-
-// ============================================
-// CONTROL DE COLOR LED P2
-// ============================================
-
-function updateP2Color() {
-  const hex = $("p2Color").value;
-
-  const brightness = Number(
-    $("p2Brightness").value
+  const rgb = [1, 3, 5].map(i =>
+    parseInt(hex.slice(i, i + 2), 16)
   );
 
-  const red = parseInt(hex.substring(1, 3), 16);
-  const green = parseInt(hex.substring(3, 5), 16);
-  const blue = parseInt(hex.substring(5, 7), 16);
+  const scaled = rgb.map(v =>
+    Math.round(v * brillo / 100)
+  );
 
-  // El brillo se aplica a cada componente RGB.
-  const r = Math.round(red * brightness / 100);
-  const g = Math.round(green * brightness / 100);
-  const b = Math.round(blue * brightness / 100);
-
-  $("brightnessText").textContent =
-    brightness + "%";
-
+  $("p2BrightnessText").textContent = brillo + "%";
   $("p2Hex").textContent = hex.toUpperCase();
-
   $("p2Preview").style.background =
-    `rgb(${r}, ${g}, ${b})`;
+    "rgb(" + scaled.join(",") + ")";
 
-  $("p2Preview").style.boxShadow =
-    `0 0 25px rgba(${r}, ${g}, ${b}, 0.55)`;
-
-  if (colorTimer) {
-    clearTimeout(colorTimer);
+  if (!writer || !device || !device.gatt.connected) {
+    $("p2Feedback").textContent = "Conectá la micro:bit";
+    return;
   }
 
-  // Evita enviar demasiados comandos BLE
-  // mientras se mueve el selector.
-  colorTimer = setTimeout(async () => {
-    const command = `C:${r},${g},${b}`;
-
-    const ok = await sendCommand(command);
-
-    $("p2Feedback").textContent = ok
-      ? "Color enviado: " + command
-      : "No se pudo enviar el color.";
+  clearTimeout(p2Timer);
+  p2Timer = setTimeout(() => {
+    send("C:" + scaled.join(","));
+    $("p2Feedback").textContent = "Color enviado";
   }, 150);
 }
 
-// ============================================
-// BOTONES DE CONTROL
-// ============================================
+document.querySelectorAll(".swatches button").forEach(b => {
+  b.onclick = () => {
+    const rgb = b.dataset.rgb.split(",").map(Number);
 
-$("connectBtn").addEventListener("click", () => {
-  if (device && device.gatt.connected) {
-    disconnectBluetooth();
-  } else {
-    connectBluetooth();
-  }
+    $("colorLibre").value = "#" +
+      rgb.map(v => v.toString(16).padStart(2, "0")).join("");
+
+    $("p2Brightness").value = 100;
+    p2Update();
+  };
 });
 
-$("dualBtn").addEventListener("click", async () => {
-  soloMode = false;
+$("colorLibre").addEventListener("input", p2Update);
+$("p2Brightness").addEventListener("input", p2Update);
 
-  $("redLane").style.opacity = "1";
-
-  $("winner").textContent = "CARRERA 2 AUTOS";
-  $("winnerTime").textContent = "--.-s";
-
-  await sendCommand("A");
-});
-
-$("soloBtn").addEventListener("click", async () => {
-  soloMode = true;
-
-  $("redLane").style.opacity = ".35";
-
-  $("winner").textContent = "CONTRARRELOJ";
-  $("winnerTime").textContent = "--.-s";
-
-  await sendCommand("S");
-});
-
-$("resetBtn").addEventListener("click", async () => {
-  resetDisplay();
-  await sendCommand("B");
-});
-
-// Selector libre de color.
-$("p2Color").addEventListener(
-  "input",
-  updateP2Color
-);
-
-// Regulador de brillo.
-$("p2Brightness").addEventListener(
-  "input",
-  updateP2Color
-);
-
-// Colores rápidos.
-document.querySelectorAll(".presets button")
-  .forEach(button => {
-    button.addEventListener("click", () => {
-      $("p2Color").value = button.dataset.color;
-
-      // Los presets usan brillo completo.
-      // APAGAR envía RGB 0,0,0.
-      $("p2Brightness").value = 100;
-
-      updateP2Color();
-    });
-  });
-
-// Estado inicial.
 setConnected(false);
-resetDisplay();
-logEvent("Panel Drift Masters iniciado");
-
 </script>
-
 </body>
 </html>
