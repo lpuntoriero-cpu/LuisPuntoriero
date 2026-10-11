@@ -2,354 +2,840 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drift Masters</title>
-  <meta name="theme-color" content="#00e676">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0d12">
+<title>Drift Masters | Race Control</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    }
+<style>
+:root {
+  --bg:#0a0d12;
+  --panel:#131923;
+  --panel2:#1b2430;
+  --line:#293545;
+  --green:#00f5a0;
+  --blue:#36baff;
+  --red:#ff5268;
+  --purple:#c084fc;
+  --text:#f3f7fc;
+  --muted:#8b9aad;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:
+    radial-gradient(ellipse at 50% -15%,#19352f 0,transparent 48%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,"Segoe UI",Arial,sans-serif;
+  min-height:100vh;
+}
+button { font:inherit; }
+.app { width:min(1100px,100%); margin:auto; padding:20px; }
+header {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:15px; flex-wrap:wrap; margin-bottom:22px;
+}
+.brand { display:flex; align-items:center; gap:12px; }
+.logo {
+  width:48px;height:48px;border-radius:14px;
+  display:grid;place-items:center;background:var(--green);
+  color:#06130e;font-size:24px;font-weight:1000;
+  box-shadow:0 0 25px #00f5a033;
+}
+h1 { font-size:clamp(22px,4vw,34px); margin:0; letter-spacing:2px; }
+.kicker { color:var(--muted);font-size:11px;letter-spacing:2px;margin-top:5px; }
+.connection {
+  display:flex;align-items:center;gap:9px;
+  background:var(--panel);border:1px solid var(--line);
+  padding:10px 13px;border-radius:12px;font-size:12px;
+}
+.dot { width:9px;height:9px;border-radius:50%;background:var(--red); }
+.dot.on { background:var(--green);box-shadow:0 0 12px var(--green); }
 
-    body {
-      background: #121212;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-      text-align: center;
-    }
+.panel {
+  background:linear-gradient(145deg,#171f2a,#10151d);
+  border:1px solid var(--line);border-radius:18px;padding:18px;
+  box-shadow:0 10px 30px #0002;
+}
+.section-head {
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;margin-bottom:15px;
+}
+.section-head h2 { margin:0;font-size:15px;letter-spacing:1px; }
+.muted { color:var(--muted);font-size:12px; }
+.grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px; }
+.lane { overflow:hidden;position:relative; }
+.lane.blue { border-top:3px solid var(--blue); }
+.lane.red { border-top:3px solid var(--red); }
+.lane-title { display:flex;justify-content:space-between;align-items:center;gap:8px; }
+.lane-name { font-size:14px;font-weight:900;letter-spacing:1.5px; }
+.blue-text { color:var(--blue); }
+.red-text { color:var(--red); }
+.lane-tag {
+  border:1px solid var(--line);border-radius:8px;
+  padding:5px 8px;color:var(--muted);font-size:10px;
+}
+.track {
+  height:115px;margin:15px 0;border-radius:12px;overflow:hidden;
+  position:relative;display:flex;align-items:center;padding:12px;
+  background:
+    repeating-linear-gradient(90deg,transparent 0 48px,#ffffff0a 49px 50px),
+    #0b1017;
+  border:1px solid #ffffff0d;
+}
+.track:before {
+  content:"";position:absolute;left:0;right:0;top:50%;
+  border-top:2px dashed #ffffff28;
+}
+.track:after {
+  content:"";position:absolute;right:12px;top:0;bottom:0;
+  border-left:4px solid white;border-right:4px solid #fff;
+  width:9px;opacity:.7;
+}
+.car {
+  position:relative;z-index:1;width:92px;height:43px;
+  border-radius:15px 23px 13px 13px;
+  clip-path:polygon(10% 25%,26% 25%,39% 0,70% 0,86% 25%,98% 32%,100% 80%,91% 100%,8% 100%,0 78%,0 40%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:1000;color:#06101a;
+  transition:transform .4s;
+}
+.car:before {
+  content:"";position:absolute;top:5px;left:35%;
+  width:34%;height:12px;background:#dff8ffb0;
+  border-radius:5px 7px 2px 2px;
+}
+.car.blue-car { background:linear-gradient(145deg,#8ae0ff,var(--blue)); }
+.car.red-car { background:linear-gradient(145deg,#ff9aa5,var(--red)); }
+.car span { position:relative;top:5px; }
+.lane-status {
+  display:flex;justify-content:space-between;gap:8px;
+  font-size:12px;color:var(--muted);
+}
+.pill {
+  border-radius:7px;padding:5px 8px;font-size:10px;
+  font-weight:800;letter-spacing:.5px;background:#ffffff0b;
+}
+.pill.ready { color:var(--green); }
+.pill.warn { color:#ffc857; }
+.pill.bad { color:var(--red); }
 
-    h1 {
-      color: #00e676;
-      margin-bottom: 5px;
-      font-size: 2rem;
-      letter-spacing: 2px;
-    }
+.race-panel { margin-top:16px; }
+.signal-row { display:flex;align-items:center;justify-content:center;gap:9px;margin:20px 0; }
+.lamp {
+  width:24px;height:24px;border-radius:50%;background:#313b48;
+  border:2px solid #536070;transition:all .15s;
+}
+.lamp.red.lit { background:#ff304f;box-shadow:0 0 20px #ff304f; }
+.lamp.yellow.lit { background:#ffce45;box-shadow:0 0 20px #ffce45; }
+.lamp.green.lit { background:#00f5a0;box-shadow:0 0 20px #00f5a0; }
 
-    .subtitle {
-      color: #aaa;
-      margin-bottom: 25px;
-      font-size: 0.9rem;
-    }
+.countdown {
+  font-size:clamp(48px,10vw,86px);line-height:1;
+  font-weight:1000;letter-spacing:3px;text-align:center;
+  margin:14px 0 8px;color:var(--green);
+  text-shadow:0 0 28px #00f5a026;
+}
+.race-message { text-align:center;color:var(--muted);font-size:13px;min-height:20px; }
+.timer-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:22px; }
+.timer-box { background:#0b1017;border:1px solid var(--line);border-radius:12px;padding:14px; }
+.timer-label { font-size:11px;color:var(--muted);letter-spacing:1px; }
+.timer-value { font-size:clamp(24px,5vw,36px);font-variant-numeric:tabular-nums;font-weight:800;margin-top:7px; }
+.timer-note { color:var(--muted);font-size:10px;margin-top:5px; }
 
-    .status-card {
-      background: #1e1e1e;
-      border: 2px solid #333;
-      border-radius: 12px;
-      width: 100%;
-      max-width: 350px;
-      padding: 15px;
-      margin-bottom: 25px;
-    }
+.winner {
+  margin-top:16px;padding:17px;border-radius:14px;
+  border:1px solid #00f5a044;background:#00f5a00a;
+}
+.winner-top { display:flex;align-items:center;gap:10px; }
+.trophy { font-size:27px; }
+.winner-title { color:var(--green);font-weight:900;letter-spacing:1.5px;font-size:12px; }
+.winner-name { font-size:23px;font-weight:900;margin-top:5px; }
+.winner-time { margin-left:auto;text-align:right;font-size:21px;font-weight:900;font-variant-numeric:tabular-nums; }
+.winner-time small { display:block;color:var(--muted);font-size:10px;font-weight:500; }
 
-    .status-text {
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: #ff5252;
-    }
+.controls { margin-top:16px; }
+.button-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px; }
+.btn {
+  border:0;border-radius:12px;padding:15px 12px;
+  font-size:13px;font-weight:900;cursor:pointer;
+  transition:filter .15s,transform .15s;min-height:52px;
+}
+.btn:hover { filter:brightness(1.12); }
+.btn:active { transform:scale(.98); }
+.btn:disabled { opacity:.35;cursor:not-allowed; }
+.btn-connect { background:var(--green);color:#06130e; }
+.btn-blue { background:var(--blue);color:#07121b; }
+.btn-purple { background:var(--purple);color:#170c25; }
+.btn-red { background:#3b2028;color:#ff8797;border:1px solid #71313f; }
+.btn-secondary { background:var(--panel2);color:var(--text);border:1px solid var(--line); }
+.wide { grid-column:1/-1; }
+.note { color:var(--muted);font-size:11px;line-height:1.5;margin-top:12px; }
 
-    .status-text.connected {
-      color: #00e676;
-    }
+.history { margin-top:16px; }
+.history-list { display:flex;flex-direction:column;gap:8px; }
+.history-item {
+  display:grid;grid-template-columns:1fr auto;gap:10px;
+  align-items:center;background:#0b1017;padding:12px;border-radius:10px;
+  border:1px solid #ffffff0b;font-size:12px;
+}
+.history-item strong { display:block;margin-bottom:4px; }
+.history-item span { color:var(--muted);font-size:11px; }
+.empty { color:var(--muted);text-align:center;padding:20px;font-size:12px; }
 
-    .btn {
-      background: #2c2c2c;
-      color: white;
-      border: none;
-      padding: 16px;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      width: 100%;
-      max-width: 350px;
-      margin-bottom: 12px;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    }
+.console {
+  margin-top:16px;background:#05080b;border:1px solid var(--line);
+  border-radius:12px;padding:12px;color:#a3fbd4;
+  font:11px/1.6 Consolas,monospace;height:135px;
+  overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;
+}
+footer { text-align:center;color:#667386;font-size:10px;padding:20px 0 4px; }
 
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn-connect {
-      background: #00e676;
-      color: #000;
-    }
-
-    .btn-largada2 {
-      background: #29b6f6;
-      color: #000;
-    }
-
-    .btn-largada1 {
-      background: #ab47bc;
-      color: white;
-    }
-
-    .btn-reset {
-      background: #ff5252;
-      color: white;
-    }
-
-    .btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .console {
-      background: #000;
-      color: #00ff66;
-      font-family: monospace;
-      padding: 10px;
-      border-radius: 8px;
-      width: 100%;
-      max-width: 350px;
-      height: 260px;
-      overflow-y: auto;
-      overflow-wrap: anywhere;
-      white-space: pre-wrap;
-      text-align: left;
-      font-size: 0.75rem;
-      border: 1px solid #333;
-      margin-top: 15px;
-    }
-  </style>
+@media(max-width:600px) {
+  .app { padding:13px; }
+  .grid { gap:10px; }
+  .panel { padding:13px; }
+  .track { height:90px;padding:7px; }
+  .car { width:73px;height:36px; }
+  .button-grid { gap:8px; }
+  .btn { padding:13px 8px;font-size:12px; }
+}
+</style>
 </head>
 
 <body>
-  <h1>DRIFT MASTERS</h1>
-  <p class="subtitle">Control de Pista Micro:bit</p>
+<div class="app">
 
-  <div class="status-card">
-    Estado:
-    <span id="lblEstado" class="status-text">Desconectado</span>
-  </div>
+  <header>
+    <div class="brand">
+      <div class="logo">DM</div>
+      <div>
+        <h1>DRIFT MASTERS</h1>
+        <div class="kicker">RACE CONTROL · RC 1:24</div>
+      </div>
+    </div>
+    <div class="connection">
+      <span id="connDot" class="dot"></span>
+      <span id="connText">DESCONECTADO</span>
+    </div>
+  </header>
 
-  <button id="btnConectar" class="btn btn-connect"
-          onclick="conectarBLE()">
-    Buscar Pista Bluetooth
-  </button>
+  <section class="panel">
+    <div class="section-head">
+      <h2>01 / GRILLA DE LARGADA</h2>
+      <span class="muted" id="gridStatus">Esperando autos</span>
+    </div>
 
-  <button id="btnLargada2" class="btn btn-largada2"
-          onclick="enviarComando('A')" disabled>
-    Largar 2 Autos (A)
-  </button>
+    <div class="grid">
+      <article class="panel lane blue">
+        <div class="lane-title">
+          <span class="lane-name blue-text">CARRIL AZUL</span>
+          <span class="lane-tag">LANE 01</span>
+        </div>
+        <div class="track">
+          <div class="car blue-car" id="carBlue"><span>DM01</span></div>
+        </div>
+        <div class="lane-status">
+          <span id="blueStatus">Sensor pendiente</span>
+          <span id="bluePill" class="pill">EN ESPERA</span>
+        </div>
+      </article>
 
-  <button id="btnLargada1" class="btn btn-largada1"
-          onclick="enviarComando('S')" disabled>
-    Largar 1 Auto (S)
-  </button>
+      <article class="panel lane red">
+        <div class="lane-title">
+          <span class="lane-name red-text">CARRIL ROJO</span>
+          <span class="lane-tag">LANE 02</span>
+        </div>
+        <div class="track">
+          <div class="car red-car" id="carRed"><span>DM02</span></div>
+        </div>
+        <div class="lane-status">
+          <span id="redStatus">Sensor pendiente</span>
+          <span id="redPill" class="pill">EN ESPERA</span>
+        </div>
+      </article>
+    </div>
+    <p class="note">La posición de los autos es ilustrativa. El estado real de los sensores se mostrará cuando la micro:bit lo comunique por Bluetooth.</p>
+  </section>
 
-  <button id="btnReset" class="btn btn-reset"
-          onclick="enviarComando('B')" disabled>
-    RESET / Arcoíris (B)
-  </button>
+  <section class="panel race-panel">
+    <div class="section-head">
+      <h2>02 / SEMÁFORO Y CRONÓMETRO</h2>
+      <span class="pill" id="raceState">STANDBY</span>
+    </div>
 
-  <div id="console" class="console">> Listo para conectar...</div>
+    <div class="signal-row" aria-label="Semáforo">
+      <div class="lamp red" id="lampRed"></div>
+      <div class="lamp yellow" id="lampYellow"></div>
+      <div class="lamp green" id="lampGreen"></div>
+    </div>
 
-  <script>
-    const UART_SERVICE_UUID =
-      "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+    <div class="countdown" id="countdown">READY</div>
+    <div class="race-message" id="raceMessage">Conectá la micro:bit para comenzar.</div>
 
-    let dispositivo = null;
-    let gattServer = null;
-    let txCharacteristic = null;
+    <div class="timer-grid">
+      <div class="timer-box">
+        <div class="timer-label">TIEMPO AZUL</div>
+        <div class="timer-value" id="timeBlue">--.---</div>
+        <div class="timer-note" id="timeBlueNote">Esperando resultado real</div>
+      </div>
+      <div class="timer-box">
+        <div class="timer-label">TIEMPO ROJO</div>
+        <div class="timer-value" id="timeRed">--.---</div>
+        <div class="timer-note" id="timeRedNote">Esperando resultado real</div>
+      </div>
+    </div>
 
-    let colaEnvio = [];
-    let enviando = false;
+    <div class="winner">
+      <div class="winner-top">
+        <div class="trophy">🏆</div>
+        <div>
+          <div class="winner-title">RESULTADO DE CARRERA</div>
+          <div class="winner-name" id="winnerName">Sin resultados</div>
+        </div>
+        <div class="winner-time" id="winnerTime">--.---<small>TIEMPO OFICIAL</small></div>
+      </div>
+    </div>
+  </section>
 
-    function log(mensaje) {
-      const consola = document.getElementById("console");
-      consola.textContent += "\n> " + mensaje;
-      consola.scrollTop = consola.scrollHeight;
+  <section class="panel controls">
+    <div class="section-head">
+      <h2>03 / CONTROL DE PISTA</h2>
+      <span class="muted">Micro:bit V2 · Bluetooth UART</span>
+    </div>
+    <div class="button-grid">
+      <button class="btn btn-connect wide" id="btnConnect" onclick="conectarBLE()">⟷ CONECTAR BLUETOOTH</button>
+      <button class="btn btn-blue" id="btnTwo" onclick="enviarComando('A')" disabled>🏁 LARGAR 2 AUTOS</button>
+      <button class="btn btn-purple" id="btnOne" onclick="enviarComando('S')" disabled>🏎 LARGAR 1 AUTO</button>
+      <button class="btn btn-red" id="btnReset" onclick="enviarComando('B')" disabled>■ RESET / ARCOÍRIS</button>
+      <button class="btn btn-secondary" onclick="limpiarPantalla()">↺ LIMPIAR PANEL</button>
+    </div>
+    <p class="note">
+      A: dos autos · S: un auto azul · B: reset.
+      La cuenta regresiva de pantalla es visual y aproximada; el tiempo oficial debe provenir de la micro:bit.
+    </p>
+  </section>
+
+  <section class="panel history">
+    <div class="section-head">
+      <h2>04 / HISTORIAL DE CARRERAS</h2>
+      <button class="btn btn-secondary" style="min-height:34px;padding:7px 10px" onclick="borrarHistorial()">BORRAR</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <div class="empty">Todavía no hay resultados recibidos.</div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top:16px">
+    <div class="section-head">
+      <h2>05 / REGISTRO BLUETOOTH</h2>
+      <button class="btn btn-secondary" style="min-height:34px;padding:7px 10px" onclick="limpiarConsola()">LIMPIAR</button>
+    </div>
+    <div id="console" class="console">[DM] Panel iniciado.
+[DM] Esperando conexión Bluetooth...</div>
+  </section>
+
+  <footer>DRIFT MASTERS RACE CONTROL · SISTEMA DE PISTA RC</footer>
+</div>
+
+<script>
+"use strict";
+
+const SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+
+// En este dispositivo la característica 0003 admite escritura.
+const WRITE_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+
+// La característica 0002 indicó "indicate: true" en el diagnóstico.
+// Se usa para intentar recibir resultados desde la micro:bit.
+const READ_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+
+let device = null;
+let server = null;
+let writeCharacteristic = null;
+let readCharacteristic = null;
+let queue = [];
+let sending = false;
+let countdownToken = 0;
+let timerInterval = null;
+let raceStart = 0;
+let history = [];
+let receiveBuffer = "";
+
+const $ = id => document.getElementById(id);
+
+function log(message) {
+  const box = $("console");
+  const time = new Date().toLocaleTimeString();
+  box.textContent += "\n[" + time + "] " + message;
+  box.scrollTop = box.scrollHeight;
+}
+
+function setConnection(connected) {
+  $("connDot").classList.toggle("on", connected);
+  $("connText").textContent = connected ? "CONECTADO" : "DESCONECTADO";
+  $("btnTwo").disabled = !connected;
+  $("btnOne").disabled = !connected;
+  $("btnReset").disabled = !connected;
+  $("btnConnect").textContent = connected
+    ? "✓ MICRO:BIT CONECTADA"
+    : "⟷ CONECTAR BLUETOOTH";
+}
+
+async function conectarBLE() {
+  if (!navigator.bluetooth) {
+    log("Web Bluetooth no disponible. Usá Chrome o Edge en HTTPS.");
+    return;
+  }
+
+  try {
+    $("btnConnect").disabled = true;
+    log("Buscando micro:bit...");
+
+    device = await navigator.bluetooth.requestDevice({
+      filters: [{ namePrefix: "BBC micro:bit" }],
+      optionalServices: [SERVICE_UUID]
+    });
+
+    device.removeEventListener("gattserverdisconnected", desconectado);
+    device.addEventListener("gattserverdisconnected", desconectado);
+
+    log("Dispositivo: " + device.name);
+    server = await device.gatt.connect();
+
+    const service = await server.getPrimaryService(SERVICE_UUID);
+    const characteristics = await service.getCharacteristics();
+
+    writeCharacteristic = characteristics.find(c =>
+      c.uuid === WRITE_UUID &&
+      (c.properties.write || c.properties.writeWithoutResponse)
+    );
+
+    readCharacteristic = characteristics.find(c =>
+      c.uuid === READ_UUID &&
+      (c.properties.notify || c.properties.indicate)
+    );
+
+    if (!writeCharacteristic) {
+      throw new Error("No se encontró la característica de escritura 0003.");
     }
 
-    function actualizarEstado(conectado) {
-      const estado = document.getElementById("lblEstado");
+    log("Escritura UART: " + writeCharacteristic.uuid);
+    log("write=" + writeCharacteristic.properties.write +
+        "; writeWithoutResponse=" +
+        writeCharacteristic.properties.writeWithoutResponse);
 
-      estado.textContent = conectado
-        ? "Conectado"
-        : "Desconectado";
-
-      estado.classList.toggle("connected", conectado);
-
-      document.getElementById("btnLargada2").disabled = !conectado;
-      document.getElementById("btnLargada1").disabled = !conectado;
-      document.getElementById("btnReset").disabled = !conectado;
-    }
-
-    async function conectarBLE() {
-      if (!navigator.bluetooth) {
-        log("ERROR: Web Bluetooth no está disponible.");
-        log("Usá Chrome o Edge mediante HTTPS.");
-        return;
-      }
-
+    if (readCharacteristic) {
       try {
-        document.getElementById("btnConectar").disabled = true;
-
-        log("Buscando micro:bit...");
-
-        dispositivo = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: "BBC micro:bit" }],
-          optionalServices: [UART_SERVICE_UUID]
-        });
-
-        dispositivo.removeEventListener(
-          "gattserverdisconnected",
-          onDisconnected
+        await readCharacteristic.startNotifications();
+        readCharacteristic.addEventListener(
+          "characteristicvaluechanged",
+          recibirBluetooth
         );
-
-        dispositivo.addEventListener(
-          "gattserverdisconnected",
-          onDisconnected
-        );
-
-        log("Dispositivo: " + dispositivo.name);
-        log("Conectando...");
-
-        gattServer = await dispositivo.gatt.connect();
-
-        log("Buscando servicio UART...");
-
-        const servicio = await gattServer.getPrimaryService(
-          UART_SERVICE_UUID
-        );
-
-        const caracteristicas = await servicio.getCharacteristics();
-
-        log("--- DIAGNÓSTICO UART ---");
-
-        for (const c of caracteristicas) {
-          const p = c.properties;
-
-          log("UUID: " + c.uuid);
-          log("  write: " + p.write);
-          log("  writeWithoutResponse: " + p.writeWithoutResponse);
-          log("  notify: " + p.notify);
-          log("  indicate: " + p.indicate);
-          log("  read: " + p.read);
-        }
-
-        log("--- FIN DIAGNÓSTICO ---");
-
-        // Seleccionar la característica que realmente permita escribir.
-        txCharacteristic = caracteristicas.find(c =>
-          c.properties.write || c.properties.writeWithoutResponse
-        );
-
-        if (!txCharacteristic) {
-          throw new Error(
-            "No se encontró una característica UART que permita escribir."
-          );
-        }
-
-        log("Característica seleccionada: " + txCharacteristic.uuid);
-        log("write = " + txCharacteristic.properties.write);
-        log(
-          "writeWithoutResponse = " +
-          txCharacteristic.properties.writeWithoutResponse
-        );
-
-        colaEnvio = [];
-        enviando = false;
-
-        actualizarEstado(true);
-        log("Conexión establecida.");
-
-      } catch (error) {
-        txCharacteristic = null;
-        gattServer = null;
-
-        actualizarEstado(false);
-
-        log("ERROR al conectar: " + error.name + " - " + error.message);
-
-      } finally {
-        document.getElementById("btnConectar").disabled = false;
+        log("Recepción UART habilitada: " + readCharacteristic.uuid);
+      } catch (e) {
+        log("Aviso: no se pudo activar la recepción UART: " + e.message);
+        readCharacteristic = null;
       }
+    } else {
+      log("No hay característica de recepción compatible.");
     }
 
-    function enviarComando(cmd) {
-      if (
-        !txCharacteristic ||
-        !gattServer ||
-        !gattServer.connected
-      ) {
-        log("No hay conexión Bluetooth activa.");
-        return;
-      }
+    setConnection(true);
+    $("raceMessage").textContent = "Conectado. Verificá los autos en la grilla.";
+    $("raceState").textContent = "CONECTADO";
+    log("Conexión establecida correctamente.");
 
-      colaEnvio.push(cmd);
-      procesarFila();
+  } catch (error) {
+    log("ERROR: " + error.name + " - " + error.message);
+    writeCharacteristic = null;
+    readCharacteristic = null;
+    server = null;
+    setConnection(false);
+  } finally {
+    $("btnConnect").disabled = false;
+  }
+}
+
+function desconectado() {
+  log("Micro:bit desconectada.");
+  writeCharacteristic = null;
+  readCharacteristic = null;
+  server = null;
+  queue = [];
+  sending = false;
+  setConnection(false);
+  detenerCronometro();
+  detenerCuenta();
+  $("raceState").textContent = "DESCONECTADO";
+  $("raceMessage").textContent = "Se perdió la conexión Bluetooth.";
+}
+
+function enviarComando(command) {
+  if (!writeCharacteristic || !server || !server.connected) {
+    log("No hay conexión Bluetooth activa.");
+    return;
+  }
+
+  queue.push(command);
+  procesarCola();
+}
+
+async function procesarCola() {
+  if (sending || queue.length === 0) return;
+  sending = true;
+  const command = queue.shift();
+
+  try {
+    if (!writeCharacteristic || !server || !server.connected) {
+      throw new Error("Conexión GATT inactiva.");
     }
 
-    async function procesarFila() {
-      if (enviando || colaEnvio.length === 0) {
-        return;
-      }
+    const bytes = new TextEncoder().encode(command + "\n");
 
-      enviando = true;
-
-      const cmd = colaEnvio.shift();
-
-      try {
-        if (
-          !txCharacteristic ||
-          !gattServer ||
-          !gattServer.connected
-        ) {
-          throw new Error("Conexión GATT inactiva.");
-        }
-
-        // Enviamos la letra y un salto de línea.
-        const datos = new TextEncoder().encode(cmd + "\n");
-        const propiedades = txCharacteristic.properties;
-
-        if (propiedades.writeWithoutResponse) {
-          await txCharacteristic.writeValueWithoutResponse(datos);
-        } else if (propiedades.write) {
-          await txCharacteristic.writeValueWithResponse(datos);
-        } else {
-          throw new Error(
-            "La característica seleccionada no permite escritura."
-          );
-        }
-
-        log("Comando enviado: " + cmd);
-
-      } catch (error) {
-        log("ERROR GATT: " + error.name + " - " + error.message);
-
-      } finally {
-        setTimeout(() => {
-          enviando = false;
-
-          if (colaEnvio.length > 0) {
-            procesarFila();
-          }
-        }, 250);
-      }
+    if (writeCharacteristic.properties.writeWithoutResponse) {
+      await writeCharacteristic.writeValueWithoutResponse(bytes);
+    } else {
+      await writeCharacteristic.writeValueWithResponse(bytes);
     }
 
-    function onDisconnected() {
-      txCharacteristic = null;
-      gattServer = null;
-      colaEnvio = [];
-      enviando = false;
+    log("Comando enviado: " + command);
 
-      actualizarEstado(false);
-
-      log("Micro:bit desconectada.");
+    if (command === "A") {
+      prepararCarrera("DOS AUTOS");
+      iniciarCuenta();
+    } else if (command === "S") {
+      prepararCarrera("UN AUTO");
+      iniciarCuenta();
+    } else if (command === "B") {
+      detenerCuenta();
+      detenerCronometro();
+      $("countdown").textContent = "RESET";
+      $("raceState").textContent = "REINICIADO";
+      $("raceMessage").textContent = "Se solicitó el reinicio de la pista.";
+      apagarSemaforo();
+      $("winnerName").textContent = "Sin resultados";
+      $("winnerTime").innerHTML = "--.---<small>TIEMPO OFICIAL</small>";
+      $("timeBlue").textContent = "--.---";
+      $("timeRed").textContent = "--.---";
+      log("Reset solicitado; esperando confirmación de la micro:bit.");
     }
-  </script>
+  } catch (error) {
+    log("ERROR GATT: " + error.name + " - " + error.message);
+  } finally {
+    setTimeout(() => {
+      sending = false;
+      procesarCola();
+    }, 150);
+  }
+}
+
+function prepararCarrera(mode) {
+  detenerCronometro();
+  detenerCuenta();
+
+  $("timeBlue").textContent = "--.---";
+  $("timeRed").textContent = "--.---";
+  $("timeBlueNote").textContent = "Esperando resultado real";
+  $("timeRedNote").textContent = "Esperando resultado real";
+  $("winnerName").textContent = "Carrera en preparación";
+  $("winnerTime").innerHTML = "--.---<small>TIEMPO OFICIAL</small>";
+  $("raceState").textContent = mode;
+  $("raceMessage").textContent = "Comando recibido por la interfaz; esperando la secuencia de pista.";
+  $("gridStatus").textContent = "Verificación física en la micro:bit";
+  $("blueStatus").textContent = "Esperando sensor";
+  $("redStatus").textContent = mode === "UN AUTO" ? "No participa" : "Esperando sensor";
+  $("bluePill").className = "pill warn";
+  $("bluePill").textContent = "PENDIENTE";
+  $("redPill").className = "pill warn";
+  $("redPill").textContent = mode === "UN AUTO" ? "INACTIVO" : "PENDIENTE";
+  apagarSemaforo();
+  $("countdown").textContent = "READY";
+}
+
+function apagarSemaforo() {
+  ["lampRed","lampYellow","lampGreen"].forEach(id => $(id).classList.remove("lit"));
+}
+
+function encenderLuz(color) {
+  apagarSemaforo();
+  if (color === "red") $("lampRed").classList.add("lit");
+  if (color === "yellow") $("lampYellow").classList.add("lit");
+  if (color === "green") $("lampGreen").classList.add("lit");
+}
+
+function detenerCuenta() {
+  countdownToken++;
+}
+
+function iniciarCuenta() {
+  detenerCuenta();
+  const token = countdownToken;
+  const secuencia = [8,7,6,5,4,3,2,1];
+  let index = 0;
+
+  $("raceMessage").textContent =
+    "Cuenta visual aproximada; la secuencia oficial corre en la micro:bit.";
+
+  function paso() {
+    if (token !== countdownToken) return;
+
+    if (index < secuencia.length) {
+      const n = secuencia[index++];
+      $("countdown").textContent = n;
+      $("raceState").textContent = "PREPARACIÓN";
+      encenderLuz(n > 3 ? "red" : "yellow");
+      setTimeout(paso, 850);
+      return;
+    }
+
+    $("countdown").textContent = "¡YA!";
+    $("raceState").textContent = "LARGADA";
+    $("raceMessage").textContent =
+      "Salida visual. Esperando datos oficiales de la micro:bit.";
+    encenderLuz("green");
+    $("carBlue").style.transform = "translateX(12px)";
+    $("carRed").style.transform = "translateX(12px)";
+    iniciarCronometroVisual();
+  }
+
+  paso();
+}
+
+function iniciarCronometroVisual() {
+  detenerCronometro();
+  raceStart = performance.now();
+
+  timerInterval = setInterval(() => {
+    const elapsed = performance.now() - raceStart;
+    const value = (elapsed / 1000).toFixed(3);
+    $("timeBlue").textContent = value;
+    $("timeBlueNote").textContent = "Visual, no oficial";
+    $("timeRed").textContent = value;
+    $("timeRedNote").textContent = "Visual, no oficial";
+  }, 40);
+}
+
+function detenerCronometro() {
+  if (timerInterval !== null) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function recibirBluetooth(event) {
+  const value = event.target.value;
+  const bytes = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+  receiveBuffer += new TextDecoder().decode(bytes);
+
+  let lines = receiveBuffer.split(/\r?\n/);
+  receiveBuffer = lines.pop() || "";
+
+  for (const line of lines) {
+    const message = line.trim();
+    if (message) procesarMensaje(message);
+  }
+}
+
+function procesarMensaje(message) {
+  log("RX: " + message);
+
+  // Protocolo previsto para la micro:bit:
+  // FALSE:AZUL
+  // FALSE:ROJO
+  // READY:AZUL
+  // READY:ROJO
+  // GO
+  // WIN:AZUL:4826   (tiempo en milisegundos)
+  // WIN:ROJO:5012
+  // TIME:4826       (modo de un auto)
+  // RESET
+  const parts = message.split(":");
+  const type = parts[0].toUpperCase();
+  const lane = (parts[1] || "").toUpperCase();
+
+  if (type === "FALSE") {
+    detenerCronometro();
+    $("countdown").textContent = "FALSA";
+    $("raceState").textContent = "SALIDA EN FALSO";
+    $("raceMessage").textContent = "Salida en falso: carril " + lane + ".";
+    $("winnerName").textContent = "SALIDA EN FALSO";
+    $("winnerTime").innerHTML = "--.---<small>SIN RESULTADO</small>";
+
+    const isBlue = lane === "AZUL" || lane === "BLUE";
+    const pill = isBlue ? $("bluePill") : $("redPill");
+    pill.className = "pill bad";
+    pill.textContent = "FALSA SALIDA";
+
+    encenderLuz("red");
+    agregarHistorial("Salida en falso · " + lane, "--.---");
+    return;
+  }
+
+  if (type === "READY") {
+    const isBlue = lane === "AZUL" || lane === "BLUE";
+    const pill = isBlue ? $("bluePill") : $("redPill");
+    const status = isBlue ? $("blueStatus") : $("redStatus");
+    pill.className = "pill ready";
+    pill.textContent = "LISTO";
+    status.textContent = "Auto posicionado";
+    $("gridStatus").textContent = "Estado recibido desde la pista";
+    return;
+  }
+
+  if (type === "GO") {
+    $("countdown").textContent = "¡YA!";
+    $("raceState").textContent = "EN CARRERA";
+    $("raceMessage").textContent = "Largada confirmada por la micro:bit.";
+    encenderLuz("green");
+    return;
+  }
+
+  if (type === "WIN" && parts.length >= 3) {
+    const name = lane;
+    const ms = Number(parts[2]);
+    if (!Number.isFinite(ms)) return;
+
+    detenerCronometro();
+    mostrarGanador(name, ms);
+    agregarHistorial("Ganador: " + name, formatearTiempo(ms));
+    return;
+  }
+
+  if (type === "TIME" && parts.length >= 2) {
+    const ms = Number(parts[1]);
+    if (!Number.isFinite(ms)) return;
+
+    detenerCronometro();
+    $("timeBlue").textContent = formatearTiempo(ms);
+    $("timeBlueNote").textContent = "Tiempo recibido de la micro:bit";
+    $("winnerName").textContent = "Tiempo registrado";
+    $("winnerTime").innerHTML =
+      formatearTiempo(ms) + "<small>TIEMPO OFICIAL</small>";
+    $("raceState").textContent = "FINALIZADA";
+    $("raceMessage").textContent = "Tiempo recibido desde la pista.";
+    agregarHistorial("Tiempo individual", formatearTiempo(ms));
+    return;
+  }
+
+  if (type === "RESET") {
+    detenerCronometro();
+    detenerCuenta();
+    $("countdown").textContent = "READY";
+    $("raceState").textContent = "STANDBY";
+    $("raceMessage").textContent = "La pista confirmó el reset.";
+    apagarSemaforo();
+  }
+}
+
+function formatearTiempo(ms) {
+  const seconds = Math.floor(ms / 1000);
+  const millis = String(ms % 1000).padStart(3, "0");
+  return seconds + "." + millis + " s";
+}
+
+function mostrarGanador(lane, ms) {
+  const name = lane === "AZUL" || lane === "BLUE" ? "AZUL" : "ROJO";
+  const isBlue = name === "AZUL";
+
+  $("winnerName").textContent = "¡GANA CARRIL " + name + "!";
+  $("winnerTime").innerHTML =
+    formatearTiempo(ms) + "<small>TIEMPO OFICIAL</small>";
+  $("raceState").textContent = "FINALIZADA";
+  $("raceMessage").textContent = "Resultado confirmado por la micro:bit.";
+
+  if (isBlue) {
+    $("timeBlue").textContent = formatearTiempo(ms);
+    $("timeBlueNote").textContent = "Tiempo oficial";
+    $("bluePill").className = "pill ready";
+    $("bluePill").textContent = "GANADOR";
+    $("redPill").className = "pill";
+    $("redPill").textContent = "FINALIZÓ";
+  } else {
+    $("timeRed").textContent = formatearTiempo(ms);
+    $("timeRedNote").textContent = "Tiempo oficial";
+    $("redPill").className = "pill ready";
+    $("redPill").textContent = "GANADOR";
+    $("bluePill").className = "pill";
+    $("bluePill").textContent = "FINALIZÓ";
+  }
+
+  $("countdown").textContent = "FIN";
+  encenderLuz("green");
+}
+
+function agregarHistorial(title, time) {
+  history.unshift({
+    title,
+    time,
+    date: new Date().toLocaleTimeString()
+  });
+  history = history.slice(0, 20);
+  renderHistorial();
+}
+
+function renderHistorial() {
+  const list = $("historyList");
+  list.replaceChildren();
+
+  if (!history.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "Todavía no hay resultados recibidos.";
+    list.appendChild(empty);
+    return;
+  }
+
+  for (const item of history) {
+    const row = document.createElement("div");
+    row.className = "history-item";
+
+    const left = document.createElement("div");
+    const strong = document.createElement("strong");
+    strong.textContent = item.title;
+    const small = document.createElement("span");
+    small.textContent = item.date;
+    left.append(strong, small);
+
+    const right = document.createElement("strong");
+    right.textContent = item.time;
+
+    row.append(left, right);
+    list.appendChild(row);
+  }
+}
+
+function borrarHistorial() {
+  history = [];
+  renderHistorial();
+  log("Historial borrado.");
+}
+
+function limpiarPantalla() {
+  detenerCuenta();
+  detenerCronometro();
+  apagarSemaforo();
+  $("countdown").textContent = "READY";
+  $("raceState").textContent = server && server.connected
+    ? "CONECTADO" : "STANDBY";
+  $("raceMessage").textContent = "Panel limpiado. La pista no recibió un reset.";
+  $("timeBlue").textContent = "--.---";
+  $("timeRed").textContent = "--.---";
+  $("timeBlueNote").textContent = "Esperando resultado real";
+  $("timeRedNote").textContent = "Esperando resultado real";
+  $("winnerName").textContent = "Sin resultados";
+  $("winnerTime").innerHTML = "--.---<small>TIEMPO OFICIAL</small>";
+  $("carBlue").style.transform = "";
+  $("carRed").style.transform = "";
+  log("Panel limpiado; no se envió ningún comando a la pista.");
+}
+
+function limpiarConsola() {
+  $("console").textContent = "[DM] Registro limpiado.";
+}
+
+renderHistorial();
+</script>
 </body>
 </html>
