@@ -297,60 +297,43 @@
       procesarFila();
     }
 
-    async function procesarFila() {
-      if (enviando || colaEnvio.length === 0) {
-        return;
-      }
+    
+async function procesarFila() {
+  if (enviando || colaEnvio.length === 0) return;
 
-      enviando = true;
+  enviando = true;
+  const cmd = colaEnvio.shift();
 
-      const cmd = colaEnvio.shift();
-
-      try {
-        if (
-          !txCharacteristic ||
-          !gattServer ||
-          !gattServer.connected
-        ) {
-          throw new Error("La conexión GATT no está activa");
-        }
-
-        // Enviamos el comando con salto de línea.
-        const datos = new TextEncoder().encode(cmd + "\n");
-
-        const propiedades = txCharacteristic.properties;
-
-        if (propiedades.writeWithoutResponse) {
-          await txCharacteristic.writeValueWithoutResponse(datos);
-
-        } else if (propiedades.write) {
-          await txCharacteristic.writeValueWithResponse(datos);
-
-        } else {
-          throw new Error(
-            "La característica RX no admite escritura"
-          );
-        }
-
-        log("Enviado correctamente: " + cmd);
-
-      } catch (error) {
-        log(
-          "ERROR GATT: " +
-          error.name + " - " + error.message
-        );
-
-      } finally {
-        // Evitamos enviar varios comandos simultáneamente.
-        setTimeout(() => {
-          enviando = false;
-
-          if (colaEnvio.length > 0) {
-            procesarFila();
-          }
-        }, 250);
-      }
+  try {
+    if (!txCharacteristic || !gattServer?.connected) {
+      throw new Error("Bluetooth desconectado");
     }
+
+    const p = txCharacteristic.properties;
+
+    log("RX write: " + p.write);
+    log("RX writeWithoutResponse: " + p.writeWithoutResponse);
+
+    const datos = new TextEncoder().encode(cmd + "\n");
+
+    // API compatible con navegadores que implementan Web Bluetooth.
+    if (typeof txCharacteristic.writeValue === "function") {
+      await txCharacteristic.writeValue(datos);
+      log("Comando enviado: " + cmd);
+    } else {
+      throw new Error("El navegador no admite escritura UART");
+    }
+
+  } catch (error) {
+    log("ERROR GATT: " + error.name + " - " + error.message);
+
+  } finally {
+    setTimeout(() => {
+      enviando = false;
+      if (colaEnvio.length > 0) procesarFila();
+    }, 250);
+  }
+}
 
     function onDisconnected() {
       txCharacteristic = null;
