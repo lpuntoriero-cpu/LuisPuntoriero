@@ -5,7 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Drift Masters</title>
-  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#00e676">
 
   <style>
@@ -13,7 +12,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     }
 
     body {
@@ -38,7 +37,7 @@
     .subtitle {
       color: #aaa;
       margin-bottom: 25px;
-      font-size: .9rem;
+      font-size: 0.9rem;
     }
 
     .status-card {
@@ -73,11 +72,11 @@
       max-width: 350px;
       margin-bottom: 12px;
       cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,.3);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
 
     .btn:active {
-      transform: scale(.98);
+      transform: scale(0.98);
     }
 
     .btn-connect {
@@ -101,7 +100,7 @@
     }
 
     .btn:disabled {
-      opacity: .4;
+      opacity: 0.4;
       cursor: not-allowed;
     }
 
@@ -113,12 +112,12 @@
       border-radius: 8px;
       width: 100%;
       max-width: 350px;
-      height: 230px;
+      height: 260px;
       overflow-y: auto;
       overflow-wrap: anywhere;
       white-space: pre-wrap;
       text-align: left;
-      font-size: .75rem;
+      font-size: 0.75rem;
       border: 1px solid #333;
       margin-top: 15px;
     }
@@ -134,30 +133,23 @@
     <span id="lblEstado" class="status-text">Desconectado</span>
   </div>
 
-  <button id="btnConectar"
-          class="btn btn-connect"
+  <button id="btnConectar" class="btn btn-connect"
           onclick="conectarBLE()">
     Buscar Pista Bluetooth
   </button>
 
-  <button id="btnLargada2"
-          class="btn btn-largada2"
-          onclick="enviarComando('A')"
-          disabled>
+  <button id="btnLargada2" class="btn btn-largada2"
+          onclick="enviarComando('A')" disabled>
     Largar 2 Autos (A)
   </button>
 
-  <button id="btnLargada1"
-          class="btn btn-largada1"
-          onclick="enviarComando('S')"
-          disabled>
+  <button id="btnLargada1" class="btn btn-largada1"
+          onclick="enviarComando('S')" disabled>
     Largar 1 Auto (S)
   </button>
 
-  <button id="btnReset"
-          class="btn btn-reset"
-          onclick="enviarComando('B')"
-          disabled>
+  <button id="btnReset" class="btn btn-reset"
+          onclick="enviarComando('B')" disabled>
     RESET / Arcoíris (B)
   </button>
 
@@ -167,12 +159,10 @@
     const UART_SERVICE_UUID =
       "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 
-    // UUID de recepción UART estándar de micro:bit.
-   const UART_RX_CHARACTERISTIC = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
-
+    let dispositivo = null;
     let gattServer = null;
     let txCharacteristic = null;
-    let dispositivo = null;
+
     let colaEnvio = [];
     let enviando = false;
 
@@ -185,8 +175,9 @@
     function actualizarEstado(conectado) {
       const estado = document.getElementById("lblEstado");
 
-      estado.textContent =
-        conectado ? "Conectado" : "Desconectado";
+      estado.textContent = conectado
+        ? "Conectado"
+        : "Desconectado";
 
       estado.classList.toggle("connected", conectado);
 
@@ -198,7 +189,7 @@
     async function conectarBLE() {
       if (!navigator.bluetooth) {
         log("ERROR: Web Bluetooth no está disponible.");
-        log("Abrí la página en Chrome o Edge mediante HTTPS.");
+        log("Usá Chrome o Edge mediante HTTPS.");
         return;
       }
 
@@ -208,9 +199,7 @@
         log("Buscando micro:bit...");
 
         dispositivo = await navigator.bluetooth.requestDevice({
-          filters: [
-            { namePrefix: "BBC micro:bit" }
-          ],
+          filters: [{ namePrefix: "BBC micro:bit" }],
           optionalServices: [UART_SERVICE_UUID]
         });
 
@@ -231,14 +220,13 @@
 
         log("Buscando servicio UART...");
 
-        const servicio =
-          await gattServer.getPrimaryService(UART_SERVICE_UUID);
+        const servicio = await gattServer.getPrimaryService(
+          UART_SERVICE_UUID
+        );
 
-        // DIAGNÓSTICO: mostrar todas las características UART.
+        const caracteristicas = await servicio.getCharacteristics();
+
         log("--- DIAGNÓSTICO UART ---");
-
-        const caracteristicas =
-          await servicio.getCharacteristics();
 
         for (const c of caracteristicas) {
           const p = c.properties;
@@ -253,22 +241,28 @@
 
         log("--- FIN DIAGNÓSTICO ---");
 
-        // Seleccionar la característica RX estándar.
-        txCharacteristic =
-          await servicio.getCharacteristic(UART_RX_CHARACTERISTIC);
+        // Seleccionar la característica que realmente permita escribir.
+        txCharacteristic = caracteristicas.find(c =>
+          c.properties.write || c.properties.writeWithoutResponse
+        );
 
-        log("Característica seleccionada: " +
-            txCharacteristic.uuid);
+        if (!txCharacteristic) {
+          throw new Error(
+            "No se encontró una característica UART que permita escribir."
+          );
+        }
 
-        log("Propiedades de escritura:");
-        log("write = " +
-            txCharacteristic.properties.write);
-        log("writeWithoutResponse = " +
-            txCharacteristic.properties.writeWithoutResponse);
+        log("Característica seleccionada: " + txCharacteristic.uuid);
+        log("write = " + txCharacteristic.properties.write);
+        log(
+          "writeWithoutResponse = " +
+          txCharacteristic.properties.writeWithoutResponse
+        );
 
         colaEnvio = [];
-        actualizarEstado(true);
+        enviando = false;
 
+        actualizarEstado(true);
         log("Conexión establecida.");
 
       } catch (error) {
@@ -277,8 +271,7 @@
 
         actualizarEstado(false);
 
-        log("ERROR al conectar: " +
-            error.name + " - " + error.message);
+        log("ERROR al conectar: " + error.name + " - " + error.message);
 
       } finally {
         document.getElementById("btnConectar").disabled = false;
@@ -286,9 +279,11 @@
     }
 
     function enviarComando(cmd) {
-      if (!txCharacteristic ||
-          !gattServer ||
-          !gattServer.connected) {
+      if (
+        !txCharacteristic ||
+        !gattServer ||
+        !gattServer.connected
+      ) {
         log("No hay conexión Bluetooth activa.");
         return;
       }
@@ -303,35 +298,36 @@
       }
 
       enviando = true;
+
       const cmd = colaEnvio.shift();
 
       try {
-        if (!txCharacteristic ||
-            !gattServer ||
-            !gattServer.connected) {
+        if (
+          !txCharacteristic ||
+          !gattServer ||
+          !gattServer.connected
+        ) {
           throw new Error("Conexión GATT inactiva.");
         }
 
-        const datos =
-          new TextEncoder().encode(cmd + "\n");
+        // Enviamos la letra y un salto de línea.
+        const datos = new TextEncoder().encode(cmd + "\n");
+        const propiedades = txCharacteristic.properties;
 
-        const p = txCharacteristic.properties;
-
-        if (p.writeWithoutResponse) {
+        if (propiedades.writeWithoutResponse) {
           await txCharacteristic.writeValueWithoutResponse(datos);
-        } else if (p.write) {
+        } else if (propiedades.write) {
           await txCharacteristic.writeValueWithResponse(datos);
         } else {
           throw new Error(
-            "La característica seleccionada no admite escritura."
+            "La característica seleccionada no permite escritura."
           );
         }
 
         log("Comando enviado: " + cmd);
 
       } catch (error) {
-        log("ERROR GATT: " +
-            error.name + " - " + error.message);
+        log("ERROR GATT: " + error.name + " - " + error.message);
 
       } finally {
         setTimeout(() => {
@@ -348,8 +344,10 @@
       txCharacteristic = null;
       gattServer = null;
       colaEnvio = [];
+      enviando = false;
 
       actualizarEstado(false);
+
       log("Micro:bit desconectada.");
     }
   </script>
