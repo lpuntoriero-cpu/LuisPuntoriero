@@ -17,16 +17,19 @@
   --dim:#9eb6ca;
 }
 *{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
 body{
-  margin:0;
-  color:var(--text);
+  margin:0;color:var(--text);
   font:13px system-ui,Arial,sans-serif;
   background:
     radial-gradient(ellipse at 0 0,#073e65,transparent 40%),
     radial-gradient(ellipse at 100% 5%,#440b2c,transparent 35%),
     var(--bg);
 }
-.app{max-width:1350px;margin:auto;padding:8px}
+.app{
+  width:100%;max-width:1350px;
+  margin:auto;padding:8px;min-width:0;
+}
 header{
   display:flex;justify-content:space-between;
   align-items:center;flex-wrap:wrap;gap:9px;
@@ -62,7 +65,10 @@ header{
   background:var(--green);
   box-shadow:0 0 10px var(--green);
 }
-button{cursor:pointer;color:white;font:inherit;font-weight:800}
+button{
+  cursor:pointer;color:white;
+  font:inherit;font-weight:800;
+}
 button:disabled{opacity:.4;cursor:not-allowed}
 .btn{
   padding:11px 13px;border-radius:8px;
@@ -85,14 +91,15 @@ button:disabled{opacity:.4;cursor:not-allowed}
 }
 .panel{
   background:linear-gradient(145deg,#0b1e31,#06111f);
-  border:1px solid #35536c;border-radius:10px;padding:11px;
+  border:1px solid #35536c;
+  border-radius:10px;padding:11px;
+  min-width:0;max-width:100%;
 }
 .panel h2{
   font-size:13px;margin:0 0 10px;font-weight:900;
 }
 
 /* PISTA */
-
 .top{
   display:grid;
   grid-template-columns:minmax(0,1fr) 180px minmax(0,1fr);
@@ -146,15 +153,10 @@ button:disabled{opacity:.4;cursor:not-allowed}
   position:absolute;top:41px;left:13px;
   font-size:10px;font-weight:bold;color:#d7ecfa;
 }
-
-/* AUTOS MÁS CHICOS */
-
 .car{
   position:absolute;
-  top:27%;
-  left:10%;
-  width:80%;
-  height:48%;
+  top:27%;left:10%;
+  width:80%;height:48%;
   object-fit:contain;
   filter:drop-shadow(0 12px 10px #000a);
   transition:filter .5s,transform .5s;
@@ -176,7 +178,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .result{color:#d2e2f0;font-size:10px}
 
 /* GANADOR */
-
 .lane.winner-blue{
   border-color:#8deaff;
   box-shadow:
@@ -225,7 +226,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 }
 
 /* SEMÁFORO */
-
 .signal{
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
@@ -267,9 +267,9 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .signaltext{font-size:12px;font-weight:900}
 
 /* CONTROLES */
-
 .below{
-  display:grid;grid-template-columns:1fr 1fr;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
   gap:9px;margin-top:9px;
 }
 .actions{display:flex;flex-wrap:wrap;gap:7px}
@@ -283,13 +283,11 @@ button:disabled{opacity:.4;cursor:not-allowed}
   margin-top:9px;font-size:11px;
 }
 
-/* ILUMINACIÓN MULTIPIN */
-
+/* ILUMINACIÓN */
 .pinselector{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:6px;
-  margin-bottom:11px;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;margin-bottom:11px;
 }
 .pinbtn{
   padding:10px 6px;
@@ -314,7 +312,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
   border:0;background:transparent;
 }
 #brightness{
-  width:120px;
+  width:120px;max-width:100%;
   accent-color:#00c7ff;
 }
 .preview{
@@ -339,65 +337,94 @@ button:disabled{opacity:.4;cursor:not-allowed}
   margin-top:9px;
 }
 
-/* HISTORIAL */
-
+/* HISTORIAL Y RÉCORDS: ANCHO CORREGIDO */
 .historygrid{
   display:grid;
-  grid-template-columns:1.5fr 1fr;
+  grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);
   gap:9px;margin-top:9px;
+  width:100%;min-width:0;
+}
+.historygrid>.panel{
+  min-width:0;
+  max-width:100%;
+  overflow:hidden;
 }
 .headrow{
   display:flex;justify-content:space-between;
   align-items:center;flex-wrap:wrap;gap:7px;
+  min-width:0;
 }
 .headrow h2{margin:0}
+.headrow .actions{
+  max-width:100%;
+}
+.headrow .actions .btn{
+  font-size:10px;
+  padding:8px 9px;
+  white-space:normal;
+}
 .recgrid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
   gap:6px;
+  width:100%;
 }
 .rec{
   padding:10px 4px;text-align:center;
   border:1px solid #405b79;
   border-radius:9px;
-  background:#04101e;min-width:0;
+  background:#04101e;
+  min-width:0;
+  overflow:hidden;
 }
 .rec:nth-child(1){border-color:var(--blue)}
 .rec:nth-child(2){border-color:var(--red)}
 .rec:nth-child(3){border-color:#eab94f}
 .rec label{
-  display:block;font-size:9px;font-weight:bold;
+  display:block;
+  font-size:9px;font-weight:bold;
+  overflow-wrap:anywhere;
 }
 .rec strong{
   display:block;
-  font-size:clamp(15px,2vw,24px);
+  font-size:clamp(13px,1.8vw,23px);
   margin-top:6px;
+  white-space:nowrap;
 }
 .rec:nth-child(1) strong{color:#59cfff}
 .rec:nth-child(2) strong{color:#ff7f9b}
 .rec:nth-child(3) strong{color:#ffd988}
 .tablewrap{
-  overflow:auto;margin-top:10px;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  margin-top:10px;
   max-height:300px;
+  border-radius:6px;
 }
 table{
   border-collapse:collapse;
-  width:100%;min-width:530px;
+  width:100%;
+  min-width:530px;
   font-size:11px;
 }
 td,th{
   border:1px solid #29445d;
   padding:8px;text-align:left;
+  white-space:nowrap;
 }
 th{background:#12253b}
 td{background:#09192c}
 #aviso{
   color:#ffd38e;
   font-size:11px;margin-top:7px;
+  overflow-wrap:anywhere;
 }
 
 /* CARTEL GANADOR */
-
 #winOverlay{
   position:fixed;inset:0;z-index:100;
   display:none;
@@ -446,12 +473,11 @@ td{background:#09192c}
 }
 
 /* CELULAR */
-
 @media(max-width:850px){
-  .top{grid-template-columns:1fr 1fr}
+  .top{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .signal{grid-column:1/-1;grid-row:2}
   .signal .ledrow{max-width:330px}
-  .historygrid{grid-template-columns:1fr}
+  .historygrid{grid-template-columns:minmax(0,1fr)}
 }
 @media(max-width:530px){
   .app{padding:7px}
@@ -484,7 +510,7 @@ td{background:#09192c}
   .count{font-size:55px;margin-top:8px}
   .signaltext{font-size:11px}
   .below{
-    grid-template-columns:1fr;
+    grid-template-columns:minmax(0,1fr);
     gap:7px;margin-top:7px;
   }
   .actions .btn{
@@ -493,10 +519,23 @@ td{background:#09192c}
   .historygrid{
     gap:7px;margin-top:7px;
   }
-  .rec{padding:9px 3px}
+  .historygrid .panel{
+    padding:8px;
+  }
+  .headrow .actions{
+    width:100%;
+  }
+  .headrow .actions .btn{
+    font-size:9px;
+    padding:9px 5px;
+  }
+  .rec{padding:9px 2px}
   .rec label{font-size:8px}
-  .rec strong{font-size:16px}
+  .rec strong{font-size:clamp(12px,3.8vw,17px)}
   .panel h2{font-size:12px}
+  .tablewrap{max-height:260px}
+  table{font-size:10px}
+  td,th{padding:6px}
 }
 </style>
 </head>
@@ -577,15 +616,19 @@ td{background:#09192c}
   <div class="panel">
     <h2>CONTROL DE CARRERA</h2>
     <div class="actions">
-      <button id="dualBtn" class="btn primary" disabled>
+
+      <button id="dualBtn" class="btn green" disabled>
         DOS AUTOS
       </button>
-      <button id="soloBtn" class="btn red" disabled>
-        SOLO AZUL
+
+      <button id="soloBtn" class="btn primary" disabled>
+        UN AUTO
       </button>
+
       <button id="resetBtn" class="btn" disabled>
         REINICIAR
       </button>
+
     </div>
     <div id="statusMessage" class="status">
       Esperando conexión
@@ -596,15 +639,9 @@ td{background:#09192c}
     <h2>ILUMINACIÓN NEOPIXEL</h2>
 
     <div class="pinselector">
-      <button class="pinbtn" data-pin="P1">
-        P1
-      </button>
-      <button class="pinbtn active" data-pin="P2">
-        P2
-      </button>
-      <button class="pinbtn" data-pin="P16">
-        P16
-      </button>
+      <button class="pinbtn" data-pin="P1">P1</button>
+      <button class="pinbtn active" data-pin="P2">P2</button>
+      <button class="pinbtn" data-pin="P16">P16</button>
     </div>
 
     <div class="p2row">
@@ -737,7 +774,6 @@ let audio = null;
 let bannerTimer = null;
 
 // ESTADOS DE LOS SENSORES
-
 let azulPosicionado = false;
 let rojoPosicionado = false;
 let faseCarrera = "reposo";
@@ -746,7 +782,6 @@ const STORAGE_KEY = "driftMastersHistoryV1";
 let history = [];
 
 // ILUMINACIÓN INDEPENDIENTE
-
 let selectedPin = "P2";
 let lightTimer = null;
 
@@ -757,7 +792,6 @@ const lights = {
 };
 
 // SONIDOS
-
 function audioOn(){
   try{
     if(!audio){
@@ -814,7 +848,6 @@ function sfx(s){
 }
 
 // ESTADO GENERAL
-
 function status(t){
   $("statusMessage").textContent=t;
 }
@@ -846,9 +879,7 @@ function setConnection(ok){
 }
 
 // ESTADO AUTOMÁTICO DE LOS AUTOS
-
 function actualizarEstadoAutos(){
-  // No reemplazar mensajes de carrera ya iniciada.
   if(
     faseCarrera==="cuenta" ||
     faseCarrera==="corriendo" ||
@@ -894,7 +925,6 @@ function actualizarSensor(color,posicionado){
 }
 
 // SEMÁFORO
-
 for(let i=0;i<8;i++){
   const led=document.createElement("span");
   led.className="led";
@@ -912,7 +942,6 @@ function setSignal(n,mode="red"){
 }
 
 // GANADOR
-
 function clearWinner(){
   $("blueLane").classList.remove(
     "winner-blue","loser"
@@ -953,7 +982,6 @@ function showWinner(color,time){
 }
 
 // REINICIO
-
 function resetDisplay(){
   clearWinner();
   setSignal(0,"off");
@@ -994,7 +1022,6 @@ function startRace(isSolo){
 }
 
 // HISTORIAL
-
 function parseTime(t){
   if(!t || String(t).trim()==="-"){
     return null;
@@ -1121,7 +1148,6 @@ function record(mode,w,b,r){
 }
 
 // RESULTADOS
-
 function results(payload){
   const parts=payload.split(",");
 
@@ -1180,7 +1206,6 @@ function results(payload){
 }
 
 // MENSAJES MICRO:BIT
-
 function processMessage(raw){
   const m=raw.trim();
   const u=m.toUpperCase();
@@ -1223,8 +1248,6 @@ function processMessage(raw){
   }
 
   if(u==="AUTOS LISTOS"||u==="AUTO LISTO"){
-    // Se calcula con los estados actuales,
-    // evitando que quede un mensaje viejo.
     actualizarEstadoAutos();
     return;
   }
@@ -1372,7 +1395,6 @@ function processMessage(raw){
 }
 
 // RECEPCIÓN UART
-
 function notify(e){
   buffer+=new TextDecoder().decode(
     e.target.value
@@ -1386,7 +1408,6 @@ function notify(e){
 }
 
 // BLUETOOTH
-
 async function connect(){
   audioOn();
 
@@ -1486,7 +1507,6 @@ async function send(s){
 }
 
 // BOTONES DE CARRERA
-
 $("connectBtn").onclick=()=>{
   if(device&&device.gatt.connected){
     disconnect();
@@ -1521,7 +1541,6 @@ $("resetBtn").onclick=()=>{
 };
 
 // ILUMINACIÓN P1 / P2 / P16
-
 function hexToRGB(hex){
   return [1,3,5].map(i=>
     parseInt(hex.slice(i,i+2),16)
@@ -1598,10 +1617,8 @@ function sendLight(pin){
   const values=rgb.join(",");
 
   if(pin==="P2"){
-    // Comando original compatible.
     send("C:"+values);
   }else{
-    // Comandos nuevos para firmware futuro.
     send(pin+":"+values);
   }
 }
@@ -1639,7 +1656,6 @@ document.querySelectorAll(".presets button")
   });
 
 // EXPORTAR CSV
-
 $("exportCsv").onclick=()=>{
   if(!history.length){
     status("No hay carreras para exportar");
@@ -1687,7 +1703,6 @@ $("exportCsv").onclick=()=>{
 };
 
 // BORRAR HISTORIAL
-
 $("clearHistory").onclick=()=>{
   if(!confirm(
     "¿Borrar todo el historial y los récords?"
@@ -1701,7 +1716,6 @@ $("clearHistory").onclick=()=>{
 };
 
 // INICIO
-
 loadHistory();
 renderHistory();
 resetDisplay();
