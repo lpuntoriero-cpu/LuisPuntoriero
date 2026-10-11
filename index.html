@@ -1726,5 +1726,15 @@ renderLight();
 setConnection(false);
 
 </script>
+  <script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js")
+            .catch(function (error) {
+                console.log("Service Worker:", error);
+            });
+    });
+}
+</script>
 </body>
 </html>
