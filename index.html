@@ -1,387 +1,642 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drift Masters - Control de Pista</title>
-  <meta name="theme-color" content="#0a0a0c">
-
-  <style>
-    :root {
-      --bg-color: #0a0a0c;
-      --card-bg: #141419;
-      --border-color: #272732;
-      --accent-green: #00e676;
-      --accent-blue: #00b0ff;
-      --accent-purple: #d500f9;
-      --accent-red: #ff1744;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 24px 16px;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 400px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    header {
-      text-align: center;
-      margin-bottom: 4px;
-    }
-
-    h1 {
-      font-size: 1.75rem;
-      font-weight: 800;
-      letter-spacing: 3px;
-      background: linear-gradient(135deg, #fff 0%, var(--accent-green) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 4px;
-    }
-
-    .subtitle {
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-    }
-
-    /* Tarjeta de Estado */
-    .status-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    }
-
-    .status-label {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-
-    .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      color: var(--accent-red);
-    }
-
-    .status-badge.connected {
-      color: var(--accent-green);
-    }
-
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background-color: currentColor;
-      box-shadow: 0 0 10px currentColor;
-    }
-
-    /* Controles y Botones */
-    .controls-group {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .btn {
-      width: 100%;
-      border: none;
-      border-radius: 14px;
-      padding: 18px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: transform 0.1s ease, filter 0.2s ease, opacity 0.2s ease;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .btn:active:not(:disabled) {
-      transform: scale(0.97);
-    }
-
-    .btn:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-
-    .btn-connect {
-      background: linear-gradient(135deg, #00e676 0%, #00b0ff 100%);
-      color: #000;
-      font-size: 1.05rem;
-      margin-bottom: 8px;
-    }
-
-    .btn-largada2 {
-      background-color: #1e1e28;
-      color: var(--accent-blue);
-      border: 2px solid rgba(0, 176, 255, 0.3);
-    }
-    .btn-largada2:not(:disabled):hover {
-      background-color: rgba(0, 176, 255, 0.1);
-      border-color: var(--accent-blue);
-    }
-
-    .btn-largada1 {
-      background-color: #1e1e28;
-      color: var(--accent-purple);
-      border: 2px solid rgba(213, 0, 249, 0.3);
-    }
-    .btn-largada1:not(:disabled):hover {
-      background-color: rgba(213, 0, 249, 0.1);
-      border-color: var(--accent-purple);
-    }
-
-    .btn-reset {
-      background-color: #1e1e28;
-      color: var(--accent-red);
-      border: 2px solid rgba(255, 23, 68, 0.3);
-    }
-    .btn-reset:not(:disabled):hover {
-      background-color: rgba(255, 23, 68, 0.1);
-      border-color: var(--accent-red);
-    }
-
-    /* Consola de depuración estilizada */
-    .console-container {
-      background: #050507;
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 12px;
-      margin-top: 10px;
-    }
-
-    .console-header {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .console {
-      color: #00ff66;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.75rem;
-      height: 110px;
-      overflow-y: auto;
-      overflow-wrap: anywhere;
-      white-space: pre-wrap;
-      text-align: left;
-      line-height: 1.4;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRIFT MASTERS | Race Control</title>
+<style>
+:root {
+  --bg:#090c12; --panel:#111722; --line:#263143;
+  --blue:#20aaff; --red:#ff4059; --green:#39f2a0;
+  --text:#f3f6fc; --muted:#8592a6; --yellow:#ffc857;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; background:
+  radial-gradient(ellipse at 12% 0%,#12304a 0,transparent 35%),
+  radial-gradient(ellipse at 100% 20%,#37131d 0,transparent 28%),
+  var(--bg);
+  color:var(--text); font-family:Arial,Helvetica,sans-serif;
+  min-height:100vh;
+}
+button { font:inherit; cursor:pointer; }
+button:disabled { opacity:.4; cursor:not-allowed; }
+.app { max-width:1450px; margin:auto; padding:22px; }
+header {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:16px; flex-wrap:wrap; padding-bottom:20px;
+  border-bottom:1px solid var(--line);
+}
+.brand { display:flex; gap:13px; align-items:center; }
+.logo {
+  display:grid; place-items:center; width:54px; height:54px;
+  background:linear-gradient(135deg,#fff,#9ca9bc);
+  color:#10141d; font-size:25px; font-weight:1000;
+  transform:skew(-7deg); border-radius:7px;
+}
+.eyebrow { font-size:10px; letter-spacing:3px; color:var(--blue); font-weight:bold; }
+h1 { font-size:clamp(23px,4vw,38px); margin:3px 0; letter-spacing:1px; }
+.subtitle { color:var(--muted); font-size:12px; }
+.connection {
+  display:flex; align-items:center; gap:9px; padding:10px 13px;
+  background:#121a25; border:1px solid var(--line); border-radius:9px;
+  color:#aab5c5; font-size:12px;
+}
+.dot { width:9px;height:9px;border-radius:50%;background:#687386; }
+.dot.on { background:var(--green); box-shadow:0 0 12px var(--green); }
+.connect-btn {
+  border:1px solid #3d526b; border-radius:8px; padding:11px 15px;
+  background:#1a2a3c; color:white; font-weight:bold;
+}
+.connect-btn:hover { background:#263c54; }
+main { padding-top:20px; }
+.section-top {
+  display:flex; justify-content:space-between; align-items:center;
+  gap:10px; margin-bottom:13px; flex-wrap:wrap;
+}
+.section-label { color:var(--muted); font-size:11px; letter-spacing:2px; font-weight:bold; }
+.live-label { color:var(--green); font-size:10px; letter-spacing:2px; }
+.track {
+  border:1px solid #2c394c; border-radius:15px; overflow:hidden;
+  background:#0d121b; position:relative;
+}
+.track-head {
+  padding:15px 18px; display:flex; justify-content:space-between;
+  gap:10px; flex-wrap:wrap; border-bottom:1px solid var(--line);
+  background:linear-gradient(90deg,#151e2a,#10151e);
+}
+.track-name { font-weight:900; letter-spacing:1.5px; }
+.track-meta { font-size:11px; color:var(--muted); }
+.lane {
+  min-height:184px; padding:20px 18px; position:relative;
+  display:grid; grid-template-columns:115px minmax(120px,1fr) 130px;
+  align-items:center; gap:15px; overflow:hidden;
+}
+.lane + .lane { border-top:4px solid #080b10; }
+.lane.blue { background:linear-gradient(90deg,#102c42,#0e1722 75%); }
+.lane.red { background:linear-gradient(90deg,#35151e,#17131c 75%); }
+.lane::after {
+  content:""; position:absolute; inset:0; pointer-events:none; opacity:.12;
+  background:repeating-linear-gradient(115deg,transparent 0 45px,#fff 46px 48px,transparent 49px 90px);
+}
+.lane-info,.car-zone,.lane-time { position:relative; z-index:1; }
+.lane-info .number { font-size:11px; letter-spacing:2px; color:var(--muted); }
+.lane-info h2 { margin:5px 0; font-size:20px; }
+.blue .lane-info h2 { color:var(--blue); }
+.red .lane-info h2 { color:var(--red); }
+.lane-state { color:#9ba8b9; font-size:10px; line-height:1.5; }
+.car-zone {
+  min-height:108px; display:flex; align-items:center; position:relative;
+  border-top:1px dashed #566275; border-bottom:1px dashed #566275;
+}
+.start-line {
+  position:absolute; left:3%; top:0; bottom:0; width:8px;
+  background:repeating-linear-gradient(to bottom,#fff 0 9px,#121722 9px 18px);
+  opacity:.75;
+}
+.finish-line {
+  position:absolute; right:4%; top:0; bottom:0; width:12px;
+  background:repeating-conic-gradient(#e8edf5 0 25%,#151923 0 50%) 0/12px 12px;
+  opacity:.8;
+}
+.car {
+  width:112px; height:48px; position:relative; margin-left:17%;
+  transition:margin-left .3s; filter:drop-shadow(0 8px 9px #0009);
+}
+.car-body {
+  position:absolute; left:4px; right:4px; top:12px; height:29px;
+  border-radius:10px 18px 7px 7px;
+}
+.blue .car-body { background:linear-gradient(180deg,#73d3ff,#0875db 60%,#064887); border:1px solid #8ddfff; }
+.red .car-body { background:linear-gradient(180deg,#ff9ba8,#ef2946 60%,#8d1226); border:1px solid #ffb2bc; }
+.car-body::before {
+  content:""; position:absolute; left:29px; top:3px; width:37px; height:13px;
+  background:#152431; border:1px solid #a6c7db;
+  border-radius:9px 10px 2px 2px; transform:skew(-12deg);
+}
+.car-body::after {
+  content:""; position:absolute; left:8px; right:7px; top:18px; height:3px;
+  background:#ffffffb0;
+}
+.wheel {
+  position:absolute; width:20px; height:19px; background:#080a0e;
+  border:2px solid #657183; border-radius:5px; top:28px; z-index:2;
+}
+.wheel.one { left:15px; } .wheel.two { right:15px; }
+.headlight { position:absolute; right:5px; top:18px; width:7px;height:6px;background:#fff8c9;z-index:3; }
+.car-number {
+  position:absolute; top:16px; left:48px; color:white;
+  font-size:10px; font-weight:900; z-index:4;
+}
+.lane-time { text-align:right; }
+.time-label { color:var(--muted); font-size:9px; letter-spacing:1.5px; }
+.time-value { font-size:clamp(20px,3vw,28px); font-weight:900; margin-top:7px; font-variant-numeric:tabular-nums; }
+.blue .time-value { color:var(--blue); }
+.red .time-value { color:var(--red); }
+.time-status { margin-top:6px; color:#a5b1c0; font-size:10px; }
+.center-control {
+  display:grid; grid-template-columns:1fr 200px 1fr; gap:14px;
+  align-items:stretch; margin-top:17px;
+}
+.control-box,.signal-box,.result-box,.log-box {
+  background:linear-gradient(145deg,#141c28,#0e131c);
+  border:1px solid var(--line); border-radius:12px; padding:17px;
+}
+.control-box h3,.result-box h3,.log-box h3 {
+  margin:0 0 14px; font-size:11px; letter-spacing:2px; color:var(--muted);
+}
+.mode-buttons { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.action {
+  min-height:57px; padding:12px 8px; border-radius:8px;
+  border:1px solid #35465c; background:#202c3c; color:white;
+  font-weight:900; font-size:12px;
+}
+.action small { display:block; font-weight:normal; font-size:10px; color:#aeb9c8; margin-top:5px; }
+.action.blue-action { border-color:#147fc1; background:linear-gradient(135deg,#087fc8,#114a79); }
+.action.red-action { border-color:#ad3345; background:linear-gradient(135deg,#a82037,#571b29); }
+.action.reset { width:100%; margin-top:9px; min-height:42px; background:#191e28; }
+.action:hover { filter:brightness(1.2); }
+.signal-box { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.signal-title { color:var(--muted); font-size:9px; letter-spacing:2px; }
+.lights { display:flex; gap:9px; margin:14px 0; }
+.light {
+  width:27px;height:27px;border-radius:50%; background:#252c38;
+  border:2px solid #404b5d; box-shadow:inset 0 2px 6px #0009;
+}
+.light.red-on { background:#ff304f; border-color:#ff8798; box-shadow:0 0 18px #ff304f99; }
+.light.yellow-on { background:#ffc857; border-color:#ffe5a2; box-shadow:0 0 18px #ffc85799; }
+.light.green-on { background:#36f5a0; border-color:#b3ffdc; box-shadow:0 0 18px #36f5a099; }
+.countdown { font-size:43px; font-weight:1000; line-height:1; }
+.signal-message { margin-top:9px; color:#9eacbd; font-size:10px; min-height:25px; line-height:1.4; }
+.bottom-grid { display:grid; grid-template-columns:1.2fr 1fr; gap:14px; margin-top:14px; }
+.result-main { min-height:66px; display:flex; align-items:center; gap:14px; }
+.trophy { font-size:34px; }
+.result-winner { font-size:22px; font-weight:900; }
+.result-time { color:var(--green); font-weight:bold; margin-top:5px; font-variant-numeric:tabular-nums; }
+.result-note { color:var(--muted); font-size:10px; margin-top:12px; line-height:1.5; }
+.status-message { font-size:14px; font-weight:bold; line-height:1.5; }
+.status-message.warn { color:var(--yellow); }
+.status-message.bad { color:#ff6175; }
+.status-message.good { color:var(--green); }
+.log { max-height:145px; overflow:auto; font-size:11px; color:#9ba8b9; }
+.log-entry { padding:7px 0; border-bottom:1px solid #202a38; }
+.log-entry b { color:#eaf0f9; font-weight:600; }
+.footer { text-align:center; color:#556276; font-size:10px; padding:22px 0 5px; letter-spacing:1px; }
+@media(max-width:760px) {
+ .app { padding:13px; }
+ .center-control { grid-template-columns:1fr 1fr; }
+ .signal-box { grid-column:1/-1; grid-row:1; min-height:150px; }
+ .bottom-grid { grid-template-columns:1fr; }
+ .lane { grid-template-columns:80px minmax(95px,1fr) 83px; gap:7px; padding:14px 9px; min-height:150px; }
+ .lane-info h2 { font-size:15px; }
+ .lane-info .number { font-size:9px; }
+ .car { transform:scale(.78); transform-origin:left center; margin-left:12%; }
+ .car-zone { min-height:85px; }
+ .time-label { font-size:8px; letter-spacing:.5px; }
+ .time-value { font-size:18px; }
+ .mode-buttons { grid-template-columns:1fr; }
+ .action { min-height:48px; }
+}
+@media(max-width:390px) {
+ .lane { grid-template-columns:67px minmax(80px,1fr) 72px; }
+ .lane-info h2 { font-size:13px; }
+ .car { transform:scale(.65); margin-left:8%; }
+ .time-value { font-size:15px; }
+}
+</style>
 </head>
-
 <body>
-  <div class="container">
-    <header>
+<div class="app">
+<header>
+  <div class="brand">
+    <div class="logo">DM</div>
+    <div>
+      <div class="eyebrow">RC RACING SYSTEM</div>
       <h1>DRIFT MASTERS</h1>
-      <p class="subtitle">Panel de Control de Pista</p>
-    </header>
-
-    <div class="status-card">
-      <span class="status-label">Estado BLE</span>
-      <div id="lblEstado" class="status-badge">
-        <span class="status-dot"></span>
-        <span id="txtEstadoTexto">Desconectado</span>
-      </div>
-    </div>
-
-    <div class="controls-group">
-      <button id="btnConectar" class="btn btn-connect" onclick="conectarBLE()">
-        🔗 Buscar Pista Bluetooth
-      </button>
-
-      <button id="btnLargada2" class="btn btn-largada2" onclick="enviarComando('A')" disabled>
-        ⚡ Largar 2 Autos (A)
-      </button>
-
-      <button id="btnLargada1" class="btn btn-largada1" onclick="enviarComando('S')" disabled>
-        🚀 Largar 1 Auto (S)
-      </button>
-
-      <button id="btnReset" class="btn btn-reset" onclick="enviarComando('B')" disabled>
-        🔄 RESET / Arcoíris (B)
-      </button>
-    </div>
-
-    <div class="console-container">
-      <div class="console-header">
-        <span>Consola de sistema</span>
-      </div>
-      <div id="console" class="console">> Sistema listo. Esperando conexión...</div>
+      <div class="subtitle">DUAL LANE · RACE CONTROL CENTER</div>
     </div>
   </div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <div class="connection"><span class="dot" id="btDot"></span><span id="btText">MICRO:BIT DESCONECTADA</span></div>
+    <button class="connect-btn" id="connectBtn">⌁ CONECTAR</button>
+  </div>
+</header>
 
-  <script>
-    const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+<main>
+  <div class="section-top">
+    <div class="section-label">01 / PISTA EN VIVO</div>
+    <div class="live-label" id="raceMode">● SISTEMA EN ESPERA</div>
+  </div>
 
-    let dispositivo = null;
-    let gattServer = null;
-    let txCharacteristic = null;
+  <section class="track">
+    <div class="track-head">
+      <div class="track-name">START GRID <span style="color:var(--muted)">/ 1:24</span></div>
+      <div class="track-meta" id="trackStatus">Esperando largada</div>
+    </div>
+    <div class="lane blue">
+      <div class="lane-info">
+        <div class="number">LANE 01</div><h2>AZUL</h2>
+        <div class="lane-state" id="blueState">LISTO PARA SALIR</div>
+      </div>
+      <div class="car-zone">
+        <div class="start-line"></div><div class="finish-line"></div>
+        <div class="car" id="blueCar">
+          <div class="wheel one"></div><div class="wheel two"></div>
+          <div class="car-body"></div><div class="headlight"></div><div class="car-number">01</div>
+        </div>
+      </div>
+      <div class="lane-time">
+        <div class="time-label">TIEMPO OFICIAL</div>
+        <div class="time-value" id="blueTime">--.---</div>
+        <div class="time-status" id="blueResult">Sin registro</div>
+      </div>
+    </div>
+    <div class="lane red">
+      <div class="lane-info">
+        <div class="number">LANE 02</div><h2>ROJO</h2>
+        <div class="lane-state" id="redState">LISTO PARA SALIR</div>
+      </div>
+      <div class="car-zone">
+        <div class="start-line"></div><div class="finish-line"></div>
+        <div class="car" id="redCar">
+          <div class="wheel one"></div><div class="wheel two"></div>
+          <div class="car-body"></div><div class="headlight"></div><div class="car-number">02</div>
+        </div>
+      </div>
+      <div class="lane-time">
+        <div class="time-label">TIEMPO OFICIAL</div>
+        <div class="time-value" id="redTime">--.---</div>
+        <div class="time-status" id="redResult">Sin registro</div>
+      </div>
+    </div>
+  </section>
 
-    let colaEnvio = [];
-    let enviando = false;
+  <section class="center-control">
+    <div class="control-box">
+      <h3>02 / CONTROLES DE CARRERA</h3>
+      <div class="mode-buttons">
+        <button class="action blue-action" id="dualBtn">⚑ DOS AUTOS<small>Azul contra rojo · A</small></button>
+        <button class="action red-action" id="soloBtn">▶ SOLO AZUL<small>Contrarreloj · S</small></button>
+      </div>
+      <button class="action reset" id="resetBtn">↻ REINICIAR SISTEMA <small>Restablecer · B</small></button>
+    </div>
 
-    function log(mensaje) {
-      const consola = document.getElementById("console");
-      consola.textContent += "\n> " + mensaje;
-      consola.scrollTop = consola.scrollHeight;
+    <div class="signal-box">
+      <div class="signal-title">START LIGHTS</div>
+      <div class="lights">
+        <div class="light" id="light1"></div><div class="light" id="light2"></div><div class="light" id="light3"></div>
+      </div>
+      <div class="countdown" id="countdown">—</div>
+      <div class="signal-message" id="signalMessage">Conectá la micro:bit para comenzar</div>
+    </div>
+
+    <div class="control-box">
+      <h3>03 / ESTADO DE PISTA</h3>
+      <div class="status-message" id="statusMessage">Sistema en espera</div>
+      <div class="result-note" id="sensorNote">Los sensores y la secuencia de largada son controlados por la micro:bit.</div>
+      <div class="result-note">AZUL: sensor P14<br>ROJO: sensor P15</div>
+    </div>
+  </section>
+
+  <section class="bottom-grid">
+    <div class="result-box">
+      <h3>04 / RESULTADO DE LA MANGA</h3>
+      <div class="result-main">
+        <div class="trophy">🏆</div>
+        <div>
+          <div class="result-winner" id="winner">A LA ESPERA</div>
+          <div class="result-time" id="winnerTime">Sin tiempo oficial</div>
+        </div>
+      </div>
+      <div class="result-note" id="resultNote">El resultado aparecerá cuando la micro:bit envíe los datos de la carrera por Bluetooth.</div>
+    </div>
+    <div class="log-box">
+      <h3>05 / REGISTRO DE EVENTOS</h3>
+      <div class="log" id="log">
+        <div class="log-entry"><b>SISTEMA</b> · Panel iniciado.</div>
+        <div class="log-entry"><b>BLUETOOTH</b> · Esperando conexión.</div>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="footer">DRIFT MASTERS · RACE CONTROL · MICRO:BIT UART</div>
+</div>
+
+<script>
+const SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const RX_UUID  = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+const TX_UUID  = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+
+let device = null, tx = null, rx = null;
+let buffer = "";
+let previewTimer = null;
+
+const $ = id => document.getElementById(id);
+
+function logEvent(title, message) {
+  const el = document.createElement("div");
+  el.className = "log-entry";
+  const time = new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const b = document.createElement("b");
+  b.textContent = time + " · " + title + " ";
+  el.appendChild(b);
+  el.appendChild(document.createTextNode(message));
+  $("log").prepend(el);
+  while ($("log").children.length > 35) $("log").lastChild.remove();
+}
+
+function setStatus(message, type="") {
+  $("statusMessage").textContent = message;
+  $("statusMessage").className = "status-message " + type;
+}
+
+function lights(mode) {
+  ["light1","light2","light3"].forEach(id => $(id).className = "light");
+  if (mode === "red") $("light1").classList.add("red-on");
+  if (mode === "yellow") {
+    $("light1").classList.add("red-on");
+    $("light2").classList.add("yellow-on");
+  }
+  if (mode === "green") $("light3").classList.add("green-on");
+}
+
+function stopPreview() {
+  if (previewTimer) clearInterval(previewTimer);
+  previewTimer = null;
+}
+
+function startPreview() {
+  stopPreview();
+  let n = 8;
+  lights("red");
+  $("countdown").textContent = n;
+  $("signalMessage").textContent = "Vista previa visual · no sincronizada";
+  previewTimer = setInterval(() => {
+    n--;
+    if (n > 0) {
+      $("countdown").textContent = n;
+      if (n <= 3) lights("yellow");
+    } else {
+      stopPreview();
+      $("countdown").textContent = "GO!";
+      lights("green");
+      $("signalMessage").textContent = "Esperando confirmación de la micro:bit";
     }
+  }, 850);
+}
 
-    function actualizarEstado(conectado) {
-      const contenedorEstado = document.getElementById("lblEstado");
-      const textoEstado = document.getElementById("txtEstadoTexto");
+async function sendCommand(command) {
+  if (!device || !device.gatt.connected || !tx) {
+    setStatus("Conectá primero la micro:bit", "warn");
+    logEvent("ERROR", "No hay conexión Bluetooth.");
+    return false;
+  }
+  try {
+    const bytes = new TextEncoder().encode(command + "\n");
+    if (tx.properties.write) await tx.writeValueWithResponse(bytes);
+    else await tx.writeValueWithoutResponse(bytes);
+    logEvent("TX", "Comando enviado: " + command);
+    return true;
+  } catch (e) {
+    logEvent("ERROR", "No se pudo enviar el comando: " + e.message);
+    setStatus("Error enviando comando", "bad");
+    return false;
+  }
+}
 
-      textoEstado.textContent = conectado ? "Conectado" : "Desconectado";
-      contenedorEstado.classList.toggle("connected", conectado);
-
-      document.getElementById("btnLargada2").disabled = !conectado;
-      document.getElementById("btnLargada1").disabled = !conectado;
-      document.getElementById("btnReset").disabled = !conectado;
-    }
-
-    async function conectarBLE() {
-      if (!navigator.bluetooth) {
-        log("ERROR: Web Bluetooth no disponible.");
-        return;
+async function connectBluetooth() {
+  if (!navigator.bluetooth) {
+    alert("Usá Chrome o Edge y abrí la página mediante HTTPS.");
+    return;
+  }
+  try {
+    $("connectBtn").disabled = true;
+    $("connectBtn").textContent = "CONECTANDO…";
+    device = await navigator.bluetooth.requestDevice({
+      filters: [{services:[SERVICE]}],
+      optionalServices:[SERVICE]
+    });
+    device.addEventListener("gattserverdisconnected", disconnected);
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(SERVICE);
+    tx = await service.getCharacteristic(TX_UUID);
+    try {
+      rx = await service.getCharacteristic(RX_UUID);
+      if (rx.properties.notify || rx.properties.indicate) {
+        await rx.startNotifications();
+        rx.addEventListener("characteristicvaluechanged", receiveData);
       }
-
-      try {
-        document.getElementById("btnConectar").disabled = true;
-        log("Buscando micro:bit...");
-
-        dispositivo = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: "BBC micro:bit" }],
-          optionalServices: [UART_SERVICE_UUID]
-        });
-
-        dispositivo.removeEventListener("gattserverdisconnected", onDisconnected);
-        dispositivo.addEventListener("gattserverdisconnected", onDisconnected);
-
-        log("Dispositivo: " + dispositivo.name);
-        log("Conectando al servidor GATT...");
-
-        gattServer = await dispositivo.gatt.connect();
-
-        log("Buscando servicio UART...");
-        const servicio = await gattServer.getPrimaryService(UART_SERVICE_UUID);
-        const caracteristicas = await servicio.getCharacteristics();
-
-        txCharacteristic = caracteristicas.find(c =>
-          c.properties.write || c.properties.writeWithoutResponse
-        );
-
-        if (!txCharacteristic) {
-          throw new Error("No se encontró característica de escritura UART.");
-        }
-
-        log("¡Conectado exitosamente!");
-        colaEnvio = [];
-        enviando = false;
-        actualizarEstado(true);
-
-      } catch (error) {
-        txCharacteristic = null;
-        gattServer = null;
-        actualizarEstado(false);
-        log("ERROR: " + error.message);
-      } finally {
-        document.getElementById("btnConectar").disabled = false;
-      }
+    } catch (e) {
+      logEvent("UART", "Conexión de envío activa; recepción no disponible.");
     }
+    $("btDot").classList.add("on");
+    $("btText").textContent = "CONECTADA · " + (device.name || "MICRO:BIT");
+    $("connectBtn").textContent = "DESCONECTAR";
+    $("connectBtn").disabled = false;
+    $("connectBtn").onclick = disconnectBluetooth;
+    setStatus("Micro:bit conectada. Elegí el modo de carrera.");
+    $("signalMessage").textContent = "Conexión establecida";
+    logEvent("BLUETOOTH", "Conectado a " + (device.name || "micro:bit"));
+  } catch (e) {
+    $("connectBtn").disabled = false;
+    $("connectBtn").textContent = "⌁ CONECTAR";
+    logEvent("BLUETOOTH", "Conexión cancelada o fallida.");
+    setStatus("No se pudo conectar", "bad");
+  }
+}
 
-    function enviarComando(cmd) {
-      if (!txCharacteristic || !gattServer || !gattServer.connected) {
-        log("Error: Sin conexión Bluetooth activa.");
-        return;
-      }
+function disconnected() {
+  stopPreview();
+  tx = null; rx = null;
+  $("btDot").classList.remove("on");
+  $("btText").textContent = "MICRO:BIT DESCONECTADA";
+  $("connectBtn").textContent = "⌁ CONECTAR";
+  $("connectBtn").onclick = connectBluetooth;
+  logEvent("BLUETOOTH", "Dispositivo desconectado.");
+  setStatus("Micro:bit desconectada", "warn");
+  $("signalMessage").textContent = "Conectá la micro:bit para comenzar";
+}
 
-      colaEnvio.push(cmd);
-      procesarFila();
+function disconnectBluetooth() {
+  if (device && device.gatt.connected) device.gatt.disconnect();
+  disconnected();
+}
+
+function receiveData(event) {
+  const value = new TextDecoder().decode(event.target.value);
+  buffer += value;
+  const lines = buffer.split(/\r?\n/);
+  buffer = lines.pop() || "";
+  lines.forEach(line => { if (line.trim()) parseMessage(line.trim()); });
+}
+
+function showFalseStart(lane) {
+  stopPreview(); lights("red");
+  $("countdown").textContent = "FALSA";
+  $("signalMessage").textContent = "LARGADA ANTICIPADA";
+  $("raceMode").textContent = "● FALSA LARGADA";
+  if (lane === "AZUL") $("blueState").textContent = "FALSA LARGADA";
+  if (lane === "ROJO") $("redState").textContent = "FALSA LARGADA";
+  setStatus("FALSA LARGADA · " + lane, "bad");
+  $("resultNote").textContent = "La micro:bit detectó una salida anticipada.";
+  logEvent("FALSA LARGADA", lane);
+}
+
+function parseMessage(raw) {
+  const msg = raw.trim().toUpperCase();
+  logEvent("RX", msg);
+
+  if (msg === "GO" || msg === "START" || msg === "VERDE") {
+    stopPreview(); lights("green");
+    $("countdown").textContent = "GO!";
+    $("signalMessage").textContent = "¡LARGADA!";
+    $("raceMode").textContent = "● CARRERA EN CURSO";
+    setStatus("¡Largada confirmada!", "good");
+    return;
+  }
+
+  if (msg.includes("FALSE") || msg.includes("FALSA")) {
+    const lane = msg.includes("ROJO") ? "ROJO" : "AZUL";
+    showFalseStart(lane);
+    return;
+  }
+
+  if (msg === "RESET" || msg === "READY" || msg === "LISTO") {
+    stopPreview(); lights("");
+    $("countdown").textContent = "—";
+    $("signalMessage").textContent = "Sistema preparado";
+    $("raceMode").textContent = "● SISTEMA EN ESPERA";
+    $("blueTime").textContent = "--.---";
+    $("redTime").textContent = "--.---";
+    $("blueState").textContent = "LISTO PARA SALIR";
+    $("redState").textContent = "LISTO PARA SALIR";
+    $("blueResult").textContent = "Sin registro";
+    $("redResult").textContent = "Sin registro";
+    $("winner").textContent = "A LA ESPERA";
+    $("winnerTime").textContent = "Sin tiempo oficial";
+    setStatus("Sistema reiniciado");
+    return;
+  }
+
+  // Formato admitido: WIN:AZUL:4826 o WIN:ROJO:4826
+  // El tiempo se interpreta en milisegundos.
+  const win = msg.match(/^(?:WIN|WINNER|GANADOR):?(AZUL|ROJO):(\d+)$/);
+  if (win) {
+    const lane = win[1], ms = Number(win[2]);
+    const time = formatTime(ms);
+    stopPreview(); lights("green");
+    $("countdown").textContent = "FIN";
+    $("signalMessage").textContent = "MANGA FINALIZADA";
+    $("raceMode").textContent = "● CARRERA FINALIZADA";
+    $("winner").textContent = lane + " GANA";
+    $("winnerTime").textContent = "Tiempo: " + time;
+    $("resultNote").textContent = "Resultado recibido desde la micro:bit.";
+    if (lane === "AZUL") {
+      $("blueTime").textContent = time;
+      $("blueResult").textContent = "GANADOR";
+      $("blueState").textContent = "MANGA GANADA";
+      $("blueCar").style.marginLeft = "55%";
+      $("redResult").textContent = "Finalizó";
+    } else {
+      $("redTime").textContent = time;
+      $("redResult").textContent = "GANADOR";
+      $("redState").textContent = "MANGA GANADA";
+      $("redCar").style.marginLeft = "55%";
+      $("blueResult").textContent = "Finalizó";
     }
+    setStatus("Ganador: " + lane + " · " + time, "good");
+    logEvent("RESULTADO", lane + " gana en " + time);
+    return;
+  }
 
-    async function procesarFila() {
-      if (enviando || colaEnvio.length === 0) return;
+  // Formato admitido: TIME:4826 o TIME:AZUL:4826
+  const tm = msg.match(/^TIME:(?:(AZUL|ROJO):)?(\d+)$/);
+  if (tm) {
+    const lane = tm[1], time = formatTime(Number(tm[2]));
+    if (lane === "AZUL") $("blueTime").textContent = time;
+    else if (lane === "ROJO") $("redTime").textContent = time;
+    else $("winnerTime").textContent = "Tiempo recibido: " + time;
+    return;
+  }
 
-      enviando = true;
-      const cmd = colaEnvio.shift();
+  const count = msg.match(/^(?:COUNT|COUNTDOWN):(\d+)$/);
+  if (count) {
+    stopPreview();
+    $("countdown").textContent = count[1];
+    lights(Number(count[1]) <= 3 ? "yellow" : "red");
+    $("signalMessage").textContent = "Cuenta regresiva de la micro:bit";
+    return;
+  }
 
-      try {
-        if (!txCharacteristic || !gattServer || !gattServer.connected) {
-          throw new Error("Conexión perdida.");
-        }
+  if (msg.startsWith("STATUS:")) {
+    setStatus(raw.substring(raw.indexOf(":") + 1));
+  }
+}
 
-        const datos = new TextEncoder().encode(cmd + "\n");
-        const propiedades = txCharacteristic.properties;
+function formatTime(ms) {
+  const sec = Math.floor(ms / 1000);
+  const milli = ms % 1000;
+  return sec + "." + String(milli).padStart(3,"0") + " s";
+}
 
-        if (propiedades.writeWithoutResponse) {
-          await txCharacteristic.writeValueWithoutResponse(datos);
-        } else if (propiedades.write) {
-          await txCharacteristic.writeValueWithResponse(datos);
-        } else {
-          throw new Error("Característica sin permisos de escritura.");
-        }
+$("connectBtn").addEventListener("click", connectBluetooth);
 
-        log("Comando enviado: " + cmd);
+$("dualBtn").addEventListener("click", async () => {
+  $("blueCar").style.marginLeft = "17%";
+  $("redCar").style.marginLeft = "17%";
+  $("blueTime").textContent = "--.---";
+  $("redTime").textContent = "--.---";
+  $("blueState").textContent = "ESPERANDO LARGADA";
+  $("redState").textContent = "ESPERANDO LARGADA";
+  $("blueResult").textContent = "En competencia";
+  $("redResult").textContent = "En competencia";
+  $("winner").textContent = "EN COMPETENCIA";
+  $("winnerTime").textContent = "Esperando resultado oficial";
+  $("resultNote").textContent = "El ganador se mostrará al recibir el mensaje de la micro:bit.";
+  $("raceMode").textContent = "● DOS AUTOS";
+  setStatus("Preparando carrera de dos autos");
+  if (await sendCommand("A")) startPreview();
+});
 
-      } catch (error) {
-        log("ERROR GATT: " + error.message);
-      } finally {
-        setTimeout(() => {
-          enviando = false;
-          if (colaEnvio.length > 0) {
-            procesarFila();
-          }
-        }, 250);
-      }
-    }
+$("soloBtn").addEventListener("click", async () => {
+  $("redState").textContent = "FUERA DE MANGA";
+  $("redResult").textContent = "No participa";
+  $("redTime").textContent = "--.---";
+  $("blueState").textContent = "CONTRARRELOJ";
+  $("blueTime").textContent = "--.---";
+  $("blueResult").textContent = "En competencia";
+  $("winner").textContent = "CONTRARRELOJ";
+  $("winnerTime").textContent = "Esperando tiempo oficial";
+  $("resultNote").textContent = "Modalidad individual: solo se registra el auto azul.";
+  $("raceMode").textContent = "● CONTRARRELOJ";
+  setStatus("Preparando contrarreloj azul");
+  if (await sendCommand("S")) startPreview();
+});
 
-    function onDisconnected() {
-      txCharacteristic = null;
-      gattServer = null;
-      colaEnvio = [];
-      enviando = false;
-      actualizarEstado(false);
-      log("Micro:bit desconectada.");
-    }
-  </script>
+$("resetBtn").addEventListener("click", async () => {
+  stopPreview();
+  lights("");
+  $("countdown").textContent = "—";
+  $("signalMessage").textContent = "Reiniciando sistema…";
+  $("blueCar").style.marginLeft = "17%";
+  $("redCar").style.marginLeft = "17%";
+  $("blueTime").textContent = "--.---";
+  $("redTime").textContent = "--.---";
+  $("blueState").textContent = "LISTO PARA SALIR";
+  $("redState").textContent = "LISTO PARA SALIR";
+  $("blueResult").textContent = "Sin registro";
+  $("redResult").textContent = "Sin registro";
+  $("winner").textContent = "A LA ESPERA";
+  $("winnerTime").textContent = "Sin tiempo oficial";
+  $("raceMode").textContent = "● SISTEMA EN ESPERA";
+  setStatus("Solicitando reinicio");
+  await sendCommand("B");
+});
+
+if (!navigator.bluetooth) {
+  $("connectBtn").title = "Abrí esta página con Chrome o Edge mediante HTTPS";
+}
+</script>
 </body>
 </html>
