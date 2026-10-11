@@ -3,38 +3,36 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#080d16">
-<title>Drift Masters - Race Control</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#030918">
+<title>DRIFT MASTERS</title>
 
 <style>
 :root {
-  --bg:#080d16;
-  --panel:#121d2c;
-  --border:#304459;
-  --blue:#29aaff;
-  --red:#ff4058;
-  --green:#38e89a;
-  --text:#f3f7ff;
-  --muted:#a1b1c5;
+  --bg:#030918;
+  --blue:#00baff;
+  --red:#ff3159;
+  --green:#31f09b;
+  --text:#eff8ff;
+  --dim:#a0b8ce;
 }
 
-* {box-sizing:border-box}
+* { box-sizing:border-box; }
 
 body {
   margin:0;
-  color:var(--text);
   background:
-    radial-gradient(circle at top left,#183e59,transparent 38%),
-    radial-gradient(circle at top right,#381825,transparent 32%),
+    radial-gradient(ellipse at 0 0,#073e65,transparent 42%),
+    radial-gradient(ellipse at 100% 5%,#440b2c,transparent 38%),
     var(--bg);
+  color:var(--text);
   font:14px system-ui,Arial,sans-serif;
 }
 
-main {
-  max-width:1250px;
-  padding:15px;
+.app {
+  max-width:1350px;
   margin:auto;
+  padding:10px;
 }
 
 header {
@@ -42,50 +40,65 @@ header {
   justify-content:space-between;
   align-items:center;
   flex-wrap:wrap;
-  gap:15px;
-  padding:18px 0;
-  border-bottom:1px solid var(--border);
+  gap:12px;
+  padding:12px 4px 18px;
+  border-bottom:2px solid #12649a;
 }
 
-h1 {
-  margin:0;
-  font-size:clamp(26px,5vw,39px);
-  letter-spacing:2px;
+.logo {
+  font-size:clamp(30px,5vw,52px);
   font-weight:1000;
+  font-style:italic;
+  letter-spacing:-2px;
+  text-shadow:0 0 18px #009dff77;
 }
 
-h2 {
-  margin:0 0 15px;
-  font-size:15px;
-  letter-spacing:1px;
+.logo span {
+  color:var(--red);
+  text-shadow:0 0 18px #ff315988;
 }
 
-small,.muted {color:var(--muted)}
+.subtitle {
+  font-size:10px;
+  color:#78daf8;
+  letter-spacing:2px;
+}
 
-.brand {
-  color:var(--blue);
+.btbar {
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.btstatus {
+  padding:10px;
+  border:1px solid #395875;
+  border-radius:8px;
+  background:#08172a;
   font-size:11px;
-  letter-spacing:3px;
-  font-weight:bold;
 }
 
-.panel {
-  background:linear-gradient(140deg,#18283a,#101925);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:17px;
-  margin-top:15px;
+.dot {
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:var(--red);
+  box-shadow:0 0 10px var(--red);
+  margin-right:6px;
+}
+
+.dot.on {
+  background:var(--green);
+  box-shadow:0 0 10px var(--green);
 }
 
 button {
-  background:#263d57;
+  cursor:pointer;
   color:white;
-  border:1px solid #4c6989;
-  border-radius:9px;
-  padding:12px 15px;
   font:inherit;
   font-weight:800;
-  cursor:pointer;
 }
 
 button:disabled {
@@ -93,614 +106,607 @@ button:disabled {
   cursor:not-allowed;
 }
 
-.primary {background:#086eaf}
-.danger {background:#a52340}
-
-.buttons {
-  display:flex;
-  gap:9px;
-  flex-wrap:wrap;
+.btn {
+  padding:12px 15px;
+  border-radius:9px;
+  border:1px solid #4f6580;
+  background:linear-gradient(#28445b,#1a2c43);
 }
 
-.grid {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
+.btn.primary {
+  background:linear-gradient(#007aff,#0056c9);
+  border-color:#45caff;
+  box-shadow:0 0 14px #009fff66;
 }
 
-.connection {
-  display:flex;
-  flex-direction:column;
-  gap:9px;
+.btn.red {
+  background:linear-gradient(#e52043,#9f0928);
+  border-color:#ff718b;
+  box-shadow:0 0 14px #f0244866;
 }
 
-#btText {
-  font-size:12px;
-  font-weight:bold;
+.btn.green {
+  background:linear-gradient(#119a58,#076e3e);
+  border-color:#47f4a0;
 }
 
-#aviso {
-  color:#ffd17b;
-  font-size:12px;
-  white-space:pre-wrap;
-  margin-top:10px;
-}
-
-.track {
-  border:1px solid var(--border);
+.panel {
+  background:linear-gradient(145deg,#0b1e31,#06111f);
+  border:1px solid #35536c;
   border-radius:12px;
-  overflow:hidden;
+  padding:14px;
+}
+
+.panel h2 {
+  font-size:14px;
+  margin:0 0 13px;
+  font-weight:900;
+}
+
+/* PISTA */
+
+.top {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 250px minmax(0,1fr);
+  gap:11px;
+  margin-top:13px;
 }
 
 .lane {
-  display:grid;
-  grid-template-columns:115px minmax(0,1fr) 145px;
-  align-items:center;
-  gap:12px;
-  min-height:205px;
-  padding:18px;
-  position:relative;
-}
-
-.lane.blue {
-  background:linear-gradient(100deg,#123e61,#112033);
-}
-
-.lane.red {
-  background:linear-gradient(100deg,#541d2a,#291923);
-  border-top:4px solid #070b12;
-}
-
-.lane-name {
-  font-size:23px;
-  font-weight:1000;
-}
-
-.blue .lane-name {color:var(--blue)}
-.red .lane-name {color:var(--red)}
-
-.lane-state {
-  color:var(--muted);
-  font-size:11px;
-  margin-top:7px;
-}
-
-/* SUPRA GRANDES, SIN FONDO */
-
-.car-zone {
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
   min-width:0;
-  height:165px;
+  height:285px;
+  position:relative;
   overflow:hidden;
+  border:2px solid var(--blue);
+  border-radius:12px;
+  background:
+    radial-gradient(ellipse at center,#07508788,transparent 70%),
+    linear-gradient(140deg,#071b30,#030c1d);
+  box-shadow:0 0 17px #00baff66,inset 0 0 25px #049bff18;
 }
 
-.car-zone:before {
+.lane.redlane {
+  border-color:var(--red);
+  background:
+    radial-gradient(ellipse at center,#8c103c77,transparent 70%),
+    linear-gradient(140deg,#290719,#080b1b);
+  box-shadow:0 0 17px #ff315966,inset 0 0 25px #f6294b18;
+}
+
+.lane:before {
   content:"";
   position:absolute;
-  left:2%;
-  top:10%;
-  bottom:10%;
-  width:8px;
+  inset:0;
   background:repeating-linear-gradient(
-    to bottom,
-    white 0 9px,
-    #152030 9px 18px
+    130deg,transparent 0 53px,
+    #ffffff16 54px 57px,
+    transparent 58px 105px
   );
+  pointer-events:none;
 }
 
-.car-photo {
-  display:block;
+.lane h2 {
+  position:absolute;
+  top:13px;
+  left:14px;
+  margin:0;
+  color:#3ddcff;
+  font-size:clamp(15px,2vw,24px);
+  font-style:italic;
+  text-shadow:0 0 10px #00baff;
+}
+
+.redlane h2 {
+  color:#ff5774;
+  text-shadow:0 0 10px #ff3159;
+}
+
+.state {
+  position:absolute;
+  top:47px;
+  left:15px;
+  font-size:10px;
+  font-weight:bold;
+  color:#d7ecfa;
+}
+
+/* AUTOS CON PNG TRANSPARENTE */
+
+.car {
+  position:absolute;
+  top:25%;
+  left:0;
   width:100%;
-  max-width:420px;
-  max-height:155px;
-  height:auto;
+  height:53%;
   object-fit:contain;
-  filter:drop-shadow(0 10px 12px #0009);
+  filter:drop-shadow(0 14px 12px #000a);
   transition:transform .35s;
-  user-select:none;
 }
 
-.car-photo.go {
+.car.go {
   transform:translateX(15px);
 }
 
-.time {
-  text-align:right;
-  font-size:clamp(18px,3vw,29px);
-  font-weight:1000;
-  font-variant-numeric:tabular-nums;
-  white-space:nowrap;
-}
-
-.blue .time {color:var(--blue)}
-.red .time {color:var(--red)}
-
 .timing {
-  text-align:right;
-}
-
-.timing small {
-  font-size:10px;
-}
-
-.result-state {
-  font-size:10px;
-  color:var(--muted);
-  margin-top:8px;
-}
-
-.signal {
+  position:absolute;
+  bottom:23px;
+  width:100%;
   text-align:center;
 }
 
-.signal-row {
-  margin:16px 0;
+.time {
+  font-size:clamp(22px,3vw,34px);
+  font-weight:1000;
+  font-style:italic;
+  color:#aee8ff;
+  text-shadow:0 0 13px #008aff;
 }
 
-.signal-title {
-  text-align:left;
-  color:var(--muted);
-  font-size:11px;
-  margin-bottom:8px;
-  font-weight:800;
+.redlane .time {
+  color:#ffb1c3;
+  text-shadow:0 0 13px #ff264c;
 }
 
-.leds {
+.result {
+  color:#d2e2f0;
+  font-size:10px;
+}
+
+/* SEMÁFORO */
+
+.signal {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+}
+
+.ledlabel {
+  font-size:10px;
+  color:#a4bace;
+  margin:12px 0 6px;
+}
+
+.ledrow {
   display:grid;
-  grid-template-columns:repeat(8,minmax(0,1fr));
-  gap:5px;
+  grid-template-columns:repeat(8,1fr);
+  gap:4px;
+  width:100%;
 }
 
 .led {
   aspect-ratio:1;
-  background:#303b48;
-  border:1px solid #53657a;
-  border-radius:6px;
+  border-radius:50%;
+  border:2px solid #51617a;
+  background:#273443;
+  box-shadow:inset 0 0 5px #000;
 }
 
-.led.on-red {
-  background:#ff334e;
-  border-color:#ff8695;
-  box-shadow:0 0 11px #ff334e88;
+.led.red {
+  background:radial-gradient(circle at 35% 28%,#fff,#ff314e 40%,#b90023 85%);
+  border-color:#ff718a;
+  box-shadow:0 0 10px #ff3159aa;
 }
 
-.led.on-green {
-  background:#31e98f;
-  border-color:#a2ffce;
-  box-shadow:0 0 11px #31e98f88;
+.led.green {
+  background:radial-gradient(circle at 35% 28%,#fff,#3dfca5 40%,#00865d 85%);
+  border-color:#9bffd4;
+  box-shadow:0 0 10px #31f09baa;
 }
 
-.countdown {
-  font-size:57px;
+.count {
+  font-size:65px;
   font-weight:1000;
-}
-
-#statusMessage {
-  background:#233349;
-  border-radius:9px;
-  padding:14px;
+  font-style:italic;
+  color:#ff5a73;
+  text-shadow:0 0 22px #ff3159;
   margin-top:15px;
-  font-weight:bold;
 }
 
-.p2-row {
+.signaltext {
+  font-size:12px;
+  font-weight:900;
+}
+
+/* CONTROLES */
+
+.below {
+  display:grid;
+  grid-template-columns:1fr 1.1fr .9fr;
+  gap:11px;
+  margin-top:11px;
+}
+
+.actions {
   display:flex;
-  gap:18px;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.actions .btn {
+  flex:1;
+}
+
+.detail {
+  font-size:11px;
+  color:var(--dim);
+  margin-top:12px;
+}
+
+.status {
+  color:#b5d1e8;
+  margin-top:12px;
+  font-size:12px;
+}
+
+.winner {
+  text-align:center;
+  font-size:clamp(20px,3vw,29px);
+  font-weight:1000;
+  padding-top:10px;
+}
+
+.winTime {
+  text-align:center;
+  color:var(--green);
+  font-size:14px;
+  font-weight:bold;
+  margin:10px 0;
+}
+
+.winNote {
+  text-align:center;
+  color:var(--dim);
+  font-size:11px;
+}
+
+.p2row {
+  display:flex;
   align-items:center;
+  gap:12px;
   flex-wrap:wrap;
 }
 
-input[type=color] {
-  width:90px;
+#colorLibre {
+  width:60px;
   height:50px;
-  cursor:pointer;
+  border:0;
+  background:transparent;
 }
 
-input[type=range] {
-  width:175px;
+#brightness {
+  width:125px;
+  accent-color:#00c7ff;
 }
 
-#p2Preview {
-  width:100px;
-  height:42px;
+.preview {
+  width:75px;
+  height:32px;
   background:blue;
-  border-radius:9px;
-  box-shadow:0 0 20px #0000ff77;
+  border-radius:6px;
+  box-shadow:0 0 15px #0000ff88;
 }
 
 .presets {
   display:flex;
-  gap:9px;
   flex-wrap:wrap;
-  margin-top:16px;
+  gap:5px;
+  margin-top:12px;
 }
 
-.records {
+.presets button {
+  padding:8px;
+  border:1px solid #405d7d;
+  border-radius:6px;
+  background:#102640;
+  font-size:10px;
+}
+
+/* HISTORIAL */
+
+.historygrid {
   display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
+  grid-template-columns:1.5fr 1fr;
+  gap:11px;
+  margin-top:11px;
 }
 
-.record {
-  padding:14px;
+.headrow {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.headrow h2 {
+  margin:0;
+}
+
+.recgrid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+}
+
+.rec {
+  padding:12px 5px;
+  text-align:center;
+  border:1px solid #405b79;
   border-radius:10px;
-  background:#101c2b;
-  border:1px solid var(--border);
+  background:#04101e;
+  min-width:0;
 }
 
-.record:nth-child(1) {border-top:3px solid var(--blue)}
-.record:nth-child(2) {border-top:3px solid var(--red)}
-.record:nth-child(3) {border-top:3px solid #ffcd66}
+.rec:nth-child(1) {border-color:var(--blue)}
+.rec:nth-child(2) {border-color:var(--red)}
+.rec:nth-child(3) {border-color:#eab94f}
 
-.record-value {
-  font-size:25px;
-  font-weight:1000;
-  margin-top:7px;
+.rec label {
+  display:block;
+  font-size:9px;
+  font-weight:bold;
 }
 
-#log {
-  max-height:200px;
+.rec strong {
+  display:block;
+  font-size:clamp(15px,2vw,25px);
+  margin-top:8px;
+}
+
+.rec:nth-child(1) strong {color:#59cfff}
+.rec:nth-child(2) strong {color:#ff7f9b}
+.rec:nth-child(3) strong {color:#ffd988}
+
+.tablewrap {
   overflow:auto;
-  font-size:12px;
-}
-
-.entry {
-  padding:8px 0;
-  border-bottom:1px solid var(--border);
-}
-
-.table-wrap {
-  overflow:auto;
-  max-height:400px;
-  margin-top:16px;
+  margin-top:12px;
+  max-height:350px;
 }
 
 table {
   border-collapse:collapse;
   width:100%;
-  min-width:590px;
-  font-size:12px;
+  min-width:560px;
+  font-size:11px;
 }
 
-th,td {
-  padding:11px;
-  border-bottom:1px solid var(--border);
+td,th {
+  border:1px solid #29445d;
+  padding:9px;
   text-align:left;
 }
 
-th {color:var(--muted)}
+th {background:#12253b}
+td {background:#09192c}
 
-#lastTimes {
-  margin-top:12px;
-  color:var(--muted);
-  font-weight:bold;
+#aviso {
+  color:#ffd38e;
+  font-size:12px;
+  margin-top:8px;
 }
 
-@media(max-width:700px) {
-  .grid {grid-template-columns:1fr}
-
-  .lane {
-    grid-template-columns:72px minmax(0,1fr) 86px;
-    padding:10px;
-    gap:5px;
-    min-height:140px;
-  }
-
-  .lane-name {font-size:16px}
-  .lane-state {font-size:9px}
-
-  .car-zone {height:105px}
-
-  .car-photo {
-    max-height:100px;
-  }
-
-  .time {font-size:16px}
-  .timing small {font-size:8px}
-
-  .records {gap:6px}
-  .record {padding:9px}
-  .record-value {font-size:18px}
+@media(max-width:850px) {
+  .top {grid-template-columns:1fr 1fr}
+  .signal {grid-column:1/-1;grid-row:2}
+  .signal .ledrow {max-width:310px}
+  .below {grid-template-columns:1fr 1fr}
+  .below .p2 {grid-column:1/-1}
+  .historygrid {grid-template-columns:1fr}
 }
 
-@media(max-width:390px) {
-  .lane {
-    grid-template-columns:60px minmax(0,1fr) 73px;
-  }
-
-  .lane-name {font-size:13px}
-  .time {font-size:14px}
-  .car-zone {height:90px}
+@media(max-width:530px) {
+  .app {padding:8px}
+  .logo {font-size:30px}
+  .subtitle {font-size:8px}
+  .btbar {width:100%;justify-content:space-between}
+  .btstatus {font-size:10px;padding:9px}
+  .btbar .btn {font-size:10px;padding:10px}
+  .top {gap:7px}
+  .lane {height:205px}
+  .lane h2 {font-size:13px;left:7px;top:9px}
+  .state {font-size:8px;left:7px;top:30px}
+  .car {top:26%;height:48%;width:112%;left:-6%}
+  .timing {bottom:18px}
+  .time {font-size:20px}
+  .panel {padding:11px}
+  .below {grid-template-columns:1fr}
+  .below .p2 {grid-column:auto}
+  .actions .btn {font-size:11px;padding:12px 8px}
+  .rec {padding:9px 3px}
+  .rec label {font-size:8px}
+  .rec strong {font-size:16px}
 }
 </style>
 </head>
 
 <body>
-<main>
+<div class="app">
 
 <header>
   <div>
-    <div class="brand">RC RACING SYSTEM</div>
-    <h1>DRIFT MASTERS</h1>
-    <small>DUAL LANE · RACE CONTROL CENTER</small>
+    <div class="logo">DRIFT <span>MASTERS</span></div>
+    <div class="subtitle">DUAL LANE · RACE CONTROL CENTER</div>
   </div>
-
-  <div class="connection">
-    <div id="btText">MICRO:BIT DESCONECTADA</div>
-    <button id="connectBtn">CONECTAR BLUETOOTH</button>
+  <div class="btbar">
+    <div class="btstatus">
+      <span id="btDot" class="dot"></span>
+      <span id="btText">MICRO:BIT DESCONECTADA</span>
+    </div>
+    <button id="connectBtn" class="btn primary">
+      CONECTAR BLUETOOTH
+    </button>
   </div>
 </header>
 
 <div id="aviso"></div>
 
-<section class="panel">
-  <h2>01 / PISTA EN VIVO</h2>
+<section class="top">
 
-  <p id="trackStatus" class="muted">
-    Esperando largada
-  </p>
-
-  <div class="track">
-
-    <!-- CARRIL AZUL -->
-    <div class="lane blue" id="blueLane">
-
-      <div>
-        <div class="lane-name">AZUL</div>
-        <div class="lane-state" id="blueState">
-          LISTO PARA SALIR
-        </div>
-      </div>
-
-      <div class="car-zone">
-        <img
-          id="blueCar"
-          class="car-photo"
-          src="drift_supra_azul.png"
-          alt="Toyota Supra azul"
-        >
-      </div>
-
-      <div class="timing">
-        <small>TIEMPO OFICIAL</small>
-        <div class="time" id="blueTime">--.- s</div>
-        <div class="result-state" id="blueResult">
-          Sin registro
-        </div>
-      </div>
-
-    </div>
-
-    <!-- CARRIL ROJO -->
-    <div class="lane red" id="redLane">
-
-      <div>
-        <div class="lane-name">ROJO</div>
-        <div class="lane-state" id="redState">
-          LISTO PARA SALIR
-        </div>
-      </div>
-
-      <div class="car-zone">
-        <img
-          id="redCar"
-          class="car-photo"
-          src="drift_supra_rojo.png"
-          alt="Toyota Supra rojo"
-        >
-      </div>
-
-      <div class="timing">
-        <small>TIEMPO OFICIAL</small>
-        <div class="time" id="redTime">--.- s</div>
-        <div class="result-state" id="redResult">
-          Sin registro
-        </div>
-      </div>
-
+  <div class="lane" id="blueLane">
+    <h2>CARRIL AZUL · 01</h2>
+    <div id="blueState" class="state">LISTO PARA SALIR</div>
+    <img id="blueCar" class="car"
+         src="drift_supra_azul.png"
+         alt="Supra azul">
+    <div class="timing">
+      <div id="blueTime" class="time">--.- s</div>
+      <div id="blueResult" class="result">Sin registro</div>
     </div>
   </div>
+
+  <section class="signal panel">
+    <h2>SEMÁFORO · 16 LED</h2>
+    <div class="ledlabel">CARRIL AZUL (1–8)</div>
+    <div class="ledrow" id="signalBlue"></div>
+    <div class="ledlabel">CARRIL ROJO (9–16)</div>
+    <div class="ledrow" id="signalRed"></div>
+    <div id="countdown" class="count">—</div>
+    <div id="signalMessage" class="signaltext">
+      ESPERANDO LARGADA
+    </div>
+  </section>
+
+  <div class="lane redlane" id="redLane">
+    <h2>CARRIL ROJO · 02</h2>
+    <div id="redState" class="state">LISTO PARA SALIR</div>
+    <img id="redCar" class="car"
+         src="drift_supra_rojo.png"
+         alt="Supra rojo">
+    <div class="timing">
+      <div id="redTime" class="time">--.- s</div>
+      <div id="redResult" class="result">Sin registro</div>
+    </div>
+  </div>
+
 </section>
 
-<div class="grid">
+<section class="below">
 
-  <section class="panel">
-    <h2>02 / CONTROL DE CARRERA</h2>
-
-    <div class="buttons">
-      <button id="dualBtn" class="primary" disabled>
+  <div class="panel">
+    <h2>CONTROL DE CARRERA</h2>
+    <div class="actions">
+      <button id="dualBtn" class="btn primary" disabled>
         DOS AUTOS
       </button>
-
-      <button id="soloBtn" class="danger" disabled>
+      <button id="soloBtn" class="btn red" disabled>
         SOLO AZUL
       </button>
-
-      <button id="resetBtn" disabled>
+      <button id="resetBtn" class="btn" disabled>
         REINICIAR
       </button>
     </div>
-
-    <p id="statusMessage">Sistema preparado</p>
-
-    <small>
-      Sensores P14 azul · P15 rojo
-    </small>
-  </section>
-
-  <section class="panel signal">
-    <h2>03 / SEMÁFORO · 16 LED</h2>
-
-    <div class="signal-row">
-      <div class="signal-title">CARRIL AZUL · LED 1–8</div>
-      <div id="signalBlue" class="leds"></div>
+    <p class="detail">Sensores P14 azul · P15 rojo</p>
+    <div id="statusMessage" class="status">
+      Esperando conexión
     </div>
-
-    <div class="signal-row">
-      <div class="signal-title">CARRIL ROJO · LED 9–16</div>
-      <div id="signalRed" class="leds"></div>
-    </div>
-
-    <div id="countdown" class="countdown">—</div>
-    <small id="signalMessage">Sistema preparado</small>
-  </section>
-
-</div>
-
-<section class="panel">
-  <h2>04 / ILUMINACIÓN NEOPIXEL P2</h2>
-
-  <p class="muted">
-    Color y brillo de los 8 LED desde el celular.
-  </p>
-
-  <div class="p2-row">
-    <input
-      id="colorLibre"
-      type="color"
-      value="#0000ff"
-      disabled
-    >
-
-    <label>
-      Brillo
-      <b id="brightnessText">100%</b>
-      <br>
-      <input
-        id="brightness"
-        type="range"
-        min="0"
-        max="100"
-        value="100"
-        disabled
-      >
-    </label>
-
-    <div id="p2Preview"></div>
-    <b id="p2Hex">#0000FF</b>
   </div>
 
-  <div class="presets">
-    <button data-rgb="0,0,255" disabled>Azul</button>
-    <button data-rgb="255,0,0" disabled>Rojo</button>
-    <button data-rgb="0,255,0" disabled>Verde</button>
-    <button data-rgb="255,110,20" disabled>Cálido</button>
-    <button data-rgb="160,0,255" disabled>Violeta</button>
-    <button data-rgb="255,255,255" disabled>Blanco</button>
-    <button data-rgb="0,0,0" disabled>Apagar</button>
-  </div>
-
-  <p id="p2Feedback" class="muted">
-    Conectá la micro:bit
-  </p>
-</section>
-
-<div class="grid">
-
-  <section class="panel">
-    <h2>05 / ÚLTIMO RESULTADO</h2>
-
-    <div
-      id="winner"
-      style="font-size:28px;font-weight:1000"
-    >
-      A LA ESPERA
+  <div class="panel p2">
+    <h2>ILUMINACIÓN NEOPIXEL P2</h2>
+    <div class="p2row">
+      <input id="colorLibre" type="color"
+             value="#0000ff" disabled>
+      <label>
+        BRILLO <b id="brightnessText">100%</b>
+        <br>
+        <input id="brightness" type="range"
+               min="0" max="100" value="100" disabled>
+      </label>
+      <div id="p2Preview" class="preview"></div>
+      <b id="p2Hex">#0000FF</b>
     </div>
 
-    <div
-      id="winnerTime"
-      style="color:var(--green);margin-top:8px"
-    >
+    <div class="presets">
+      <button data-rgb="0,0,255" disabled>Azul</button>
+      <button data-rgb="255,0,0" disabled>Rojo</button>
+      <button data-rgb="0,255,0" disabled>Verde</button>
+      <button data-rgb="255,110,20" disabled>Cálido</button>
+      <button data-rgb="160,0,255" disabled>Violeta</button>
+      <button data-rgb="255,255,255" disabled>Blanco</button>
+      <button data-rgb="0,0,0" disabled>Apagar</button>
+    </div>
+    <p id="p2Feedback" class="detail">
+      Conectá la micro:bit
+    </p>
+  </div>
+
+  <div class="panel">
+    <h2>ÚLTIMO RESULTADO</h2>
+    <div id="winner" class="winner">A LA ESPERA</div>
+    <div id="winnerTime" class="winTime">
       Sin tiempo oficial
     </div>
-
-    <p id="resultNote" class="muted">
+    <p id="resultNote" class="winNote">
       Esperando carrera
     </p>
-  </section>
+  </div>
 
-  <section class="panel">
-    <h2>06 / REGISTRO DE EVENTOS</h2>
-    <div id="log"></div>
-  </section>
+</section>
+
+<section class="historygrid">
+
+  <div class="panel">
+    <div class="headrow">
+      <h2>HISTORIAL DE CARRERAS</h2>
+      <div class="actions">
+        <button id="exportCsv" class="btn green">
+          EXPORTAR CSV
+        </button>
+        <button id="clearHistory" class="btn red">
+          BORRAR HISTORIAL
+        </button>
+      </div>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>FECHA</th>
+            <th>MODO</th>
+            <th>GANADOR</th>
+            <th>AZUL</th>
+            <th>ROJO</th>
+            <th>DIFERENCIA</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+    <p id="storageNote" class="detail"></p>
+  </div>
+
+  <div class="panel">
+    <h2>RÉCORDS DE PISTA</h2>
+    <div class="recgrid">
+      <div class="rec">
+        <label>RÉCORD AZUL</label>
+        <strong id="recordBlue">—</strong>
+      </div>
+      <div class="rec">
+        <label>RÉCORD ROJO</label>
+        <strong id="recordRed">—</strong>
+      </div>
+      <div class="rec">
+        <label>RÉCORD ABSOLUTO</label>
+        <strong id="recordTrack">—</strong>
+      </div>
+    </div>
+  </div>
+
+</section>
 
 </div>
 
-<section class="panel">
-  <h2>07 / RÉCORDS DE PISTA</h2>
-
-  <div class="records">
-    <div class="record">
-      <small>RÉCORD AZUL</small>
-      <div id="recordBlue" class="record-value">—</div>
-    </div>
-
-    <div class="record">
-      <small>RÉCORD ROJO</small>
-      <div id="recordRed" class="record-value">—</div>
-    </div>
-
-    <div class="record">
-      <small>RÉCORD ABSOLUTO</small>
-      <div id="recordTrack" class="record-value">—</div>
-    </div>
-  </div>
-
-  <div id="lastTimes">
-    AZUL: — · ROJO: — · DIFERENCIA: —
-  </div>
-</section>
-
-<section class="panel">
-  <h2>08 / HISTORIAL DE CARRERAS</h2>
-
-  <div class="buttons">
-    <button id="exportCsv">EXPORTAR CSV</button>
-    <button id="clearHistory" class="danger">
-      BORRAR HISTORIAL
-    </button>
-  </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>FECHA</th>
-          <th>MODO</th>
-          <th>GANADOR</th>
-          <th>AZUL</th>
-          <th>ROJO</th>
-          <th>DIFERENCIA</th>
-        </tr>
-      </thead>
-      <tbody id="historyBody"></tbody>
-    </table>
-  </div>
-
-  <p id="storageNote" class="muted">
-    El historial se guarda en este navegador.
-  </p>
-</section>
-
-</main>
-
 <script>
-// ============================================
-// BLUETOOTH MICRO:BIT UART
-// ============================================
+// BLUETOOTH UART MICRO:BIT
 
-// Servicio Nordic UART
 const SERVICE =
   "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-
-// Chrome escribe en 003
 const WRITE_UUID =
   "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
-
-// Chrome recibe por 002
 const NOTIFY_UUID =
   "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
@@ -710,127 +716,85 @@ let device = null;
 let writer = null;
 let notifier = null;
 let buffer = "";
-
-let conectado = false;
+let connected = false;
 let solo = false;
-let ganadorAnunciado = "";
-
-let resultadoGuardado = false;
-let conservarResultado = false;
+let winnerFirst = "";
+let raceSaved = false;
+let keepResult = false;
+let audio = null;
+let p2Timer = null;
 
 const STORAGE_KEY = "driftMastersHistoryV1";
-let historial = [];
+let history = [];
 
-// ============================================
-// SONIDOS DEL CELULAR
-// ============================================
+// SONIDOS
 
-let audioCtx = null;
-
-function activarAudio() {
+function audioOn() {
   try {
-    if (!audioCtx) {
-      audioCtx = new (
+    if (!audio) {
+      audio = new (
         window.AudioContext ||
         window.webkitAudioContext
       )();
     }
+    if (audio.state === "suspended") audio.resume();
+  } catch(e) {}
+}
 
-    if (audioCtx.state === "suspended") {
-      audioCtx.resume();
-    }
-  } catch (e) {
-    console.warn("Audio no disponible",e);
+function beep(f,d,delay=0) {
+  if (!audio) return;
+  const t = audio.currentTime + delay;
+  const o = audio.createOscillator();
+  const g = audio.createGain();
+
+  o.type = "square";
+  o.frequency.setValueAtTime(f,t);
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(.065,t+.008);
+  g.gain.exponentialRampToValueAtTime(.0001,t+d);
+
+  o.connect(g);
+  g.connect(audio.destination);
+  o.start(t);
+  o.stop(t+d+.02);
+}
+
+function sfx(s) {
+  if (s === "COUNT") beep(880,.1);
+  if (s === "GO") {
+    beep(300,.1);
+    beep(300,.1,.15);
+    beep(1568,.4,.3);
+  }
+  if (s === "FALSE") {
+    for (let i=0;i<8;i++) beep(500-i*50,.08,i*.09);
+  }
+  if (s === "WIN") {
+    beep(784,.12);
+    beep(988,.13,.15);
+    beep(1175,.25,.32);
   }
 }
 
-function beep(frecuencia,duracion,retardo=0) {
-  if (!audioCtx) return;
+// ESTADO
 
-  const t = audioCtx.currentTime + retardo;
-
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-
-  osc.type = "square";
-  osc.frequency.setValueAtTime(frecuencia,t);
-
-  gain.gain.setValueAtTime(0.0001,t);
-  gain.gain.exponentialRampToValueAtTime(0.08,t+0.008);
-  gain.gain.exponentialRampToValueAtTime(
-    0.0001,
-    t+duracion
-  );
-
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  osc.start(t);
-  osc.stop(t+duracion+0.02);
+function status(t) {
+  $("statusMessage").textContent = t;
 }
 
-function reproducirSonido(tipo) {
-  if (tipo === "COUNT") {
-    beep(880,0.11);
-  }
-
-  if (tipo === "GO") {
-    beep(300,0.10);
-    beep(300,0.10,0.16);
-    beep(1568,0.46,0.34);
-  }
-
-  if (tipo === "FALSE") {
-    for (let i=0;i<8;i++) {
-      beep(500-i*50,0.09,i*0.10);
-    }
-  }
-
-  if (tipo === "WIN") {
-    beep(784,0.13);
-    beep(988,0.14,0.16);
-    beep(1175,0.28,0.34);
-  }
-}
-
-// ============================================
-// REGISTRO DE EVENTOS
-// ============================================
-
-function logEvent(tipo,mensaje) {
-  const div = document.createElement("div");
-  div.className = "entry";
-
-  div.textContent =
-    new Date().toLocaleTimeString("es-AR") +
-    " · " + tipo + " · " + mensaje;
-
-  $("log").prepend(div);
-
-  while ($("log").children.length > 45) {
-    $("log").lastChild.remove();
-  }
-}
-
-function status(mensaje) {
-  $("statusMessage").textContent = mensaje;
-}
-
-function setConnected(ok) {
-  conectado = ok;
-
+function setConnection(ok) {
+  connected = ok;
   $("btText").textContent = ok
     ? "MICRO:BIT CONECTADA"
     : "MICRO:BIT DESCONECTADA";
 
+  $("btDot").classList.toggle("on",ok);
   $("connectBtn").textContent = ok
     ? "DESCONECTAR"
     : "CONECTAR BLUETOOTH";
 
-  [
-    "dualBtn","soloBtn","resetBtn",
-    "colorLibre","brightness"
-  ].forEach(id => {
+  ["dualBtn","soloBtn","resetBtn",
+   "colorLibre","brightness"].forEach(id => {
     $(id).disabled = !ok;
   });
 
@@ -840,515 +804,367 @@ function setConnected(ok) {
   if (!ok) status("Micro:bit desconectada");
 }
 
-// ============================================
-// SEMÁFORO VIRTUAL 16 LED
-// ============================================
+// SEMÁFORO
 
-function crearSemaforo() {
-  for (const id of ["signalBlue","signalRed"]) {
-    const fila = $(id);
-
-    for (let i=0;i<8;i++) {
-      const led = document.createElement("span");
-      led.className = "led";
-      fila.appendChild(led);
-    }
+for (const id of ["signalBlue","signalRed"]) {
+  for (let i=0;i<8;i++) {
+    const led = document.createElement("span");
+    led.className = "led";
+    $(id).appendChild(led);
   }
 }
 
-function setSignal(n,modo="red") {
+function setSignal(n,mode="red") {
   for (const id of ["signalBlue","signalRed"]) {
-    const fila = $(id);
-
     for (let i=0;i<8;i++) {
-      const led = fila.children[i];
-
-      led.className = "led";
-
-      if (modo === "green") {
-        led.classList.add("on-green");
-      } else if (modo === "red" && i<n) {
-        led.classList.add("on-red");
-      }
+      $(id).children[i].className =
+        "led" + (
+          mode === "green" ? " green" :
+          mode === "red" && i<n ? " red" : ""
+        );
     }
   }
 }
-
-// ============================================
-// INTERFAZ
-// ============================================
 
 function resetDisplay() {
   setSignal(0,"off");
-
   $("countdown").textContent = "—";
-  $("signalMessage").textContent = "Sistema preparado";
-  $("trackStatus").textContent = "Esperando largada";
-
+  $("signalMessage").textContent = "ESPERANDO LARGADA";
   $("blueState").textContent = "LISTO PARA SALIR";
   $("redState").textContent = "LISTO PARA SALIR";
-
   $("blueTime").textContent = "--.- s";
   $("redTime").textContent = "--.- s";
-
   $("blueResult").textContent = "Sin registro";
   $("redResult").textContent = "Sin registro";
-
   $("winner").textContent = "A LA ESPERA";
   $("winnerTime").textContent = "Sin tiempo oficial";
   $("resultNote").textContent = "Esperando carrera";
-
   $("blueCar").classList.remove("go");
   $("redCar").classList.remove("go");
-
   $("redLane").style.opacity = "1";
 }
 
-function empezarCarrera(esSolo) {
-  solo = esSolo;
-  ganadorAnunciado = "";
-
-  resultadoGuardado = false;
-  conservarResultado = false;
-
+function startRace(isSolo) {
+  solo = isSolo;
+  winnerFirst = "";
+  raceSaved = false;
+  keepResult = false;
   resetDisplay();
 
   if (solo) {
     $("winner").textContent = "CONTRARRELOJ";
-    $("redLane").style.opacity = ".35";
+    $("redLane").style.opacity = ".38";
   } else {
     $("winner").textContent = "DOS AUTOS";
   }
 }
 
-// ============================================
-// RÉCORDS E HISTORIAL
-// ============================================
+// HISTORIAL
 
-function convertirTiempo(valor) {
-  if (!valor || valor === "-") return null;
-
-  const n = parseFloat(
-    String(valor).replace(",",".")
-  );
-
+function parseTime(t) {
+  if (!t || String(t).trim() === "-") return null;
+  const n = parseFloat(String(t).replace(",","."));
   return Number.isFinite(n) && n>=0 ? n : null;
 }
 
-function tiempoTexto(t) {
+function fmt(t) {
   return t === null ? "—" : t.toFixed(1)+" s";
 }
 
-function cargarHistorial() {
+function loadHistory() {
   try {
-    const datos = JSON.parse(
+    const a = JSON.parse(
       localStorage.getItem(STORAGE_KEY) || "[]"
     );
-
-    historial = Array.isArray(datos) ? datos : [];
+    history = Array.isArray(a) ? a : [];
   } catch(e) {
-    historial = [];
+    history = [];
   }
 }
 
-function guardarHistorial() {
+function saveHistory() {
   try {
     localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(historial)
+      STORAGE_KEY,JSON.stringify(history)
     );
-
     $("storageNote").textContent =
-      historial.length+" carreras guardadas.";
+      history.length+" carreras guardadas";
   } catch(e) {
     $("storageNote").textContent =
-      "Error guardando historial: "+e.message;
+      "Error al guardar: "+e.message;
   }
 }
 
-function renderHistorial() {
-  const tbody = $("historyBody");
-  tbody.replaceChildren();
+function renderHistory() {
+  const body = $("historyBody");
+  body.replaceChildren();
 
-  if (!historial.length) {
+  if (!history.length) {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
-
-    td.colSpan = 6;
-    td.textContent = "Todavía no hay carreras.";
-
+    td.colSpan = 7;
+    td.textContent = "Todavía no hay carreras";
     tr.appendChild(td);
-    tbody.appendChild(tr);
+    body.appendChild(tr);
   }
 
-  for (const x of historial.slice().reverse()) {
+  history.slice().reverse().forEach((x,i) => {
     const tr = document.createElement("tr");
-
     const valores = [
+      String(history.length-i).padStart(3,"0"),
       new Date(x.fecha).toLocaleString("es-AR"),
       x.modo,
       x.ganador,
-      tiempoTexto(x.azul),
-      tiempoTexto(x.rojo),
-      tiempoTexto(x.diferencia)
+      fmt(x.azul),
+      fmt(x.rojo),
+      fmt(x.diferencia)
     ];
 
-    for (const valor of valores) {
+    valores.forEach(v => {
       const td = document.createElement("td");
-      td.textContent = valor;
+      td.textContent = v;
       tr.appendChild(td);
-    }
+    });
 
-    tbody.appendChild(tr);
-  }
-
-  let mejorAzul = null;
-  let mejorRojo = null;
-
-  for (const x of historial) {
-    if (Number.isFinite(x.azul)) {
-      mejorAzul = mejorAzul === null
-        ? x.azul
-        : Math.min(mejorAzul,x.azul);
-    }
-
-    if (Number.isFinite(x.rojo)) {
-      mejorRojo = mejorRojo === null
-        ? x.rojo
-        : Math.min(mejorRojo,x.rojo);
-    }
-  }
-
-  const validos = [mejorAzul,mejorRojo]
-    .filter(x => x !== null);
-
-  $("recordBlue").textContent = tiempoTexto(mejorAzul);
-  $("recordRed").textContent = tiempoTexto(mejorRojo);
-
-  $("recordTrack").textContent = tiempoTexto(
-    validos.length ? Math.min(...validos) : null
-  );
-}
-
-function registrarCarrera(modo,ganador,azul,rojo) {
-  if (resultadoGuardado) return;
-
-  resultadoGuardado = true;
-  conservarResultado = true;
-
-  historial.push({
-    fecha:new Date().toISOString(),
-    modo:modo,
-    ganador:ganador,
-    azul:azul,
-    rojo:rojo,
-    diferencia:azul !== null && rojo !== null
-      ? Math.abs(azul-rojo)
-      : null
+    body.appendChild(tr);
   });
 
-  guardarHistorial();
-  renderHistorial();
+  let bestB = null;
+  let bestR = null;
 
-  $("lastTimes").textContent =
-    "AZUL: "+tiempoTexto(azul)+
-    " · ROJO: "+tiempoTexto(rojo)+
-    " · DIFERENCIA: "+tiempoTexto(
-      azul !== null && rojo !== null
-        ? Math.abs(azul-rojo)
-        : null
-    );
+  history.forEach(x => {
+    if (Number.isFinite(x.azul)) {
+      bestB = bestB === null
+        ? x.azul : Math.min(bestB,x.azul);
+    }
+    if (Number.isFinite(x.rojo)) {
+      bestR = bestR === null
+        ? x.rojo : Math.min(bestR,x.rojo);
+    }
+  });
+
+  $("recordBlue").textContent = fmt(bestB);
+  $("recordRed").textContent = fmt(bestR);
+
+  const vals = [bestB,bestR].filter(v => v!==null);
+  $("recordTrack").textContent =
+    fmt(vals.length ? Math.min(...vals) : null);
 }
 
-// ============================================
-// RESULTADOS DE CARRERA
-// ============================================
+function record(mode,w,b,r) {
+  if (raceSaved) return;
+  raceSaved = true;
+  keepResult = true;
 
-function procesarResultados(datos) {
-  const partes = datos.split(",");
-  if (partes.length !== 2) return;
+  history.push({
+    fecha:new Date().toISOString(),
+    modo:mode,
+    ganador:w,
+    azul:b,
+    rojo:r,
+    diferencia:b!==null && r!==null
+      ? Math.abs(b-r) : null
+  });
 
-  const azul = convertirTiempo(partes[0]);
-  const rojo = convertirTiempo(partes[1]);
+  saveHistory();
+  renderHistory();
+}
 
-  let ganador = ganadorAnunciado;
+// RESULTADOS
 
-  if (!ganador) {
-    if (azul !== null && rojo !== null) {
-      ganador = azul <= rojo ? "AZUL" : "ROJO";
-    } else if (azul !== null) {
-      ganador = "AZUL";
-    } else if (rojo !== null) {
-      ganador = "ROJO";
-    } else {
-      ganador = "SIN GANADOR";
-    }
-  }
+function results(payload) {
+  const parts = payload.split(",");
+  if (parts.length !== 2) return;
+
+  const b = parseTime(parts[0]);
+  const r = parseTime(parts[1]);
+
+  let w = winnerFirst || (
+    b!==null && r!==null
+      ? (b<=r ? "AZUL" : "ROJO")
+      : b!==null ? "AZUL"
+      : r!==null ? "ROJO"
+      : "SIN GANADOR"
+  );
+
+  if (b===null && r===null) w="SIN GANADOR";
 
   $("blueTime").textContent =
-    azul === null ? "SIN LLEGADA" : tiempoTexto(azul);
-
+    b===null ? "SIN LLEGADA" : fmt(b);
   $("redTime").textContent =
-    rojo === null ? "SIN LLEGADA" : tiempoTexto(rojo);
+    r===null ? "SIN LLEGADA" : fmt(r);
 
   $("blueResult").textContent =
-    azul === null ? "SIN LLEGADA"
-    : ganador === "AZUL" ? "GANADOR" : "FINALIZÓ";
+    b===null ? "SIN LLEGADA"
+    : w==="AZUL" ? "GANADOR" : "FINALIZÓ";
 
   $("redResult").textContent =
-    rojo === null ? "SIN LLEGADA"
-    : ganador === "ROJO" ? "GANADOR" : "FINALIZÓ";
+    r===null ? "SIN LLEGADA"
+    : w==="ROJO" ? "GANADOR" : "FINALIZÓ";
 
   $("winner").textContent =
-    ganador === "SIN GANADOR"
-      ? "SIN GANADOR"
-      : "GANÓ "+ganador;
+    w==="SIN GANADOR" ? "SIN GANADOR" : "GANÓ "+w;
 
   $("winnerTime").textContent =
-    "AZUL: "+tiempoTexto(azul)+
-    " · ROJO: "+tiempoTexto(rojo);
+    "AZUL "+fmt(b)+" · ROJO "+fmt(r);
 
   $("resultNote").textContent =
-    azul !== null && rojo !== null
-      ? "Diferencia: "+tiempoTexto(Math.abs(azul-rojo))
-      : "Uno o ambos autos no completaron.";
+    b!==null && r!==null
+      ? "Diferencia: "+fmt(Math.abs(b-r))
+      : "Uno o ambos autos no completaron";
 
   $("countdown").textContent = "FIN";
-  $("trackStatus").textContent = "Carrera finalizada";
+  $("signalMessage").textContent = "CARRERA FINALIZADA";
 
-  if (ganador === "SIN GANADOR") {
-    setSignal(8,"red");
-  } else {
-    setSignal(8,"green");
-  }
+  setSignal(8,w==="SIN GANADOR" ? "red" : "green");
 
-  if (ganador === "AZUL") {
-    $("blueCar").classList.add("go");
-  }
+  if (w==="AZUL") $("blueCar").classList.add("go");
+  if (w==="ROJO") $("redCar").classList.add("go");
 
-  if (ganador === "ROJO") {
-    $("redCar").classList.add("go");
-  }
-
-  status("Resultados oficiales registrados");
-
-  registrarCarrera("DOS AUTOS",ganador,azul,rojo);
+  record("DOS AUTOS",w,b,r);
+  status("Resultados registrados");
 }
 
-// ============================================
-// MENSAJES DESDE MICRO:BIT
-// ============================================
+// MENSAJES DE MICRO:BIT
 
 function processMessage(raw) {
   const m = raw.trim();
+  const u = m.toUpperCase();
   if (!m) return;
 
-  logEvent("RX",m);
-
-  const u = m.toUpperCase();
-
   if (u.startsWith("SFX:")) {
-    reproducirSonido(u.substring(4));
+    sfx(u.substring(4));
     return;
   }
 
-  if (u === "REPOSO" || u === "CONECTADO") {
-    if (!conservarResultado) {
-      resetDisplay();
-    } else {
-      $("trackStatus").textContent =
-        "Lista para otra carrera";
-    }
-
+  if (u==="REPOSO" || u==="CONECTADO") {
+    if (!keepResult) resetDisplay();
     status("Sistema preparado");
     return;
   }
 
-  if (u === "POSICIONAR") {
-    $("trackStatus").textContent = "Posicionar autos";
-    status("Colocá los autos en los sensores");
+  if (u==="POSICIONAR") {
+    status("Posicioná los autos en los sensores");
     return;
   }
 
-  if (
-    u.startsWith("AZUL:") ||
-    u.startsWith("ROJO:")
-  ) {
-    const esAzul = u.startsWith("AZUL:");
-    const listo = u.endsWith(":OK");
-
-    $(esAzul ? "blueState" : "redState").textContent =
-      listo ? "POSICIONADO" : "FALTA AUTO";
-
+  if (u.startsWith("AZUL:") || u.startsWith("ROJO:")) {
+    const id = u.startsWith("AZUL:")
+      ? "blueState" : "redState";
+    $(id).textContent =
+      u.endsWith(":OK") ? "POSICIONADO" : "FALTA AUTO";
     return;
   }
 
-  if (u === "AUTOS LISTOS" || u === "AUTO LISTO") {
+  if (u==="AUTOS LISTOS" || u==="AUTO LISTO") {
     status(u);
     return;
   }
 
-  if (u === "CUENTA") {
+  if (u==="CUENTA") {
     setSignal(8,"red");
-    $("trackStatus").textContent = "Cuenta regresiva";
     return;
   }
 
-  const cuenta = u.match(/^COUNT:(\d+)$/);
-
-  if (cuenta) {
-    const n = Number(cuenta[1]);
-
+  const c = u.match(/^COUNT:(\d+)$/);
+  if (c) {
+    const n = Number(c[1]);
     $("countdown").textContent = n;
-
     $("signalMessage").textContent =
       n<=3 ? "¡ATENCIÓN!" : "PREPARADOS";
-
-    $("trackStatus").textContent =
-      "Largada en "+n;
-
     setSignal(n,"red");
     return;
   }
 
-  if (u === "GO") {
+  if (u==="GO") {
     $("countdown").textContent = "GO!";
     $("signalMessage").textContent = "¡LARGADA!";
-    $("trackStatus").textContent = "Carrera en curso";
-
     $("blueState").textContent = "EN CARRERA";
-
-    if (!solo) {
-      $("redState").textContent = "EN CARRERA";
-    }
-
+    if (!solo) $("redState").textContent = "EN CARRERA";
     setSignal(8,"green");
     status("¡Largada confirmada!");
     return;
   }
 
   if (u.startsWith("SALIDA FALSA:")) {
-    const carril = m.substring("SALIDA FALSA:".length);
-
     $("countdown").textContent = "FALSA";
-    $("signalMessage").textContent = "SALIDA FALSA";
-
+    $("signalMessage").textContent = "SALIDA ANULADA";
     $("winner").textContent = "SALIDA FALSA";
-    $("winnerTime").textContent = "AUTO "+carril;
-
-    $("trackStatus").textContent = "Salida anulada";
-
-    $("resultNote").textContent =
-      "La salida falsa no cuenta para los récords.";
-
+    $("winnerTime").textContent =
+      "AUTO "+m.substring("SALIDA FALSA:".length);
+    $("resultNote").textContent = "No cuenta para récords";
     setSignal(8,"red");
-    status("Salida falsa: "+carril);
-
-    conservarResultado = true;
+    status("Salida falsa");
+    keepResult = true;
     return;
   }
 
   if (u.startsWith("GANA:")) {
-    const match = m.match(
-      /^GANA:(Azul|Rojo)\s+(.+)$/i
-    );
+    const a = m.match(/^GANA:(Azul|Rojo)\s+(.+)$/i);
+    if (!a) return;
 
-    if (!match) return;
-
-    ganadorAnunciado = match[1].toUpperCase();
-    const t = match[2];
-
-    $("winner").textContent =
-      "GANÓ "+ganadorAnunciado;
-
-    $("winnerTime").textContent =
-      "Primer tiempo: "+t;
-
+    winnerFirst = a[1].toUpperCase();
+    $("winner").textContent = "GANÓ "+winnerFirst;
+    $("winnerTime").textContent = "Primer tiempo: "+a[2];
     $("resultNote").textContent =
-      "Esperando al segundo auto...";
+      "Esperando segundo auto...";
 
-    const esAzul = ganadorAnunciado === "AZUL";
-
-    $(esAzul ? "blueTime" : "redTime").textContent = t;
-
-    $(esAzul ? "blueResult" : "redResult").textContent =
-      "GANADOR";
-
-    $("trackStatus").textContent =
-      "Esperando segundo auto";
-
+    const id = winnerFirst==="AZUL" ? "blue" : "red";
+    $(id+"Time").textContent = a[2];
+    $(id+"Result").textContent = "GANADOR";
     return;
   }
 
   if (u.startsWith("RESULTADOS:")) {
-    procesarResultados(
-      m.substring("RESULTADOS:".length)
-    );
+    results(m.substring("RESULTADOS:".length));
     return;
   }
 
   if (u.startsWith("TIEMPO:")) {
     const t = m.substring(7);
-    const valor = convertirTiempo(t);
+    const b = parseTime(t);
 
     $("blueTime").textContent = t;
     $("blueResult").textContent = "TIEMPO REGISTRADO";
-
     $("winner").textContent = "TIEMPO AZUL";
     $("winnerTime").textContent = t;
-
-    $("resultNote").textContent =
-      "Carrera individual finalizada";
-
     $("countdown").textContent = "FIN";
-    $("trackStatus").textContent = "Contrarreloj finalizado";
-
+    $("signalMessage").textContent =
+      "CONTRARRELOJ FINALIZADO";
     setSignal(8,"green");
-
-    registrarCarrera("SOLO AZUL","AZUL",valor,null);
+    record("SOLO AZUL","AZUL",b,null);
     return;
   }
 
   if (u.startsWith("STATUS:")) {
-    const mensaje = m.substring(7);
-
-    status(mensaje);
-    $("trackStatus").textContent = mensaje;
+    status(m.substring(7));
     return;
   }
 
-  if (u === "BT:OK") {
-    status("Bluetooth activo");
-  }
+  if (u==="BT:OK") status("Bluetooth UART activo");
 }
 
-// ============================================
-// RECEPCIÓN BLUETOOTH
-// ============================================
+// RECEPCIÓN BLE
 
-function onNotify(e) {
+function notify(e) {
   buffer += new TextDecoder().decode(e.target.value);
-
-  const lineas = buffer.split(/\r?\n/);
-  buffer = lineas.pop() || "";
-
-  lineas.forEach(processMessage);
+  const lines = buffer.split(/\r?\n/);
+  buffer = lines.pop() || "";
+  lines.forEach(processMessage);
 }
 
-// ============================================
-// CONECTAR BLUETOOTH
-// ============================================
+// CONEXIÓN BLUETOOTH
 
-async function conectar() {
+async function connect() {
+  audioOn();
+
   if (!navigator.bluetooth) {
     $("aviso").textContent =
-      "Usá Chrome Android con HTTPS.";
+      "Abrí la página con Chrome Android y HTTPS";
     return;
   }
 
   try {
-    activarAudio();
-
     $("connectBtn").disabled = true;
     $("aviso").textContent = "";
 
@@ -1358,165 +1174,139 @@ async function conectar() {
     });
 
     device.addEventListener(
-      "gattserverdisconnected",
-      () => {
+      "gattserverdisconnected",() => {
         writer = null;
         notifier = null;
         buffer = "";
-
-        setConnected(false);
-        logEvent("BLE","Desconectado");
+        setConnection(false);
       }
     );
 
     const server = await device.gatt.connect();
-    const service = await server.getPrimaryService(SERVICE);
+    const svc = await server.getPrimaryService(SERVICE);
 
-    writer = await service.getCharacteristic(WRITE_UUID);
-    notifier = await service.getCharacteristic(NOTIFY_UUID);
+    writer = await svc.getCharacteristic(WRITE_UUID);
+    notifier = await svc.getCharacteristic(NOTIFY_UUID);
 
     await notifier.startNotifications();
-
     notifier.addEventListener(
-      "characteristicvaluechanged",
-      onNotify
+      "characteristicvaluechanged",notify
     );
 
-    setConnected(true);
-
+    setConnection(true);
     status("Bluetooth conectado");
 
-    logEvent(
-      "BLE",
-      "Conectado a "+(device.name || "micro:bit")
-    );
-
   } catch(e) {
-    $("aviso").textContent =
-      "No se pudo conectar: "+e.message;
-
-    logEvent("ERROR",e.message);
+    $("aviso").textContent = "Error Bluetooth: "+e.message;
 
     if (device && device.gatt.connected) {
       device.gatt.disconnect();
     }
+    setConnection(false);
 
-    setConnected(false);
   } finally {
     $("connectBtn").disabled = false;
   }
 }
 
-function desconectar() {
+function disconnect() {
   if (device && device.gatt.connected) {
     device.gatt.disconnect();
   } else {
-    setConnected(false);
+    setConnection(false);
   }
 }
 
-// ============================================
-// ENVIAR COMANDOS
-// ============================================
-
-async function send(cmd) {
+async function send(s) {
   if (!writer || !device || !device.gatt.connected) {
     status("Conectá primero la micro:bit");
     return;
   }
 
   try {
-    const data = new TextEncoder().encode(cmd+"\n");
+    const b = new TextEncoder().encode(s+"\n");
 
     if (writer.properties.write) {
-      await writer.writeValueWithResponse(data);
+      await writer.writeValueWithResponse(b);
     } else {
-      await writer.writeValueWithoutResponse(data);
+      await writer.writeValueWithoutResponse(b);
     }
 
-    logEvent("TX",cmd);
   } catch(e) {
     $("aviso").textContent =
-      "Error enviando comando: "+e.message;
+      "No se pudo enviar: "+e.message;
   }
 }
 
-// ============================================
 // BOTONES
-// ============================================
 
 $("connectBtn").onclick = () => {
   if (device && device.gatt.connected) {
-    desconectar();
+    disconnect();
   } else {
-    conectar();
+    connect();
   }
 };
 
 $("dualBtn").onclick = () => {
-  activarAudio();
-  empezarCarrera(false);
+  audioOn();
+  startRace(false);
   send("A");
 };
 
 $("soloBtn").onclick = () => {
-  activarAudio();
-  empezarCarrera(true);
+  audioOn();
+  startRace(true);
   send("S");
 };
 
 $("resetBtn").onclick = () => {
-  conservarResultado = false;
-  resultadoGuardado = false;
+  keepResult = false;
+  raceSaved = false;
   solo = false;
-
   resetDisplay();
   send("B");
 };
 
-// ============================================
 // CONTROL NEOPIXEL P2
-// ============================================
 
-let p2Timer = null;
-
-function actualizarP2() {
+function updateP2() {
   const hex = $("colorLibre").value;
-  const brillo = Number($("brightness").value);
+  const b = Number($("brightness").value);
 
   const rgb = [1,3,5].map(i =>
     parseInt(hex.slice(i,i+2),16)
   );
 
-  const ajustado = rgb.map(v =>
-    Math.round(v*brillo/100)
+  const scaled = rgb.map(v =>
+    Math.round(v*b/100)
   );
 
-  $("brightnessText").textContent = brillo+"%";
+  $("brightnessText").textContent = b+"%";
   $("p2Hex").textContent = hex.toUpperCase();
 
   $("p2Preview").style.background =
-    "rgb("+ajustado.join(",")+")";
+    "rgb("+scaled.join(",")+")";
 
-  if (!conectado) {
-    $("p2Feedback").textContent = "Conectá la micro:bit";
-    return;
-  }
+  $("p2Preview").style.boxShadow =
+    "0 0 14px rgb("+scaled.join(",")+")";
 
   clearTimeout(p2Timer);
 
-  p2Timer = setTimeout(() => {
-    send("C:"+ajustado.join(","));
-    $("p2Feedback").textContent = "Color enviado";
-  },150);
+  if (connected) {
+    p2Timer = setTimeout(() => {
+      send("C:"+scaled.join(","));
+    },130);
+  }
 }
+
+$("colorLibre").addEventListener("input",updateP2);
+$("brightness").addEventListener("input",updateP2);
 
 document.querySelectorAll(".presets button")
   .forEach(b => {
     b.onclick = () => {
-      const rgb = b.dataset.rgb
-        .split(",")
-        .map(Number);
+      const rgb = b.dataset.rgb.split(",").map(Number);
 
       $("colorLibre").value = "#" +
         rgb.map(v =>
@@ -1524,40 +1314,22 @@ document.querySelectorAll(".presets button")
         ).join("");
 
       $("brightness").value = 100;
-      actualizarP2();
+      updateP2();
     };
   });
 
-$("colorLibre").addEventListener(
-  "input",actualizarP2
-);
-
-$("brightness").addEventListener(
-  "input",actualizarP2
-);
-
-// ============================================
-// EXPORTAR CSV
-// ============================================
-
-function csvCelda(v) {
-  return '"' +
-    String(v ?? "").replace(/"/g,'""') +
-    '"';
-}
+// EXPORTAR HISTORIAL
 
 $("exportCsv").onclick = () => {
-  if (!historial.length) {
+  if (!history.length) {
     status("No hay carreras para exportar");
     return;
   }
 
-  const filas = [
-    [
-      "Fecha","Modo","Ganador",
-      "Azul (s)","Rojo (s)","Diferencia (s)"
-    ],
-    ...historial.map(x => [
+  const rows = [
+    ["Fecha","Modo","Ganador",
+     "Azul (s)","Rojo (s)","Diferencia (s)"],
+    ...history.map(x => [
       new Date(x.fecha).toLocaleString("es-AR"),
       x.modo,
       x.ganador,
@@ -1567,52 +1339,41 @@ $("exportCsv").onclick = () => {
     ])
   ];
 
-  const csv = "\uFEFF" +
-    filas.map(f =>
-      f.map(csvCelda).join(";")
-    ).join("\r\n");
+  const csv = "\ufeff" + rows.map(r =>
+    r.map(v =>
+      '"' + String(v).replace(/"/g,'""') + '"'
+    ).join(";")
+  ).join("\r\n");
 
-  const blob = new Blob([csv],{
-    type:"text/csv;charset=utf-8"
-  });
-
-  const url = URL.createObjectURL(blob);
+  const url = URL.createObjectURL(
+    new Blob([csv],{
+      type:"text/csv;charset=utf-8"
+    })
+  );
 
   const a = document.createElement("a");
   a.href = url;
   a.download = "drift-masters-historial.csv";
   a.click();
 
-  setTimeout(() => URL.revokeObjectURL(url),3000);
+  setTimeout(() => URL.revokeObjectURL(url),2000);
 };
-
-// ============================================
-// BORRAR HISTORIAL
-// ============================================
 
 $("clearHistory").onclick = () => {
-  if (!confirm(
-    "¿Borrar todos los récords y carreras?"
-  )) return;
-
-  historial = [];
-
-  guardarHistorial();
-  renderHistorial();
-
-  status("Historial borrado");
+  if (!confirm("¿Borrar todo el historial y los récords?")) {
+    return;
+  }
+  history = [];
+  saveHistory();
+  renderHistory();
 };
 
-// ============================================
-// INICIALIZACIÓN
-// ============================================
+// INICIO
 
-crearSemaforo();
-cargarHistorial();
-renderHistorial();
+loadHistory();
+renderHistory();
 resetDisplay();
-setConnected(false);
-
+setConnection(false);
 </script>
 </body>
 </html>
