@@ -82,19 +82,48 @@
       }
     }
 
+   let colaEnvio = [];
+    let enviando = false;
+
     async function enviarComando(cmd) {
       if (!txCharacteristic) {
         log("Error: Sin conexión");
         return;
       }
+      
+      // Metemos el comando en una fila para que nunca se amontonen
+      colaEnvio.push(cmd);
+      procesarFila();
+    }
+
+    async function procesarFila() {
+      if (enviando || colaEnvio.length === 0) return;
+      enviando = true;
+
+      const cmd = colaEnvio.shift();
+      const encoder = new TextEncoder();
+      const data = encoder.encode(cmd + "\n");
+
       try {
-        const encoder = new TextEncoder();
-        // Envío rápido directo sin bloqueo de respuesta
-        await txCharacteristic.writeValueWithoutResponse(encoder.encode(cmd + "\n"));
+        // Intentamos primero con respuesta controlada (más estable en Android moderno)
+        await txCharacteristic.writeValueWithResponse(data);
         log("Enviado: " + cmd);
       } catch (error) {
-        log("Error al enviar: " + error.message);
+        // Si la pila de Android tira el GATT fallido, le damos un respiro de 100ms y reintentamos sin respuesta
+        try {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          await txCharacteristic.writeValueWithoutResponse(data);
+          log("Enviado (alt): " + cmd);
+        } catch (err2) {
+          log("GATT Error: Desconecta y reconecta la placa");
+        }
       }
+
+      // Pausa obligatoria entre toque y toque para que el Bluetooth del celu no colapse
+      setTimeout(() => {
+        enviando = false;
+        procesarFila();
+      }, 250);
     }
 
     function onDisconnected() {
