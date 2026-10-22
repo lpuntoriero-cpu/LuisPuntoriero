@@ -271,7 +271,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
   text-shadow:0 0 22px #ff3159;
   margin-top:13px;
 }
- .count.false-start{font-size:62px}
+ .count.false-start{font-size:70px;font-style:normal;color:#ff3159;line-height:1.1}
 .signaltext.false-blue{color:#43cfff;text-shadow:0 0 10px #00baff88}
 .signaltext.false-red{color:#ff6581;text-shadow:0 0 10px #ff315988}
 .lane.false-offender{border-width:3px;box-shadow:0 0 24px #ff315999,inset 0 0 18px #ff315944}
@@ -533,7 +533,7 @@ td{background:#09192c}
   .signal{padding:12px 10px}
   .signal .ledrow{max-width:300px}
   .count{font-size:55px;margin-top:8px}
-  .count.false-start{font-size:46px}
+  .count.false-start{font-size:54px}
   .signaltext{font-size:11px}
   .below{
     grid-template-columns:minmax(0,1fr);
@@ -706,10 +706,9 @@ td{background:#09192c}
       <button data-rgb="0,229,176" disabled>Turquesa</button>
       <button data-rgb="0,255,0" disabled>Verde</button>
       <button data-rgb="255,255,0" disabled>Amarillo</button>
-      <button data-rgb="255,128,0" disabled>Naranja</button>
+      <button data-rgb="255,65,0" disabled>Naranja</button>
       <button data-rgb="255,0,0" disabled>Rojo</button>
       <button data-rgb="255,0,170" disabled>Fucsia</button>
-      <button data-rgb="255,0,255" disabled>Magenta</button>
       <button data-rgb="160,0,255" disabled>Violeta</button>
       <button data-rgb="255,255,255" disabled>Blanco</button>
       <button data-rgb="255,110,20" disabled>Cálido</button>
@@ -1344,7 +1343,7 @@ function processMessage(raw){
     const esRojo=infractor==="ROJO";
 
     $("countdown").classList.add("false-start");
-    $("countdown").textContent="FALSA";
+    $("countdown").textContent="✖";
 
     $("signalMessage").classList.remove("false-blue","false-red");
     if(esAzul||esRojo){
