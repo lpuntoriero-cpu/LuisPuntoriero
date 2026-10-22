@@ -676,6 +676,11 @@ td{background:#09192c}
       <button id="powerBtn" class="powerbtn" type="button" disabled aria-pressed="true">● ENCENDIDO</button>
     </div>
 
+    <div id="rainbowRow" class="powerbar" style="display:none;margin-top:8px">
+      <span class="powerlabel">ARCOÍRIS P1 · SPI</span>
+      <button id="rainbowBtn" class="powerbtn" type="button" disabled aria-pressed="false">○ ACTIVAR</button>
+    </div>
+
     <div class="lightcontrols" id="lightControls">
     <div class="p2row">
       <input
@@ -824,7 +829,7 @@ let selectedPin = "P2";
 let lightTimer = null;
 
 const lights = {
-  P1:{color:"#0000ff",brightness:100,on:true},
+  P1:{color:"#0000ff",brightness:100,on:true,rainbow:false},
   P2:{color:"#0000ff",brightness:100,on:true},
   P16:{color:"#0000ff",brightness:100,on:true}
 };
@@ -1622,20 +1627,35 @@ function renderLight(){
   $("powerLabel").textContent=
     ({P1:"PUENTE P1",P2:"PISTA P2",P16:"uBIT P16"})[selectedPin]+
     (light.on?" · ENCENDIDA":" · APAGADA");
-  $("lightControls").classList.toggle("off",!light.on);
-  $("colorLibre").disabled=!connected||!light.on;
-  $("brightness").disabled=!connected||!light.on;
+  const rainbowActive=selectedPin==="P1"&&!!light.rainbow;
+  $("rainbowRow").style.display=selectedPin==="P1"?"flex":"none";
+  $("rainbowBtn").disabled=!connected||!light.on;
+  $("rainbowBtn").classList.toggle("off",!rainbowActive);
+  $("rainbowBtn").textContent=rainbowActive?"● ARCOÍRIS ON":"○ ACTIVAR";
+  $("rainbowBtn").setAttribute("aria-pressed",String(rainbowActive));
+  $("lightControls").classList.toggle("off",!light.on||rainbowActive);
+  $("colorLibre").disabled=!connected||!light.on||rainbowActive;
+  $("brightness").disabled=!connected||!light.on||rainbowActive;
   document.querySelectorAll(".presets button")
-    .forEach(b=>b.disabled=!connected||!light.on);
+    .forEach(b=>b.disabled=!connected||!light.on||rainbowActive);
 
   $("p2Preview").style.background=css;
   $("p2Preview").style.boxShadow=
     "0 0 14px "+css;
 
   $("pinInfo").textContent=
-    "Controlando salida "+selectedPin+(light.on?"":" (apagada)");
+    "Controlando salida "+selectedPin+(light.on?"":" (apagada)")+(rainbowActive?" · arcoíris (se pausa durante carrera)":"");
 
-  document.querySelectorAll(".pinbtn")
+  $("rainbowBtn").onclick=()=>{
+  if(!connected||!lights.P1.on)return;
+  clearTimeout(lightTimer);
+  lights.P1.rainbow=!lights.P1.rainbow;
+  renderLight();
+  // La placa anima P1 por SPI. No se envían frames por Bluetooth.
+  send("R1:"+(lights.P1.rainbow?"1":"0"));
+};
+
+document.querySelectorAll(".pinbtn")
     .forEach(b=>{
       b.classList.toggle(
         "active",
@@ -1653,7 +1673,7 @@ function selectPin(pin){
 }
 
 function updateLight(){
-  if(!lights[selectedPin].on)return;
+  if(!lights[selectedPin].on || (selectedPin==="P1" && lights.P1.rainbow))return;
   lights[selectedPin].color=
     $("colorLibre").value;
 
@@ -1689,6 +1709,10 @@ $("powerBtn").onclick=()=>{
   const pin=selectedPin;
   clearTimeout(lightTimer);
   lights[pin].on=!lights[pin].on;
+  if(pin==="P1" && !lights[pin].on && lights.P1.rainbow){
+    lights.P1.rainbow=false;
+    send("R1:0");
+  }
   renderLight();
   // El apagado no borra el color ni el brillo configurados.
   sendLight(pin);
