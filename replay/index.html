@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html lang="es-AR"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><meta content="#0c1015" name="theme-color"/><meta content="Tu pista RC 1/24 en movimiento. Simulador privado Drift Masters con puente, túnel y cronometraje." name="description"/><title>Drift Masters · Simulador RC 1/24</title><link href="style.css" rel="stylesheet"/><link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff6538'/%3E%3Cpath d='M14 43V21h15q13 0 13 11T29 43zM46 21h5v22h-5' stroke='%230c1015' stroke-width='5' fill='none'/%3E%3C/svg%3E" rel="icon"/><style>#routes[hidden]{display:none!important}.stagefooter{display:none!important}.stagecaption span{display:none!important}</style></head>
+<body>
+<header class="topbar"><a aria-label="Drift Masters inicio" class="brand" href="./"><span class="brandmark">DM<span>↗</span></span><span>DRIFT MASTERS<small>RC RACING SIMULATOR</small></span></a><div class="topmeta"><span class="scale">ESCALA <b>1/24</b></span><span class="private"><svg viewbox="0 0 20 20"><rect height="8" rx="2" width="10" x="5" y="9"></rect><path d="M7 9V6a3 3 0 0 1 6 0v3"></path></svg>Espacio privado</span></div></header>
+<main>
+
+<div class="workspace">
+<section aria-label="Simulación de pista" class="stage panel"><div class="stagebar"><div><span class="eyebrow">01 / CIRCUITO</span><h2>Puente &amp; túnel <span>↗</span></h2></div><div aria-label="Vista de cámara" class="viewtabs"><button aria-pressed="true" class="active" id="perspective">Perspectiva</button><button aria-pressed="false" id="overhead">Cenital</button></div></div>
+<div class="viewport"><canvas aria-label="Circuito con dos recorridos separados: azul por debajo del puente, rojo por arriba en la primera vuelta." id="track" role="img"></canvas><div class="stagebadge"><i></i><span id="stageState">AUTOS EN POSICIÓN</span></div><button aria-pressed="false" class="route-toggle" id="routes" hidden tabindex="-1">Recorridos</button><div aria-live="assertive" class="countdown" hidden="" id="countdown"></div><div class="stagecaption"><b>DRIFT MASTERS</b><span>RC 1/24 · CIRCUITO DE TU FOTO</span></div></div>
+<div class="stagefooter" style="display:none"><button id="reference">Ver referencia ↗</button></div>
+</section>
+<aside aria-hidden="true" class="legacy-hidden" inert=""><div class="eyebrow">02 / BOXES</div><h2>Control de carrera</h2><div class="control-state"><span id="statusDot"></span><span id="statusText">Todo listo para largar</span></div><div class="timer-label">TIEMPO DE CARRERA</div><div class="clock" id="clock">00:00<span>.000</span></div><div class="separator"></div><label class="field-label" for="laps">DISTANCIA <span>Ciclo equilibrado</span></label><select id="laps"><option value="1">1 vuelta</option><option selected="" value="2">2 vueltas · ciclo completo</option><option value="4">4 vueltas · doble ciclo</option></select><div class="drivers"><div class="speedhead blue"><span><i></i>AZUL <small>01</small></span><output for="blueSpeed" id="blueOutput">100%</output></div><input aria-label="Velocidad auto azul" id="blueSpeed" max="120" min="80" type="range" value="100"/><div class="speedhead red"><span><i></i>ROJO <small>02</small></span><output for="redSpeed" id="redOutput">100%</output></div><input aria-label="Velocidad auto rojo" id="redSpeed" max="120" min="80" type="range" value="100"/></div><button class="primary" id="start"><span>▶</span> Iniciar carrera <span>↗</span></button><div class="secondary-row"><button disabled="" id="pause">Ⅱ Pausar</button><button id="reset">↻ Reiniciar</button></div><p class="hint">Una vuelta intercambia los carriles.<br/>Dos vueltas completan el ciclo original.</p><div class="keyboard"><kbd>ESPACIO</kbd> iniciar / pausar <span>·</span> <kbd>R</kbd> reiniciar</div></aside><aside aria-label="Repetir carrera" class="compact-panel panel">
+<div class="eyebrow">RACE REPLAY · 2 VUELTAS</div>
+<h2>Repetir carrera</h2>
+<div class="compact-times">
+<div class="compact-head"><strong>AZUL</strong><span>01</span></div>
+<div class="compact-fields"><label>Vuelta 1 (s)<input id="realBlue1" inputmode="decimal" min="0.001" placeholder="7.200" step="0.001" type="number"/></label><label>Total (s)<input id="realBlueTotal" inputmode="decimal" min="0.001" placeholder="14.100" step="0.001" type="number"/></label></div>
+<div class="compact-head red-head"><strong>ROJO</strong><span>02</span></div>
+<div class="compact-fields"><label>Vuelta 1 (s)<input id="realRed1" inputmode="decimal" min="0.001" placeholder="7.800" step="0.001" type="number"/></label><label>Total (s)<input id="realRedTotal" inputmode="decimal" min="0.001" placeholder="14.900" step="0.001" type="number"/></label></div>
+</div>
+<div aria-live="polite" class="compact-result"><span>GANADOR</span><strong id="simpleWinner">—</strong><small id="simpleGap"></small></div>
+<button class="replay-go compact-go" id="realStart">▶ Ver repetición</button>
+<p aria-live="polite" class="compact-status" id="realStatus"></p>
+<div aria-hidden="true" class="legacy-hidden">
+<input accept=".json,application/json" id="realFile" type="file"/>
+<select id="realSpeed"><option selected="" value="1">1×</option></select>
+<button disabled="" id="realPause">Ⅱ Pausar</button>
+<button id="realReset">↻ Reiniciar</button>
+<span id="realBlueInfo"></span><span id="realRedInfo"></span>
+</div>
+</aside>
+</div>
+<section aria-hidden="true" aria-label="Resultados de carrera" class="telemetry legacy-hidden"><article class="driver-card panel blue"><div class="driver-top"><span class="car-symbol">▰</span><div><div class="eyebrow">01 / CARRIL IZQUIERDO</div><h3>Equipo Azul</h3></div><span class="position" id="bluePlace">—</span></div><div class="driver-details"><span id="blueLocation">En posición · túnel primero</span><strong id="blueTime">—<small> s</small></strong></div><div class="progress"><span id="blueProgress"></span></div><div class="progress-label"><span id="blueLap">Vuelta 0 / 2</span><span id="bluePercent">0%</span></div></article><article class="driver-card panel red"><div class="driver-top"><span class="car-symbol">▰</span><div><div class="eyebrow">02 / CARRIL DERECHO</div><h3>Equipo Rojo</h3></div><span class="position" id="redPlace">—</span></div><div class="driver-details"><span id="redLocation">En posición · puente primero</span><strong id="redTime">—<small> s</small></strong></div><div class="progress"><span id="redProgress"></span></div><div class="progress-label"><span id="redLap">Vuelta 0 / 2</span><span id="redPercent">0%</span></div></article><article aria-live="polite" class="result panel"><div class="eyebrow">03 / BANDERA A CUADROS</div><div id="resultTitle">La pista está lista.</div><p id="resultDetail">El ganador y la diferencia aparecen acá al llegar.</p><span id="resultTag">ESPERANDO LARGADA</span></article></section>
+
+<section class="track-note legacy-hidden"><span class="check">✓</span><p><b>Un cruce. Dos alturas.</b> El trazado sigue tu referencia: la recta enlaza los carriles sin cruces adicionales, con rampa continua y túnel a nivel.</p><button id="validation">Ver comprobación ↗</button></section>
+<footer><span>DRIFT MASTERS <b>/</b> LUIS PUNTORIERO</span><span>Repetición de carrera real · Dos vueltas</span></footer>
+</main>
+<dialog id="referenceDialog"><div class="dialoghead"><h2>La referencia de tu pista</h2><button aria-label="Cerrar referencia" class="close">×</button></div><img alt="Foto cenital original de la pista RC con un puente diagonal y la recta de largada abajo" src="reference.jpg"/><p>Recorridos digitalizados a partir de esta foto. Representación esquemática, sin medidas de obra.</p></dialog>
+<dialog id="validationDialog"><div class="dialoghead"><h2>Coherencia del trazado</h2><button aria-label="Cerrar comprobación" class="close">×</button></div><div id="validationDetails"></div><p>Comprobación geométrica del modelo del simulador. Las alturas y dimensiones visuales son ilustrativas.</p></dialog>
+<div id="bootStatus" style="display:none">Cargando motor de simulación…</div>
+<script>
+window.addEventListener('error', e => {
+  const msg = e.message || 'Error al cargar un archivo';
+  document.getElementById('bootStatus').textContent='ERROR: '+msg;
+  document.getElementById('bootStatus').style.color='#ff8f9b';
+});
+window.addEventListener('unhandledrejection', e => {
+  document.getElementById('bootStatus').textContent='ERROR: '+(e.reason?.message || String(e.reason));
+  document.getElementById('bootStatus').style.color='#ff8f9b';
+});
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (!window.__DM_APP_READY__) {
+      document.getElementById('bootStatus').textContent='No se inició el simulador. Verificá app.mjs y core.mjs en la misma carpeta. Abrí F12 > Consola para detalles.';
+      document.getElementById('bootStatus').style.color='#ff8f9b';
+    }
+  }, 2000);
+});
+</script>
+<script src="app.mjs?v=diagnostico3" type="module"></script></body></html>
