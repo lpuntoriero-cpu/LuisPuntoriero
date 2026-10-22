@@ -663,6 +663,8 @@ td{background:#09192c}
     <div class="replay-entry" style="margin-top:13px;padding-top:11px;border-top:1px solid #35536c">
       <button id="openReplayBtn" class="btn primary" type="button" disabled style="width:100%;font-size:14px">▶ VER REPETICIÓN</button>
       <div id="replayNotice" class="detail" aria-live="polite">Disponible cuando se reciban los tiempos de ambas vueltas.</div>
+      <button id="demoReplayBtn" class="btn" type="button" style="width:100%;margin-top:10px;border-color:#dfb563;color:#ffe4a0">🧪 SIMULAR RESULTADOS (PRUEBA)</button>
+      <div class="detail" style="margin-top:5px">Solo para probar el enlace sin micro:bit. No guarda carreras.</div>
     </div>
   </div>
 
@@ -1277,6 +1279,19 @@ $("openReplayBtn").onclick = () => {
   const destino=new URL("./replay/index.html",window.location.href);
   destino.search=q.toString();
   window.open(destino.href,"_blank","noopener,noreferrer");
+};
+
+// PRUEBA LOCAL: carga cuatro marcas acumuladas en milisegundos.
+// No ejecuta carreras, no transmite Bluetooth ni modifica el historial.
+$("demoReplayBtn").onclick = () => {
+  if(connected){
+    $("replayNotice").textContent = "Desconectá la micro:bit para utilizar la demostración.";
+    return;
+  }
+  datosRepeticion = {azul1:7200, azulTotal:14100, rojo1:7800, rojoTotal:14900};
+  estadoRepeticion();
+  $("replayNotice").textContent =
+    "DEMO: Azul 7,200 / 14,100 s · Rojo 7,800 / 14,900 s · Ganador AZUL. Tocá VER REPETICIÓN.";
 };
 
 // MENSAJES MICRO:BIT
