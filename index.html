@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -591,6 +590,9 @@ body.dm-theater .app{max-width:none;padding:15px}body.dm-theater .top .lane{heig
 body.dm-theater .top .count{font-size:clamp(80px,11vw,140px)}
 body.dm-theater .top .time{font-size:clamp(30px,5vw,65px)}
 @media(max-width:650px){.upgrade-grid{grid-template-columns:1fr}}
+/* Nombres personalizados sobre los autos */
+#blueLaneTitle,#redLaneTitle{max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#winName{overflow-wrap:anywhere;}
 </style>
 </head>
 
@@ -619,7 +621,7 @@ body.dm-theater .top .time{font-size:clamp(30px,5vw,65px)}
 <section class="top">
 
   <div class="lane" id="blueLane">
-    <h2>CARRIL AZUL · 01</h2>
+    <h2 id="blueLaneTitle">CARRIL AZUL · 01</h2>
     <div id="blueState" class="state">
       LISTO PARA SALIR
     </div>
@@ -646,7 +648,7 @@ body.dm-theater .top .time{font-size:clamp(30px,5vw,65px)}
   </section>
 
   <div class="lane redlane" id="redLane">
-    <h2>CARRIL ROJO · 02</h2>
+    <h2 id="redLaneTitle">CARRIL ROJO · 02</h2>
     <div id="redState" class="state">
       LISTO PARA SALIR
     </div>
@@ -1074,7 +1076,7 @@ function showWinner(color,time){
     return;
   }
 
-  $("winName").textContent=color;
+  $("winName").textContent=(color==="AZUL"?pilotNames.azul:pilotNames.rojo);
   $("winTime").textContent=time;
 
   $("winBanner").className=
@@ -1974,6 +1976,11 @@ if ("serviceWorker" in navigator) {
 const DMKEY="dmEnhancementsV1";
 function dmRead(key,fallback){try{const v=JSON.parse(localStorage.getItem(key));return v===null?fallback:v}catch(e){return fallback}}
 let pilotNames=dmRead(DMKEY+"pilots",{azul:"AZUL",rojo:"ROJO"});
+function actualizarNombresCarriles(){
+ document.getElementById('blueLaneTitle').textContent='CARRIL AZUL · 01 - '+pilotNames.azul;
+ document.getElementById('redLaneTitle').textContent='CARRIL ROJO · 02 - '+pilotNames.rojo;
+}
+actualizarNombresCarriles();
 let champ=dmRead(DMKEY+"champ",{active:false,length:3,blue:0,red:0,completed:false});
 let voiceEnabled=dmRead(DMKEY+"voice",false);
 let lastVoiceText="",lastVoiceAt=0;
@@ -2013,7 +2020,7 @@ function renderAdvancedStats(){
 }
 document.getElementById('pilotBlue').value=pilotNames.azul;
 document.getElementById('pilotRed').value=pilotNames.rojo;
-document.getElementById('savePilots').onclick=()=>{pilotNames={azul:document.getElementById('pilotBlue').value.trim()||'AZUL',rojo:document.getElementById('pilotRed').value.trim()||'ROJO'};dmSave();champRender();};
+document.getElementById('savePilots').onclick=()=>{pilotNames={azul:document.getElementById('pilotBlue').value.trim()||'AZUL',rojo:document.getElementById('pilotRed').value.trim()||'ROJO'};dmSave();champRender();actualizarNombresCarriles();};
 document.getElementById('champStart').onclick=()=>{champ={active:true,length:Number(document.getElementById('champLength').value),blue:0,red:0,completed:false};dmSave();champRender()};
 document.getElementById('champReset').onclick=()=>{if(!confirm('¿Reiniciar el campeonato actual?'))return;champ={active:false,length:champ.length,blue:0,red:0,completed:false};dmSave();champRender()};
 const vbtn=document.getElementById('voiceBtn');
