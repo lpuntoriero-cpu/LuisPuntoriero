@@ -2,7 +2,7 @@ import {paths,ROAD_WIDTH,routeFor,positionAt,newRace,advance,raceResult,validate
 const $=id=>document.getElementById(id),canvas=$('track'),ctx=canvas.getContext('2d');
 const colors=['#54b9ff','#ff656c'],names=['Azul','Rojo'],keys=['blue','red'];
 let replayData=null,replayElapsed=0,replayPaused=false;
-let view='perspective',showRoutes=true,phase='ready',resumePhase='running',race=null,countTime=0,lastFrame=0,seed=Date.now()|0,w=0,h=0,dpr=1,s=1,ox=0,oy=0,confettiAt=0;
+let view='perspective',showRoutes=false,phase='ready',resumePhase='running',race=null,countTime=0,lastFrame=0,seed=Date.now()|0,w=0,h=0,dpr=1,s=1,ox=0,oy=0,confettiAt=0;
 const ground=document.createElement('canvas'),bridge=document.createElement('canvas');
 const check=validateTrack();
 window.__DM_APP_STARTED__ = true;
