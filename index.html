@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#030918">
-<title>DRIFT MASTERS</title>
+<title>DRIFT MASTERS · by Luis Puntoriero</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" type="image/png" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -52,6 +51,11 @@ header{
 .subtitle{
   font-size:9px;color:#78daf8;letter-spacing:2px;
 }
+.byline{
+  margin-top:5px;font-size:12px;font-weight:700;
+  color:#d7eaff;letter-spacing:.5px;
+}
+.byline span{color:#ff5774}
 .btbar{
   display:flex;gap:7px;align-items:center;flex-wrap:wrap;
 }
@@ -267,6 +271,11 @@ button:disabled{opacity:.4;cursor:not-allowed}
   text-shadow:0 0 22px #ff3159;
   margin-top:13px;
 }
+ .count.false-start{font-size:62px}
+.signaltext.false-blue{color:#43cfff;text-shadow:0 0 10px #00baff88}
+.signaltext.false-red{color:#ff6581;text-shadow:0 0 10px #ff315988}
+.lane.false-offender{border-width:3px;box-shadow:0 0 24px #ff315999,inset 0 0 18px #ff315944}
+.lane.false-offender:not(.redlane){box-shadow:0 0 24px #00baff99,inset 0 0 18px #00baff44}
 .signaltext{font-size:12px;font-weight:900}
 
 /* CONTROLES */
@@ -283,7 +292,8 @@ button:disabled{opacity:.4;cursor:not-allowed}
 }
 .status{
   color:#b5d1e8;
-  margin-top:9px;font-size:11px;
+  margin-top:9px;font-size:15px;
+  font-weight:700;
 }
 
 /* ILUMINACIÓN */
@@ -511,6 +521,7 @@ td{background:#09192c}
   .signal{padding:12px 10px}
   .signal .ledrow{max-width:300px}
   .count{font-size:55px;margin-top:8px}
+  .count.false-start{font-size:46px}
   .signaltext{font-size:11px}
   .below{
     grid-template-columns:minmax(0,1fr);
@@ -550,6 +561,7 @@ td{background:#09192c}
   <div>
     <div class="logo">DRIFT <span>MASTERS</span></div>
     <div class="subtitle">DUAL LANE · RACE CONTROL</div>
+    <div class="byline">by <span>Luis Puntoriero</span></div>
   </div>
   <div class="btbar">
     <div class="btstatus">
@@ -989,6 +1001,10 @@ function resetDisplay(){
   clearWinner();
   setSignal(0,"off");
 
+  $("countdown").classList.remove("false-start");
+  $("signalMessage").classList.remove("false-blue","false-red");
+  $("blueLane").classList.remove("false-offender");
+  $("redLane").classList.remove("false-offender");
   $("countdown").textContent="—";
   $("signalMessage").textContent=
     "ESPERANDO LARGADA";
@@ -1300,23 +1316,29 @@ function processMessage(raw){
     faseCarrera="finalizada";
     clearWinner();
 
+    const infractor=u.substring("SALIDA FALSA:".length).trim();
+    const esAzul=infractor==="AZUL";
+    const esRojo=infractor==="ROJO";
+
+    $("countdown").classList.add("false-start");
     $("countdown").textContent="FALSA";
 
-    $("signalMessage").textContent=
-      "SALIDA ANULADA";
+    $("signalMessage").classList.remove("false-blue","false-red");
+    if(esAzul||esRojo){
+      $("signalMessage").textContent="AUTO "+infractor+" ADELANTADO";
+      $("signalMessage").classList.add(esAzul?"false-blue":"false-red");
+      $(esAzul?"blueLane":"redLane").classList.add("false-offender");
+    }else{
+      $("signalMessage").textContent="SALIDA ANULADA";
+    }
 
-    $("blueResult").textContent=
-      "SALIDA FALSA";
-
-    $("redResult").textContent=
-      "SALIDA FALSA";
+    $("blueResult").textContent=esAzul?"SALIDA FALSA":"SALIDA ANULADA";
+    $("redResult").textContent=esRojo?"SALIDA FALSA":"SALIDA ANULADA";
+    $("blueState").textContent=esAzul?"SE ADELANTÓ":"SALIDA ANULADA";
+    $("redState").textContent=esRojo?"SE ADELANTÓ":"SALIDA ANULADA";
 
     setSignal(8,"red");
-
-    status(
-      "Salida falsa: "+
-      m.substring("SALIDA FALSA:".length)
-    );
+    status((esAzul||esRojo)?"Salida falsa del auto "+infractor:"Salida falsa: "+infractor);
 
     keepResult=true;
     return;
