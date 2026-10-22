@@ -316,6 +316,18 @@ button:disabled{opacity:.4;cursor:not-allowed}
   color:white;
   box-shadow:0 0 13px #00baff66;
 }
+/* Encendido individual de cada salida */
+.powerbar{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 12px;margin:0 0 11px;border:1px solid #42607c;
+  border-radius:9px;background:#0a1c2d}
+.powerlabel{font-size:12px;font-weight:900;color:#d9eeff}
+.powerbtn{min-width:122px;padding:10px 14px;border-radius:9px;
+  border:1px solid #45f4a0;background:linear-gradient(#16985b,#076c41);
+  color:white;box-shadow:0 0 12px #31f09b44}
+.powerbtn.off{border-color:#a45462;background:linear-gradient(#773044,#4f202e);
+  box-shadow:none;color:#ffd5dd}
+.lightcontrols{transition:opacity .2s,filter .2s}
+.lightcontrols.off{opacity:.3;filter:grayscale(1);pointer-events:none}
 .p2row{
   display:flex;align-items:center;
   gap:10px;flex-wrap:wrap;
@@ -659,6 +671,12 @@ td{background:#09192c}
       <button class="pinbtn" data-pin="P16">uBIT</button>
     </div>
 
+    <div class="powerbar">
+      <span class="powerlabel" id="powerLabel">PISTA P2 · ENCENDIDA</span>
+      <button id="powerBtn" class="powerbtn" type="button" disabled aria-pressed="true">● ENCENDIDO</button>
+    </div>
+
+    <div class="lightcontrols" id="lightControls">
     <div class="p2row">
       <input
         id="colorLibre"
@@ -684,13 +702,19 @@ td{background:#09192c}
     </div>
 
     <div class="presets">
-      <button data-rgb="0,0,255" disabled>Azul</button>
-      <button data-rgb="255,0,0" disabled>Rojo</button>
+      <button data-rgb="0,0,255" disabled>Azul eléctrico</button>
+      <button data-rgb="0,229,176" disabled>Turquesa</button>
       <button data-rgb="0,255,0" disabled>Verde</button>
-      <button data-rgb="255,110,20" disabled>Cálido</button>
+      <button data-rgb="255,255,0" disabled>Amarillo</button>
+      <button data-rgb="255,128,0" disabled>Naranja</button>
+      <button data-rgb="255,0,0" disabled>Rojo</button>
+      <button data-rgb="255,0,170" disabled>Fucsia</button>
+      <button data-rgb="255,0,255" disabled>Magenta</button>
       <button data-rgb="160,0,255" disabled>Violeta</button>
       <button data-rgb="255,255,255" disabled>Blanco</button>
-      <button data-rgb="0,0,0" disabled>Apagar</button>
+      <button data-rgb="255,110,20" disabled>Cálido</button>
+    </div>
+
     </div>
 
     <div id="pinInfo" class="pininfo">
@@ -801,9 +825,9 @@ let selectedPin = "P2";
 let lightTimer = null;
 
 const lights = {
-  P1:{color:"#0000ff",brightness:100},
-  P2:{color:"#0000ff",brightness:100},
-  P16:{color:"#0000ff",brightness:100}
+  P1:{color:"#0000ff",brightness:100,on:true},
+  P2:{color:"#0000ff",brightness:100,on:true},
+  P16:{color:"#0000ff",brightness:100,on:true}
 };
 
 // SONIDOS
@@ -880,13 +904,12 @@ function setConnection(ok){
 
   [
     "dualBtn","soloBtn","resetBtn",
-    "colorLibre","brightness"
+    "colorLibre","brightness","powerBtn"
   ].forEach(id=>{
     $(id).disabled=!ok;
   });
 
-  document.querySelectorAll(".presets button")
-    .forEach(b=>b.disabled=!ok);
+  renderLight();
 
   if(!ok){
     status("Micro:bit desconectada");
@@ -1590,15 +1613,28 @@ function renderLight(){
   $("brightnessText").textContent=
     light.brightness+"%";
 
-  const rgb=scaledRGB(selectedPin);
+  const rgb=light.on?scaledRGB(selectedPin):[0,0,0];
   const css="rgb("+rgb.join(",")+")";
+
+  $("powerBtn").disabled=!connected;
+  $("powerBtn").classList.toggle("off",!light.on);
+  $("powerBtn").textContent=light.on?"● ENCENDIDO":"○ APAGADO";
+  $("powerBtn").setAttribute("aria-pressed",String(light.on));
+  $("powerLabel").textContent=
+    ({P1:"PUENTE P1",P2:"PISTA P2",P16:"uBIT P16"})[selectedPin]+
+    (light.on?" · ENCENDIDA":" · APAGADA");
+  $("lightControls").classList.toggle("off",!light.on);
+  $("colorLibre").disabled=!connected||!light.on;
+  $("brightness").disabled=!connected||!light.on;
+  document.querySelectorAll(".presets button")
+    .forEach(b=>b.disabled=!connected||!light.on);
 
   $("p2Preview").style.background=css;
   $("p2Preview").style.boxShadow=
     "0 0 14px "+css;
 
   $("pinInfo").textContent=
-    "Controlando salida "+selectedPin;
+    "Controlando salida "+selectedPin+(light.on?"":" (apagada)");
 
   document.querySelectorAll(".pinbtn")
     .forEach(b=>{
@@ -1618,6 +1654,7 @@ function selectPin(pin){
 }
 
 function updateLight(){
+  if(!lights[selectedPin].on)return;
   lights[selectedPin].color=
     $("colorLibre").value;
 
@@ -1638,7 +1675,7 @@ function updateLight(){
 }
 
 function sendLight(pin){
-  const rgb=scaledRGB(pin);
+  const rgb=lights[pin].on?scaledRGB(pin):[0,0,0];
   const values=rgb.join(",");
 
   if(pin==="P2"){
@@ -1647,6 +1684,16 @@ function sendLight(pin){
     send(pin+":"+values);
   }
 }
+
+$("powerBtn").onclick=()=>{
+  if(!connected)return;
+  const pin=selectedPin;
+  clearTimeout(lightTimer);
+  lights[pin].on=!lights[pin].on;
+  renderLight();
+  // El apagado no borra el color ni el brillo configurados.
+  sendLight(pin);
+};
 
 document.querySelectorAll(".pinbtn")
   .forEach(b=>{
