@@ -2641,7 +2641,7 @@ async function dmGeneratePoster(){
    const y=253+i*(318/rows);
    return {x:[52,367,684,1001][r],y,w:stageW,h:Math.min(64,310/rows-3)};
  }
- const labels=stages===3?[{x:71,y:226,label:'CUARTOS DE FINAL'},{x:480,y:238,label:'SEMIFINAL'},{x:865,y:327,label:'FINAL'}]:[{x:53,y:239,label:'OCTAVOS'},{x:369,y:239,label:'CUARTOS'},{x:686,y:239,label:'SEMIFINAL'},{x:1002,y:239,label:'FINAL'}];
+ const labels=stages===3?[{x:119,y:226,label:'CUARTOS DE FINAL'},{x:528,y:238,label:'SEMIFINAL'},{x:913,y:327,label:'FINAL'}]:[{x:101,y:239,label:'OCTAVOS'},{x:417,y:239,label:'CUARTOS'},{x:734,y:239,label:'SEMIFINAL'},{x:1050,y:239,label:'FINAL'}];
  if(stages===4){g.fillStyle='rgba(2,10,22,.83)';g.fillRect(40,224,1265,350)}
  labels.forEach(o=>text(o.label,o.x,o.y,19,'#e5f4ff','900'));
  for(let r=0;r<stages;r++)dmTour.rounds[r].forEach((m,i)=>{
@@ -2655,19 +2655,19 @@ async function dmGeneratePoster(){
    const fs=small?14:18;const vfs=small?12:15;
    const center1=x+w*.25,center2=x+w*.75;
    const lineY=y+h*.37, tY=y+h*.72;
-   text(short(a,small?10:12),center1,lineY,fs,m.winner===m.blue?'#f3dc87':'#59d2ff','900','center');
-   text(short(b,small?10:12),center2,lineY,fs,m.winner===m.red?'#f3dc87':'#ff7197','900','center');
+   text(short(a,small?10:12),center1,lineY,fs,'#59d2ff','900','center');
+   text(short(b,small?10:12),center2,lineY,fs,'#ff7197','900','center');
    text(fm(found?.blueTime),center1,tY,vfs,'#eef7ff','700','center');
    text(fm(found?.redTime),center2,tY,vfs,'#eef7ff','700','center');
  });
  // Champ plaque: reserved for variable winner text only.
- text('CAMPEÓN',1400,470,28,'#ffe7a7','900','center');
- text(short(champion,17).toUpperCase(),1400,519,43,'#fff0bc','900','center');
+ text('CAMPEÓN',1400,454,28,'#ffe7a7','900','center');
+ text(short(champion,17).toUpperCase(),1400,503,43,'#fff0bc','900','center');
  const numeric=[];for(const row of dmTour.results)for(const side of ['blue','red']){const n=Number(row[side+'Time']);if(Number.isFinite(n)&&n>0)numeric.push({time:n,name:row[side]})}
  numeric.sort((a,b)=>a.time-b.time);
  let runner='—';const final=dmTour.results.find(v=>v.stage==='FINAL');if(final)runner=final.winner===final.blue?final.red:final.blue;
  const cards=[['MEJOR TIEMPO',numeric.length?fm(numeric[0].time)+' · '+short(numeric[0].name,13):'—'],['SUBCAMPEÓN',short(runner,18)],['CARRERAS',String(dmTour.results.length)]];
- [[382,816],[838,816],[1310,816]].forEach(([x,y],i)=>{
+ [[382,834],[838,834],[1310,834]].forEach(([x,y],i)=>{
    text(cards[i][0],x,y,19,'#91d9ff','900','center');
    text(cards[i][1],x,y+42,27,'#fff','900','center');
  });
