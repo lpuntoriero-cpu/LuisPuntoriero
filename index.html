@@ -827,6 +827,12 @@ body.dm-theater .vehicle-pop{z-index:9999}
         🏁 LARGAR 1 AUTO
       </button>
 
+      <label id="soloLaneRow" style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-weight:800" for="soloLaneSelect">CARRIL INDIVIDUAL
+        <select id="soloLaneSelect" style="background:#102840;color:white;border:1px solid #426b86;border-radius:7px;padding:9px">
+          <option value="AZUL">🔵 AZUL</option>
+          <option value="ROJO">🔴 ROJO</option>
+        </select>
+      </label>
       <button id="resetBtn" class="btn" disabled>
         REINICIAR
       </button>
@@ -1270,11 +1276,13 @@ function resetDisplay(){
   $("redLane").style.opacity="1";
 }
 
+let dmSimpleModoElegido='';
 function startRace(isSolo){
   stopVisualClocks();
   winnerAnnounced=false;
   borrarRepeticion();
   solo=isSolo;
+  if(raceMode==='single')dmSimpleModoElegido=isSolo?'solo':'dual';
   winnerFirst="";
   raceSaved=false;
   keepResult=false;
@@ -1290,6 +1298,7 @@ function startRace(isSolo){
   }
 
   actualizarEstadoAutos();
+  if(typeof renderRaceMode==='function')renderRaceMode();
 }
 
 // HISTORIAL
@@ -1905,6 +1914,7 @@ $("connectBtn").onclick=()=>{
 };
 
 $("dualBtn").onclick=()=>{
+  if(raceMode==='single'&&dmSimpleModoElegido==='solo')return;
   if(faseCarrera==="cuenta"||faseCarrera==="corriendo")return;
   audioOn();
   // Segunda pulsación de carrera simple: conservar los sensores ya posicionados.
@@ -1920,6 +1930,11 @@ $("dualBtn").onclick=()=>{
 };
 
 $("soloBtn").onclick=()=>{
+  if(raceMode==='single'&&dmSimpleModoElegido==='dual')return;
+  if($('soloLaneSelect').value==='ROJO'){
+    $('aviso').textContent='El modo individual ROJO necesita una actualización del firmware micro:bit. Por seguridad no se inicia con el sensor azul.';
+    return;
+  }
   if(faseCarrera==="cuenta"||faseCarrera==="corriendo")return;
   audioOn();
   // Igual que en dos autos: la segunda pulsación mantiene el sensor
@@ -1935,6 +1950,7 @@ $("soloBtn").onclick=()=>{
 };
 
 $("resetBtn").onclick=()=>{
+  dmSimpleModoElegido='';
   borrarRepeticion();
   keepResult=false;
   raceSaved=false;
@@ -1947,6 +1963,7 @@ $("resetBtn").onclick=()=>{
   resetDisplay();
   setRaceSafety();
   send("B");
+  if(typeof renderRaceMode==='function')renderRaceMode();
 };
 
 // ILUMINACIÓN P1 / P2 / P16
@@ -2220,6 +2237,12 @@ let placaListaCampeonato=false; // Solo REPOSO de la micro:bit autoriza nueva ma
 let preparacionPendienteCampeonato=false;
 let mangaPreparadaCampeonato=false;
 function renderRaceMode(){
+ const modoSimpleBloqueado=raceMode==='single' && faseCarrera==='posicionamiento' && dmSimpleModoElegido!=='';
+ const bloquearCarrera=faseCarrera==='cuenta'||faseCarrera==='corriendo';
+ document.getElementById('dualBtn').disabled=!connected||bloquearCarrera||(modoSimpleBloqueado&&dmSimpleModoElegido==='solo');
+ document.getElementById('soloBtn').disabled=!connected||bloquearCarrera||(modoSimpleBloqueado&&dmSimpleModoElegido==='dual');
+ document.getElementById('soloLaneSelect').disabled=bloquearCarrera||modoSimpleBloqueado;
+ document.getElementById('soloLaneRow').style.opacity=(bloquearCarrera||modoSimpleBloqueado)?'.45':'1';
  // Los mismos botones de carrera simple cambian de texto al estar
  // posicionados; no se agregan comandos ni tiempos de bloqueo.
  const simpleDual=document.getElementById('dualBtn');
@@ -2257,6 +2280,7 @@ function dmChangeRaceMode(target){
    preparacionPendienteCampeonato=false;mangaPreparadaCampeonato=false;
  }
  raceMode=target;
+ dmSimpleModoElegido='';
  if(target==='single')champ.active=false;
  try{localStorage.setItem(DMKEY+'raceMode',JSON.stringify(raceMode))}catch(e){}
  dmSave();
