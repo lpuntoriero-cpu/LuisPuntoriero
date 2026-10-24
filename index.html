@@ -2630,8 +2630,7 @@ async function dmGeneratePoster(){
  const stages=dmTour.rounds.length;
  const last=dmTour.rounds.at(-1)?.[0];
  const champion=last?.winner!=null?dmTour.players[last.winner]:'POR DEFINIR';
- text(short(dmTour.name||'COPA DRIFT MASTERS',40).toUpperCase(),92,192,23,'#ffe3a0','900');
- text(dmTour.size+' PARTICIPANTES · '+dmTour.results.length+' CARRERAS',92,223,17,'#9bd7fb','700');
+ text(short(dmTour.name||'COPA DRIFT MASTERS',36).toUpperCase(),92,192,23,'#ffe3a0','900');
  // En el formato de ocho pilotos las casillas coinciden con la plantilla gráfica.
  const boxes8=[[[70,246],[70,333],[70,421],[70,508]],[[477,269],[477,452]],[[864,355]]];
  // En 16 competidores se superpone una cuadrícula compacta de cuatro columnas.
@@ -2642,9 +2641,9 @@ async function dmGeneratePoster(){
    const y=253+i*(318/rows);
    return {x:[52,367,684,1001][r],y,w:stageW,h:Math.min(64,310/rows-3)};
  }
- const labels=stages===3?[[70,'CUARTOS DE FINAL'],[477,'SEMIFINAL'],[864,'FINAL']]:[[52,'OCTAVOS'],[367,'CUARTOS'],[684,'SEMIFINAL'],[1001,'FINAL']];
+ const labels=stages===3?[{x:71,y:226,label:'CUARTOS DE FINAL'},{x:480,y:238,label:'SEMIFINAL'},{x:865,y:327,label:'FINAL'}]:[{x:53,y:239,label:'OCTAVOS'},{x:369,y:239,label:'CUARTOS'},{x:686,y:239,label:'SEMIFINAL'},{x:1002,y:239,label:'FINAL'}];
  if(stages===4){g.fillStyle='rgba(2,10,22,.83)';g.fillRect(40,224,1265,350)}
- labels.forEach(([x,l])=>text(l,x,stages===3? (x===70?232:x===477?252:340):240,19,'#e5f4ff','900'));
+ labels.forEach(o=>text(o.label,o.x,o.y,19,'#e5f4ff','900'));
  for(let r=0;r<stages;r++)dmTour.rounds[r].forEach((m,i)=>{
    const {x,y,w,h}=box(r,i);
    const a=m.blue==null?'Por definir':dmTour.players[m.blue];
@@ -2662,15 +2661,15 @@ async function dmGeneratePoster(){
    text(fm(found?.redTime),center2,tY,vfs,'#eef7ff','700','center');
  });
  // Champ plaque: reserved for variable winner text only.
- text('CAMPEÓN',1400,448,28,'#ffe7a7','900','center');
- text(short(champion,17).toUpperCase(),1400,510,43,'#fff0bc','900','center');
+ text('CAMPEÓN',1400,470,28,'#ffe7a7','900','center');
+ text(short(champion,17).toUpperCase(),1400,519,43,'#fff0bc','900','center');
  const numeric=[];for(const row of dmTour.results)for(const side of ['blue','red']){const n=Number(row[side+'Time']);if(Number.isFinite(n)&&n>0)numeric.push({time:n,name:row[side]})}
  numeric.sort((a,b)=>a.time-b.time);
  let runner='—';const final=dmTour.results.find(v=>v.stage==='FINAL');if(final)runner=final.winner===final.blue?final.red:final.blue;
  const cards=[['MEJOR TIEMPO',numeric.length?fm(numeric[0].time)+' · '+short(numeric[0].name,13):'—'],['SUBCAMPEÓN',short(runner,18)],['CARRERAS',String(dmTour.results.length)]];
- [[272,820],[830,820],[1287,820]].forEach(([x,y],i)=>{
+ [[382,816],[838,816],[1310,816]].forEach(([x,y],i)=>{
    text(cards[i][0],x,y,19,'#91d9ff','900','center');
-   text(cards[i][1],x,y+40,27,'#fff','900','center');
+   text(cards[i][1],x,y+42,27,'#fff','900','center');
  });
  return await new Promise(resolve=>c.toBlob(resolve,'image/png'));
 }
