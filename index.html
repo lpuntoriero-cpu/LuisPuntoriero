@@ -1,0 +1,2344 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#030918">
+<title>DRIFT MASTERS · by Luis Puntoriero</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+
+<style>
+:root{
+  --bg:#030918;
+  --blue:#00baff;
+  --red:#ff3159;
+  --green:#31f09b;
+  --text:#eff8ff;
+  --dim:#9eb6ca;
+}
+*{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+body{
+  margin:0;color:var(--text);
+  font:13px system-ui,Arial,sans-serif;
+  background:
+    radial-gradient(ellipse at 0 0,#073e65,transparent 40%),
+    radial-gradient(ellipse at 100% 5%,#440b2c,transparent 35%),
+    var(--bg);
+}
+.app{
+  width:100%;max-width:1350px;
+  margin:auto;padding:8px;min-width:0;
+}
+header{
+  display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;gap:9px;
+  padding:8px 4px 12px;
+  border-bottom:2px solid #12649a;
+}
+.logo{
+  font-size:clamp(28px,5vw,48px);
+  font-weight:1000;font-style:italic;
+  letter-spacing:-2px;
+  text-shadow:0 0 18px #009dff77;
+}
+.logo span{
+  color:var(--red);
+  text-shadow:0 0 18px #ff315988;
+}
+.subtitle{
+  font-size:9px;color:#78daf8;letter-spacing:2px;
+}
+.byline{
+  margin-top:5px;font-size:12px;font-weight:700;
+  color:#d7eaff;letter-spacing:.5px;
+}
+.byline span{color:#ff5774}
+.btbar{
+  display:flex;gap:7px;align-items:center;flex-wrap:wrap;
+}
+.btstatus{
+  padding:9px;border:1px solid #395875;
+  border-radius:7px;background:#08172a;font-size:10px;
+}
+.dot{
+  display:inline-block;width:9px;height:9px;
+  border-radius:50%;background:var(--red);
+  box-shadow:0 0 10px var(--red);margin-right:5px;
+}
+.dot.on{
+  background:var(--green);
+  box-shadow:0 0 10px var(--green);
+}
+button{
+  cursor:pointer;color:white;
+  font:inherit;font-weight:800;
+}
+button:disabled{opacity:.4;cursor:not-allowed}
+.btn{
+  padding:11px 13px;border-radius:8px;
+  border:1px solid #4f6580;
+  background:linear-gradient(#28445b,#1a2c43);
+}
+.btn.primary{
+  background:linear-gradient(#007aff,#0056c9);
+  border-color:#45caff;
+  box-shadow:0 0 12px #009fff66;
+}
+.btn.red{
+  background:linear-gradient(#e52043,#9f0928);
+  border-color:#ff718b;
+  box-shadow:0 0 12px #f0244866;
+}
+.btn.green{
+  background:linear-gradient(#119a58,#076e3e);
+  border-color:#47f4a0;
+}
+.panel{
+  background:linear-gradient(145deg,#0b1e31,#06111f);
+  border:1px solid #35536c;
+  border-radius:10px;padding:11px;
+  min-width:0;max-width:100%;
+}
+.panel h2{
+  font-size:13px;margin:0 0 10px;font-weight:900;
+}
+
+/* PISTA */
+.top{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 180px minmax(0,1fr);
+  gap:9px;margin-top:10px;
+}
+.lane{
+  min-width:0;height:250px;position:relative;
+  overflow:hidden;
+  border:2px solid var(--blue);
+  border-radius:10px;
+  background:
+    radial-gradient(ellipse at center,#07508788,transparent 70%),
+    linear-gradient(140deg,#071b30,#030c1d);
+  box-shadow:
+    0 0 14px #00baff55,
+    inset 0 0 25px #049bff18;
+  transition:
+    opacity .5s,filter .5s,
+    box-shadow .5s,border-color .5s;
+}
+.lane.redlane{
+  border-color:var(--red);
+  background:
+    radial-gradient(ellipse at center,#8c103c77,transparent 70%),
+    linear-gradient(140deg,#290719,#080b1b);
+  box-shadow:
+    0 0 14px #ff315955,
+    inset 0 0 25px #f6294b18;
+}
+.lane:before{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(
+    130deg,transparent 0 53px,
+    #ffffff16 54px 57px,
+    transparent 58px 105px
+  );
+  pointer-events:none;
+}
+.lane h2{
+  position:absolute;top:10px;left:12px;margin:0;
+  color:#3ddcff;
+  font-size:clamp(15px,2vw,23px);
+  font-style:italic;
+  text-shadow:0 0 10px #00baff;
+}
+.redlane h2{
+  color:#ff5774;
+  text-shadow:0 0 10px #ff3159;
+}
+.state{
+  position:absolute;top:41px;left:13px;
+  font-size:10px;font-weight:bold;color:#d7ecfa;
+}
+.car{
+  position:absolute;
+  top:27%;left:10%;
+  width:80%;height:48%;
+  object-fit:contain;
+  filter:drop-shadow(0 12px 10px #000a);
+  transition:filter .5s,transform .5s;
+}
+.timing{
+  position:absolute;bottom:16px;
+  width:100%;text-align:center;
+}
+.time{
+  font-size:clamp(22px,3vw,32px);
+  font-weight:1000;font-style:italic;
+  color:#aee8ff;
+  text-shadow:0 0 12px #008aff;
+}
+.redlane .time{
+  color:#ffb1c3;
+  text-shadow:0 0 12px #ff264c;
+}
+.result{color:#d2e2f0;font-size:10px}
+
+/* GANADOR */
+.lane.winner-blue{
+  border-color:#8deaff;
+  box-shadow:
+    0 0 14px #00baff,
+    0 0 35px #00baff99,
+    inset 0 0 35px #00baff44;
+  animation:winBlue 1.1s ease-in-out infinite alternate;
+}
+.lane.winner-red{
+  border-color:#ff9cb0;
+  box-shadow:
+    0 0 14px #ff3159,
+    0 0 35px #ff315999,
+    inset 0 0 35px #ff315944;
+  animation:winRed 1.1s ease-in-out infinite alternate;
+}
+.lane.winner-blue .car{
+  filter:
+    drop-shadow(0 0 19px #00baff)
+    drop-shadow(0 0 12px #00baff);
+}
+.lane.winner-red .car{
+  filter:
+    drop-shadow(0 0 19px #ff3159)
+    drop-shadow(0 0 12px #ff3159);
+}
+.lane.loser{
+  opacity:.42;
+  filter:grayscale(.7) brightness(.65);
+}
+@keyframes winBlue{
+  to{
+    box-shadow:
+      0 0 22px #00baff,
+      0 0 48px #00baffbb,
+      inset 0 0 45px #00baff55;
+  }
+}
+@keyframes winRed{
+  to{
+    box-shadow:
+      0 0 22px #ff3159,
+      0 0 48px #ff3159bb,
+      inset 0 0 45px #ff315955;
+  }
+}
+
+/* SEMÁFORO */
+.signal{
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;
+}
+.ledrow{
+  display:grid;grid-template-columns:repeat(8,1fr);
+  gap:5px;width:100%;
+}
+.led{
+  aspect-ratio:1;border-radius:50%;
+  border:2px solid #51617a;
+  background:#273443;
+  box-shadow:inset 0 0 5px #000;
+}
+.led.red{
+  background:radial-gradient(
+    circle at 35% 28%,
+    #fff,#ff314e 40%,#b90023 85%
+  );
+  border-color:#ff718a;
+  box-shadow:0 0 10px #ff3159aa;
+}
+.led.green{
+  background:radial-gradient(
+    circle at 35% 28%,
+    #fff,#3dfca5 40%,#00865d 85%
+  );
+  border-color:#9bffd4;
+  box-shadow:0 0 10px #31f09baa;
+}
+.count{
+  font-size:72px;font-weight:1000;
+  font-style:italic;line-height:1.2;
+  color:#ff5a73;
+  text-shadow:0 0 22px #ff3159;
+  margin-top:13px;
+}
+ .count.false-start{font-size:70px;font-style:normal;color:#ff3159;line-height:1.1}
+.signaltext.false-blue{color:#43cfff;text-shadow:0 0 10px #00baff88}
+.signaltext.false-red{color:#ff6581;text-shadow:0 0 10px #ff315988}
+.lane.false-offender{border-width:3px;box-shadow:0 0 24px #ff315999,inset 0 0 18px #ff315944}
+.lane.false-offender:not(.redlane){box-shadow:0 0 24px #00baff99,inset 0 0 18px #00baff44}
+.signaltext{font-size:12px;font-weight:900}
+
+/* CONTROLES */
+.below{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:9px;margin-top:9px;
+}
+.actions{display:flex;flex-wrap:wrap;gap:7px}
+.actions .btn{flex:1}
+.detail{
+  font-size:10px;color:var(--dim);
+  margin:9px 0 0;
+}
+.status{
+  color:#b5d1e8;
+  margin-top:9px;font-size:15px;
+  font-weight:700;
+}
+
+/* ILUMINACIÓN */
+.pinselector{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;margin-bottom:11px;
+}
+.pinbtn{
+  padding:10px 6px;
+  border:1px solid #42607c;
+  border-radius:8px;
+  background:#10243a;
+  color:#a9c5dc;
+  font-size:13px;
+}
+.pinbtn.active{
+  background:linear-gradient(#086ab1,#063c75);
+  border-color:#52caff;
+  color:white;
+  box-shadow:0 0 13px #00baff66;
+}
+/* Encendido individual de cada salida */
+.powerbar{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 12px;margin:0 0 11px;border:1px solid #42607c;
+  border-radius:9px;background:#0a1c2d}
+.powerlabel{font-size:12px;font-weight:900;color:#d9eeff}
+.powerbtn{min-width:122px;padding:10px 14px;border-radius:9px;
+  border:1px solid #45f4a0;background:linear-gradient(#16985b,#076c41);
+  color:white;box-shadow:0 0 12px #31f09b44}
+.powerbtn.off{border-color:#a45462;background:linear-gradient(#773044,#4f202e);
+  box-shadow:none;color:#ffd5dd}
+.lightcontrols{transition:opacity .2s,filter .2s}
+.lightcontrols.off{opacity:.3;filter:grayscale(1);pointer-events:none}
+.p2row{
+  display:flex;align-items:center;
+  gap:10px;flex-wrap:wrap;
+}
+#colorLibre{
+  width:55px;height:45px;
+  border:0;background:transparent;
+}
+#brightness{
+  width:120px;max-width:100%;
+  accent-color:#00c7ff;
+}
+.preview{
+  width:65px;height:28px;
+  background:blue;border-radius:6px;
+  box-shadow:0 0 15px #0000ff88;
+}
+.presets{
+  display:flex;flex-wrap:wrap;
+  gap:5px;margin-top:9px;
+}
+.presets button{
+  padding:7px;
+  border:1px solid #405d7d;
+  border-radius:6px;
+  background:#102640;
+  font-size:10px;
+}
+.pininfo{
+  font-size:10px;
+  color:#9eb6ca;
+  margin-top:9px;
+}
+
+/* HISTORIAL Y RÉCORDS: ANCHO CORREGIDO */
+.historygrid{
+  display:grid;
+  grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);
+  gap:9px;margin-top:9px;
+  width:100%;min-width:0;
+}
+.historygrid>.panel{
+  min-width:0;
+  max-width:100%;
+  overflow:hidden;
+}
+.headrow{
+  display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;gap:7px;
+  min-width:0;
+}
+.headrow h2{margin:0}
+.headrow .actions{
+  max-width:100%;
+}
+.headrow .actions .btn{
+  font-size:10px;
+  padding:8px 9px;
+  white-space:normal;
+}
+.recgrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  width:100%;
+}
+.rec{
+  padding:10px 4px;text-align:center;
+  border:1px solid #405b79;
+  border-radius:9px;
+  background:#04101e;
+  min-width:0;
+  overflow:hidden;
+}
+.rec:nth-child(1){border-color:var(--blue)}
+.rec:nth-child(2){border-color:var(--red)}
+.rec:nth-child(3){border-color:#eab94f}
+.rec label{
+  display:block;
+  font-size:9px;font-weight:bold;
+  overflow-wrap:anywhere;
+}
+.rec strong{
+  display:block;
+  font-size:clamp(13px,1.8vw,23px);
+  margin-top:6px;
+  white-space:nowrap;
+}
+.rec:nth-child(1) strong{color:#59cfff}
+.rec:nth-child(2) strong{color:#ff7f9b}
+.rec:nth-child(3) strong{color:#ffd988}
+.tablewrap{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  margin-top:10px;
+  max-height:300px;
+  border-radius:6px;
+}
+table{
+  border-collapse:collapse;
+  width:100%;
+  min-width:530px;
+  font-size:11px;
+}
+td,th{
+  border:1px solid #29445d;
+  padding:8px;text-align:left;
+  white-space:nowrap;
+}
+th{background:#12253b}
+td{background:#09192c}
+#aviso{
+  color:#ffd38e;
+  font-size:11px;margin-top:7px;
+  overflow-wrap:anywhere;
+}
+
+/* CARTEL GANADOR */
+#winOverlay{
+  position:fixed;inset:0;z-index:100;
+  display:none;
+  align-items:center;justify-content:center;
+  padding:18px;background:#0008;
+  pointer-events:none;
+}
+#winOverlay.show{
+  display:flex;
+  animation:overlayIn .3s ease-out;
+}
+.winBanner{
+  width:min(420px,92vw);
+  padding:25px 18px;text-align:center;
+  border:2px solid var(--green);
+  border-radius:16px;
+  background:linear-gradient(145deg,#071a2d,#020713);
+  box-shadow:0 0 25px #31f09b66,0 0 65px #000;
+}
+.winBanner.blue{
+  border-color:var(--blue);
+  box-shadow:0 0 30px #00baff99,0 0 70px #00baff44;
+}
+.winBanner.red{
+  border-color:var(--red);
+  box-shadow:0 0 30px #ff315999,0 0 70px #ff315944;
+}
+.winBanner .small{
+  font-size:13px;letter-spacing:3px;
+  color:#bcd3e4;
+}
+.winBanner .name{
+  font-size:clamp(37px,9vw,57px);
+  font-weight:1000;font-style:italic;
+  margin:8px 0;
+  text-shadow:0 0 18px currentColor;
+}
+.winBanner.blue .name{color:#48d6ff}
+.winBanner.red .name{color:#ff5478}
+.winBanner .winningTime{
+  font-size:35px;font-weight:1000;color:#fff;
+}
+@keyframes overlayIn{
+  from{opacity:0;transform:scale(1.04)}
+  to{opacity:1;transform:scale(1)}
+}
+
+/* CELULAR */
+@media(max-width:850px){
+  .top{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .signal{grid-column:1/-1;grid-row:2}
+  .signal .ledrow{max-width:330px}
+  .historygrid{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:530px){
+  .app{padding:7px}
+  header{padding:7px 3px 10px}
+  .logo{font-size:29px}
+  .subtitle{font-size:8px;letter-spacing:1px}
+  .btbar{
+    width:100%;justify-content:space-between;
+  }
+  .btstatus{font-size:9px;padding:8px}
+  .btbar .btn{font-size:10px;padding:9px}
+  .top{gap:6px;margin-top:8px}
+  .lane{height:183px}
+  .lane h2{
+    font-size:13px;left:7px;top:8px;
+  }
+  .state{
+    font-size:8px;left:7px;top:28px;
+  }
+  .car{
+    top:27%;left:10%;
+    width:80%;height:48%;
+  }
+  .timing{bottom:12px}
+  .time{font-size:20px}
+  .result{font-size:9px}
+  .panel{padding:10px}
+  .signal{padding:12px 10px}
+  .signal .ledrow{max-width:300px}
+  .count{font-size:55px;margin-top:8px}
+  .count.false-start{font-size:54px}
+  .signaltext{font-size:11px}
+  .below{
+    grid-template-columns:minmax(0,1fr);
+    gap:7px;margin-top:7px;
+  }
+  .actions .btn{
+    font-size:11px;padding:11px 8px;
+  }
+  .historygrid{
+    gap:7px;margin-top:7px;
+  }
+  .historygrid .panel{
+    padding:8px;
+  }
+  .headrow .actions{
+    width:100%;
+  }
+  .headrow .actions .btn{
+    font-size:9px;
+    padding:9px 5px;
+  }
+  .rec{padding:9px 2px}
+  .rec label{font-size:8px}
+  .rec strong{font-size:clamp(12px,3.8vw,17px)}
+  .panel h2{font-size:12px}
+  .tablewrap{max-height:260px}
+  table{font-size:10px}
+  td,th{padding:6px}
+}
+
+/* RACE REPLAY integrado: el Bluetooth de la pantalla principal sigue conectado. */
+#replayModal[hidden]{display:none!important}
+#replayModal{position:fixed;inset:0;z-index:10000;background:#080e17;display:flex;flex-direction:column}
+#replayModal .replay-top{min-height:54px;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#0b1728;border-bottom:1px solid #38526f}
+#replayModal .replay-top strong{color:#70d8ff;font-size:15px;letter-spacing:.06em}
+#replayClose{border:1px solid #6b879c;border-radius:8px;background:#20334a;color:#fff;padding:10px 15px;font-weight:800}
+#replayFrame{display:block;flex:1;width:100%;height:100%;border:0;background:#0c1015}
+body.replay-open{overflow:hidden}
+
+/* DRIFT MASTERS: campeonato, pilotos, estadísticas, locutor y pantalla */
+.upgrade-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:9px}
+.upgrade-field{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.upgrade-field input,.upgrade-field select{min-width:0;flex:1;background:#0d263d;color:#fff;border:1px solid #426b86;border-radius:7px;padding:9px;font:inherit}
+.upgrade-stat{border:1px solid #35536c;border-radius:8px;padding:10px;background:#081b2c}
+.upgrade-stat strong{display:block;font-size:20px;color:#83dbff;margin-top:5px}
+.upgrade-buttons{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.upgrade-buttons button{flex:1}
+#champScore{font-size:23px;font-weight:900;text-align:center;margin:10px 0;color:#eef9ff}
+#champScore .blue{color:#41cfff}#champScore .red{color:#ff6588}
+#champNotice{font-size:12px;text-align:center;color:#cbdcec;min-height:18px}
+#effectsP1{width:100%;background:#0d263d;color:white;border:1px solid #426b86;border-radius:7px;padding:9px}
+#p1EffectsRow{display:none;margin-top:9px}
+body.dm-theater .app{max-width:none;padding:15px}body.dm-theater .top .lane{height:clamp(250px,34vh,480px)}
+body.dm-theater .top .count{font-size:clamp(80px,11vw,140px)}
+body.dm-theater .top .time{font-size:clamp(30px,5vw,65px)}
+@media(max-width:650px){.upgrade-grid{grid-template-columns:1fr}}
+/* Nombres personalizados sobre los autos */
+#blueLaneTitle,#redLaneTitle{max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#winName{overflow-wrap:anywhere;}
+
+body.dm-racing #lightControls,body.dm-racing .presets,body.dm-racing .pinselector,body.dm-racing #powerBtn,body.dm-racing #rainbowRow,body.dm-racing #effectRow,body.dm-racing #p1EffectsRow {opacity:.35;pointer-events:none;filter:grayscale(.6)}
+#raceSafetyNotice{display:none;color:#ffce7f;font-size:12px;margin:8px 0;font-weight:700}
+body.dm-racing #raceSafetyNotice{display:block}
+
+/* Organización clásica unificada · no altera cronometraje ni Bluetooth */
+.race-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
+.mode-choice{padding:13px 9px;background:#0d263c;border:1px solid #456780;border-radius:10px;color:#c8deed;font-weight:900}
+.mode-choice.active{border-color:#52d7ff;color:#fff;background:linear-gradient(155deg,#125c92,#0b3258);box-shadow:inset 0 0 15px #00baff24}
+.race-champ-options{padding:12px;margin-bottom:12px;border:1px solid #4b6b80;border-radius:9px;background:#071726}
+.race-champ-options[hidden]{display:none!important}
+body.champ-selected #dualBtn,body.champ-selected #soloBtn,body.champ-selected #resetBtn{display:none!important}
+#champRaceBtn,#dualBtn,#soloBtn{font-size:14px;padding:13px}
+#champRaceBtn[disabled]{opacity:.42}
+.pilot-line{display:grid;grid-template-columns:62px 92px minmax(0,1fr);gap:9px;align-items:center;margin-bottom:8px;padding:6px;border:1px solid #25465c;border-radius:10px;background:#08192b}
+.pilot-line img{width:56px;height:54px;object-fit:contain;filter:drop-shadow(0 0 7px #000)}
+.pilot-line label{font-size:12px;font-weight:900;color:#b5d4e7}
+.pilot-line input{min-width:0;background:#0d263d;color:#fff;border:1px solid #426b86;border-radius:7px;padding:10px;font:inherit}
+.mini-section-title{font-size:11px;color:#8fdafa;letter-spacing:1px;margin:13px 0 8px}
+.upgrade-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.historygrid{display:block;margin-top:10px;width:100%}
+.historygrid>.panel{width:100%;max-width:none}
+.historygrid table{width:100%;min-width:700px}
+.compact-settings{position:relative;z-index:50}
+.compact-settings summary{cursor:pointer;list-style:none;padding:11px 13px;border:1px solid #4f6580;border-radius:8px;font-size:11px;font-weight:900;background:#172b40;color:#e5f5ff}
+.compact-settings summary::-webkit-details-marker{display:none}
+.compact-pop{position:absolute;right:0;top:calc(100% + 5px);min-width:215px;background:#081a2c;border:1px solid #45617c;padding:9px;border-radius:10px;box-shadow:0 16px 30px #0009;display:grid;gap:7px}
+@media(max-width:850px){.upgrade-grid{grid-template-columns:1fr}}
+@media(max-width:530px){.pilot-line{grid-template-columns:48px 70px minmax(0,1fr);gap:5px}.pilot-line img{width:46px;height:48px}.pilot-line label{font-size:10px}.compact-settings summary{padding:9px 8px;font-size:10px}}
+
+/* Pantalla completa: vista de carrera, ajustada a la pantalla real. */
+html:fullscreen,body.dm-theater{height:100%;overflow:hidden}
+body.dm-theater .app{
+ max-width:none;width:100%;height:100dvh;padding:10px 16px;
+ display:flex;flex-direction:column;overflow:hidden
+}
+body.dm-theater header{flex:0 0 auto;padding:4px 4px 8px}
+body.dm-theater .top{
+ flex:1 1 auto;min-height:0;margin-top:8px;
+ grid-template-columns:minmax(0,1fr) minmax(150px,16vw) minmax(0,1fr);
+ align-items:stretch
+}
+body.dm-theater .top .lane{height:100%!important;min-height:0}
+body.dm-theater .top .signal{min-height:0}
+body.dm-theater .top .time{font-size:clamp(35px,5vw,78px)}
+body.dm-theater .top .count{font-size:clamp(70px,11vw,150px)}
+body.dm-theater .below{
+ flex:0 0 auto;display:grid;grid-template-columns:minmax(0,1fr);margin-top:8px;
+ max-height:31vh;overflow:auto
+}
+body.dm-theater .below>.panel:nth-child(2),
+body.dm-theater .historygrid,body.dm-theater .upgrade-grid{display:none!important}
+body.dm-theater .below>.panel:first-child{padding:10px}
+body.dm-theater .below .replay-entry{display:none}
+body.dm-theater #aviso:empty{display:none}
+body.dm-theater .compact-settings[open] .compact-pop{z-index:9999}
+@media(max-width:700px){
+ body.dm-theater .app{padding:6px}
+ body.dm-theater .top{grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr) auto}
+ body.dm-theater .top .signal{grid-column:1/-1;grid-row:2}
+ body.dm-theater .top .lane{min-height:0}
+ body.dm-theater .top .time{font-size:clamp(20px,4vw,42px)}
+ body.dm-theater .top .count{font-size:46px}
+ body.dm-theater .below{max-height:36vh}
+}
+
+
+/* Selector de autos: solo cambia las imágenes en pantalla. */
+.vehicle-pop{min-width:245px;right:0;z-index:55}
+.vehicle-pop label{font-size:10px;font-weight:900;color:#9fdcff;letter-spacing:1px}
+.vehicle-pop select{width:100%;padding:11px 9px;color:#eff8ff;background:#0b2944;border:1px solid #4c8ac0;border-radius:8px;font:inherit;font-weight:700}
+.vehicle-note{font-size:11px;color:#a8c9df}
+.vehicle-picker summary{min-width:44px;text-align:center;font-size:22px;line-height:1;padding:9px 10px}
+.compact-settings:not(.vehicle-picker) summary{min-width:44px;text-align:center;font-size:22px;line-height:1;padding:9px 10px}
+body.dm-theater .vehicle-pop{z-index:9999}
+
+
+/* Ícono compacto de auto de competición. */
+.vehicle-picker summary{display:flex;align-items:center;justify-content:center;height:43px;min-width:48px}
+.vehicle-picker .race-car-icon{display:block;flex-shrink:0;filter:drop-shadow(0 0 3px #009eff66)}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<header>
+  <div>
+    <div class="logo">DRIFT <span>MASTERS</span></div>
+    <div class="subtitle">DUAL LANE · RACE CONTROL</div>
+    <div class="byline">by <span>Luis Puntoriero</span></div>
+  </div>
+  <div class="btbar">
+    <details class="compact-settings vehicle-picker" id="vehiclePicker"><summary title="Seleccionar tipo de auto" aria-label="Seleccionar tipo de auto"><svg class="race-car-icon" viewBox="0 0 64 36" width="34" height="25" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M6 25h4l4-10h7l8-7h15l8 7h4l5 10v4h-6a6 6 0 0 0-12 0H24a6 6 0 0 0-12 0H5v-4z" fill="#61d8ff" stroke="#dffaff" stroke-width="1.5" stroke-linejoin="round"/><path d="M26 15l6-5h11l6 5z" fill="#072239"/><path d="M5 19h10M51 19h9" stroke="#ff5c73" stroke-width="3" stroke-linecap="round"/><circle cx="18" cy="29" r="5" fill="#091321" stroke="#e0f4ff" stroke-width="2"/><circle cx="49" cy="29" r="5" fill="#091321" stroke="#e0f4ff" stroke-width="2"/><path d="M4 11h13M1 15h8" stroke="#ff5c73" stroke-width="2" stroke-linecap="round"/></svg></summary>
+      <div class="compact-pop vehicle-pop">
+        <label for="vehicleType">TIPO DE AUTO</label>
+        <select id="vehicleType" aria-label="Tipo de auto">
+          <option value="drift">Drift car racing</option>
+          <option value="rc">RC car</option>
+          <option value="yahboom">Tinybit Yahboom car</option>
+          <option value="microbit">Microbit RC car</option>
+        </select>
+        <div id="vehicleSelectionLabel" class="vehicle-note">Drift car racing</div>
+      </div>
+    </details>
+    <details class="compact-settings" id="settingsPicker"><summary title="Configuración" aria-label="Configuración">⚙</summary>
+      <div class="compact-pop"><button id="voiceBtn" class="btn" type="button">🔇 LOCUTOR APAGADO</button><button id="fullScreenBtn" class="btn primary" type="button">⛶ PANTALLA COMPLETA</button></div>
+    </details>
+    <div class="btstatus">
+      <span id="btDot" class="dot"></span>
+      <span id="btText">DESCONECTADA</span>
+    </div>
+    <button id="connectBtn" class="btn primary">
+      CONECTAR BLUETOOTH
+    </button>
+  </div>
+</header>
+
+<div id="aviso"></div>
+
+<section class="top">
+
+  <div class="lane" id="blueLane">
+    <h2 id="blueLaneTitle">CARRIL AZUL · 01</h2>
+    <div id="blueState" class="state">
+      LISTO PARA SALIR
+    </div>
+    <img
+      id="blueCar"
+      class="car"
+      src="drift_supra_azul.png"
+      alt="Supra azul"
+    >
+    <div class="timing">
+      <div id="blueTime" class="time">--.- s</div>
+      <div id="blueResult" class="result">
+        Sin registro
+      </div>
+    </div>
+  </div>
+
+  <section class="signal panel">
+    <div class="ledrow" id="signalStrip"></div>
+    <div id="countdown" class="count">—</div>
+    <div id="signalMessage" class="signaltext">
+      ESPERANDO LARGADA
+    </div>
+  </section>
+
+  <div class="lane redlane" id="redLane">
+    <h2 id="redLaneTitle">CARRIL ROJO · 02</h2>
+    <div id="redState" class="state">
+      LISTO PARA SALIR
+    </div>
+    <img
+      id="redCar"
+      class="car"
+      src="drift_supra_rojo.png"
+      alt="Supra rojo"
+    >
+    <div class="timing">
+      <div id="redTime" class="time">--.- s</div>
+      <div id="redResult" class="result">
+        Sin registro
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<section class="below">
+
+  <div class="panel">
+    <h2>🏁 CONTROL DE CARRERA</h2>
+    <div class="race-mode-switch" role="group" aria-label="Tipo de competición">
+      <button id="raceModeSingle" class="mode-choice active" type="button">CARRERA SIMPLE</button>
+      <button id="raceModeChamp" class="mode-choice" type="button">🏆 CAMPEONATO</button>
+    </div>
+    <div id="raceChampOptions" class="race-champ-options" hidden>
+      <div class="upgrade-field"><label for="champLength">Formato</label><select id="champLength"><option value="3">Mejor de 3</option><option value="5">Mejor de 5</option><option value="7">Mejor de 7</option></select></div>
+      <div id="champScore"><span class="blue">0</span> — <span class="red">0</span></div>
+      <div id="champNotice">Campeonato listo</div>
+      <div class="upgrade-buttons"><button id="champRaceBtn" class="btn green" type="button" disabled>🏁 LARGAR CARRERA DE CAMPEONATO</button><button id="champReset" class="btn" type="button">REINICIAR</button></div>
+      <p class="detail">La primera largada inicia automáticamente el campeonato con dos autos. Las siguientes suman victorias al marcador. Para empezar uno nuevo, usá REINICIAR.</p>
+    </div>
+    <div class="actions">
+
+      <button id="dualBtn" class="btn green" disabled>
+        🏁 LARGAR 2 AUTOS
+      </button>
+
+      <button id="soloBtn" class="btn green" disabled>
+        🏁 LARGAR 1 AUTO
+      </button>
+
+      <button id="resetBtn" class="btn" disabled>
+        REINICIAR
+      </button>
+
+    </div>
+    <div id="statusMessage" class="status">
+      Esperando conexión
+    </div>
+    <div class="replay-entry" style="margin-top:13px;padding-top:11px;border-top:1px solid #35536c">
+      <button id="openReplayBtn" class="btn primary" type="button" disabled style="width:100%;font-size:14px">▶ VER REPETICIÓN</button>
+      <div id="replayNotice" class="detail" aria-live="polite">Disponible cuando se reciban los tiempos de ambas vueltas.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>ILUMINACIÓN NEOPIXEL</h2><div id="raceSafetyNotice">🔒 Iluminación bloqueada durante la carrera</div>
+
+    <div class="pinselector">
+      <button class="pinbtn" data-pin="P1">PUENTE</button>
+      <button class="pinbtn active" data-pin="P2">PISTA</button>
+      <button class="pinbtn" data-pin="P16">uBIT</button>
+    </div>
+
+    <div class="powerbar">
+      <span class="powerlabel" id="powerLabel">PISTA P2 · ENCENDIDA</span>
+      <button id="powerBtn" class="powerbtn" type="button" disabled aria-pressed="true">● ENCENDIDO</button>
+    </div>
+
+    <div id="rainbowRow" class="powerbar" style="display:none;margin-top:8px">
+      <span class="powerlabel">ARCOÍRIS P1 · SPI</span>
+      <button id="rainbowBtn" class="powerbtn" type="button" disabled aria-pressed="false">○ ACTIVAR</button>
+    </div>
+
+    <div class="lightcontrols" id="lightControls">
+    <div class="p2row">
+      <input
+        id="colorLibre"
+        type="color"
+        value="#0000ff"
+        disabled
+      >
+
+      <label>
+        BRILLO <b id="brightnessText">100%</b>
+        <br>
+        <input
+          id="brightness"
+          type="range"
+          min="0"
+          max="100"
+          value="100"
+          disabled
+        >
+      </label>
+
+      <div id="p2Preview" class="preview"></div>
+    </div>
+
+    <div class="presets">
+      <button data-rgb="0,0,255" disabled>Azul eléctrico</button>
+      <button data-rgb="0,229,176" disabled>Turquesa</button>
+      <button data-rgb="0,255,0" disabled>Verde</button>
+      <button data-rgb="255,255,0" disabled>Amarillo</button>
+      <button data-rgb="255,65,0" disabled>Naranja</button>
+      <button data-rgb="255,0,0" disabled>Rojo</button>
+      <button data-rgb="255,0,170" disabled>Fucsia</button>
+      <button data-rgb="160,0,255" disabled>Violeta</button>
+      <button data-rgb="255,255,255" disabled>Blanco</button>
+      <button data-rgb="255,110,20" disabled>Cálido</button>
+    </div>
+
+    </div>
+
+    <div id="p1EffectsRow"><label for="effectsP1" class="powerlabel">EFECTOS P1 (SOLO REPOSO)</label>
+      <select id="effectsP1" disabled><option value="0">Color fijo</option><option value="1">Arcoíris</option><option value="2">Respiración</option><option value="3">Pulso</option><option value="4">Policía rojo / azul</option><option value="5">Alternar colores</option></select>
+      <div class="detail">Los efectos nuevos necesitan cargar el firmware experimental. El arcoíris actual sigue disponible.</div></div>
+    <div id="pinInfo" class="pininfo">
+      Controlando salida P2
+    </div>
+  </div>
+
+</section>
+
+
+
+<section class="upgrade-grid" aria-label="Mejoras de carrera">
+<div class="panel">
+ <h2>🏎️ PILOTOS</h2>
+ <div class="pilot-line"><img src="./casco_azul.svg" alt="Casco azul"><label for="pilotBlue">AZUL · 01</label><input id="pilotBlue" maxlength="24" placeholder="Piloto azul"></div>
+ <div class="pilot-line"><img src="./casco_rojo.svg" alt="Casco rojo"><label for="pilotRed">ROJO · 02</label><input id="pilotRed" maxlength="24" placeholder="Piloto rojo"></div>
+ <div class="upgrade-buttons"><button id="savePilots" class="btn primary" type="button">GUARDAR NOMBRES</button></div>
+ <p class="detail">Los nombres se guardan en este dispositivo y se registran en las nuevas carreras.</p>
+</div>
+<div class="panel">
+ <h2>📊 ESTADÍSTICAS Y RÉCORDS</h2><h3 class="mini-section-title">RÉCORDS DE PISTA</h3>
+    <div class="recgrid">
+      <div class="rec">
+        <label>RÉCORD AZUL</label>
+        <strong id="recordBlue">—</strong>
+      </div>
+      <div class="rec">
+        <label>RÉCORD ROJO</label>
+        <strong id="recordRed">—</strong>
+      </div>
+      <div class="rec">
+        <label>RÉCORD ABSOLUTO</label>
+        <strong id="recordTrack">—</strong>
+      </div>
+    </div>
+  <h3 class="mini-section-title">ESTADÍSTICAS DE CARRERA</h3>
+ <div class="recgrid"><div class="upgrade-stat">CARRERAS<strong id="statRaces">0</strong></div><div class="upgrade-stat">AZUL · VICTORIAS<strong id="statBlueWins">0</strong></div><div class="upgrade-stat">ROJO · VICTORIAS<strong id="statRedWins">0</strong></div></div>
+ <div class="recgrid" style="margin-top:8px"><div class="upgrade-stat">PROM. AZUL<strong id="statBlueAvg">—</strong></div><div class="upgrade-stat">PROM. ROJO<strong id="statRedAvg">—</strong></div><div class="upgrade-stat">DIF. PROM.<strong id="statDiff">—</strong></div></div>
+ <p id="statRate" class="detail">Porcentajes de victorias: —</p>
+</div>
+
+</section>
+<section class="historygrid">
+
+  <div class="panel">
+    <div class="headrow">
+      <h2>HISTORIAL DE CARRERAS</h2>
+      <div class="actions">
+        <button id="exportCsv" class="btn green">
+          EXPORTAR CSV
+        </button>
+        <button id="clearHistory" class="btn red">
+          BORRAR HISTORIAL
+        </button>
+      </div>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>FECHA</th>
+            <th>MODO</th>
+            <th>GANADOR</th>
+            <th>AZUL</th>
+            <th>ROJO</th>
+            <th>DIFERENCIA</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+
+    <p id="storageNote" class="detail"></p>
+  </div>
+
+
+
+</section>
+</div>
+
+<div id="winOverlay">
+  <div id="winBanner" class="winBanner">
+    <div class="small">GANADOR DE LA CARRERA</div>
+    <div id="winName" class="name">AZUL</div>
+    <div id="winTime" class="winningTime">0.0 s</div>
+  </div>
+</div>
+
+<script>
+const SERVICE =
+  "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+
+const WRITE_UUID =
+  "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+
+const NOTIFY_UUID =
+  "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+
+const $ = id => document.getElementById(id);
+
+let device = null;
+let writer = null;
+let notifier = null;
+let buffer = "";
+let connected = false;
+let solo = false;
+let winnerFirst = "";
+let raceSaved = false;
+let keepResult = false;
+let audio = null;
+let bannerTimer = null;
+
+// ESTADOS DE LOS SENSORES
+let azulPosicionado = false;
+let rojoPosicionado = false;
+let faseCarrera = "reposo";
+
+const STORAGE_KEY = "driftMastersHistoryV1";
+let history = [];
+
+// ILUMINACIÓN INDEPENDIENTE
+let selectedPin = "P2";
+let lightTimer = null;
+
+const lights = {
+  P1:{color:"#0000ff",brightness:100,on:true,rainbow:false},
+  P2:{color:"#0000ff",brightness:100,on:true},
+  P16:{color:"#0000ff",brightness:100,on:true}
+};
+
+// SONIDOS
+function audioOn(){
+  try{
+    if(!audio){
+      audio = new (
+        window.AudioContext ||
+        window.webkitAudioContext
+      )();
+    }
+    if(audio.state==="suspended"){
+      audio.resume();
+    }
+  }catch(e){}
+}
+
+function beep(f,d,delay=0){
+  if(!audio)return;
+
+  const t=audio.currentTime+delay;
+  const o=audio.createOscillator();
+  const g=audio.createGain();
+
+  o.type="square";
+  o.frequency.setValueAtTime(f,t);
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(.065,t+.008);
+  g.gain.exponentialRampToValueAtTime(.0001,t+d);
+
+  o.connect(g);
+  g.connect(audio.destination);
+  o.start(t);
+  o.stop(t+d+.02);
+}
+
+function sfx(s){
+  if(s==="COUNT")beep(880,.1);
+
+  if(s==="GO"){
+    beep(300,.1);
+    beep(300,.1,.15);
+    beep(1568,.4,.3);
+  }
+
+  if(s==="FALSE"){
+    for(let i=0;i<8;i++){
+      beep(500-i*50,.08,i*.09);
+    }
+  }
+
+  if(s==="WIN"){
+    beep(784,.12);
+    beep(988,.13,.15);
+    beep(1175,.25,.32);
+  }
+}
+
+// ESTADO GENERAL
+function status(t){
+  $("statusMessage").textContent=t;
+}
+
+function setConnection(ok){
+  connected=ok;
+
+  $("btText").textContent=
+    ok?"CONECTADA":"DESCONECTADA";
+
+  $("btDot").classList.toggle("on",ok);
+
+  $("connectBtn").textContent=
+    ok?"DESCONECTAR":"CONECTAR BLUETOOTH";
+
+  [
+    "dualBtn","soloBtn","resetBtn",
+    "colorLibre","brightness","powerBtn"
+  ].forEach(id=>{
+    $(id).disabled=!ok;
+  });
+
+  renderLight();
+
+  if(!ok){
+    status("Micro:bit desconectada");
+  }
+}
+
+// ESTADO AUTOMÁTICO DE LOS AUTOS
+function actualizarEstadoAutos(){
+  if(
+    faseCarrera==="cuenta" ||
+    faseCarrera==="corriendo" ||
+    faseCarrera==="finalizada"
+  ){
+    return;
+  }
+
+  if(solo){
+    status(
+      azulPosicionado
+        ?"AUTO AZUL LISTO"
+        :"FALTA AUTO AZUL"
+    );
+    return;
+  }
+
+  if(azulPosicionado && rojoPosicionado){
+    status("AUTOS LISTOS");
+  }else if(!azulPosicionado && !rojoPosicionado){
+    status("POSICIONAR AUTOS");
+  }else if(!azulPosicionado){
+    status("FALTA AUTO AZUL");
+  }else{
+    status("FALTA AUTO ROJO");
+  }
+}
+
+function actualizarSensor(color,posicionado){
+  if(color==="AZUL"){
+    azulPosicionado=posicionado;
+
+    $("blueState").textContent=
+      posicionado?"POSICIONADO":"FALTA AUTO";
+  }else{
+    rojoPosicionado=posicionado;
+
+    $("redState").textContent=
+      posicionado?"POSICIONADO":"FALTA AUTO";
+  }
+
+  actualizarEstadoAutos();
+}
+
+// SEMÁFORO
+for(let i=0;i<8;i++){
+  const led=document.createElement("span");
+  led.className="led";
+  $("signalStrip").appendChild(led);
+}
+
+function setSignal(n,mode="red"){
+  for(let i=0;i<8;i++){
+    $("signalStrip").children[i].className=
+      "led"+(
+        mode==="green"?" green":
+        mode==="red"&&i<n?" red":""
+      );
+  }
+}
+
+// GANADOR
+function clearWinner(){
+  $("blueLane").classList.remove(
+    "winner-blue","loser"
+  );
+  $("redLane").classList.remove(
+    "winner-red","loser"
+  );
+  $("winOverlay").classList.remove("show");
+  clearTimeout(bannerTimer);
+}
+
+function showWinner(color,time){
+  clearWinner();
+
+  if(color==="AZUL"){
+    $("blueLane").classList.add("winner-blue");
+    $("redLane").classList.add("loser");
+  }else if(color==="ROJO"){
+    $("redLane").classList.add("winner-red");
+    $("blueLane").classList.add("loser");
+  }else{
+    return;
+  }
+
+  $("winName").textContent=(color==="AZUL"?pilotNames.azul:pilotNames.rojo);
+  $("winTime").textContent=time;
+
+  $("winBanner").className=
+    "winBanner "+(
+      color==="AZUL"?"blue":"red"
+    );
+
+  $("winOverlay").classList.add("show");
+
+  bannerTimer=setTimeout(()=>{
+    $("winOverlay").classList.remove("show");
+  },5000);
+}
+
+// REINICIO
+function resetDisplay(){
+  clearWinner();
+  setSignal(0,"off");
+
+  $("countdown").classList.remove("false-start");
+  $("signalMessage").classList.remove("false-blue","false-red");
+  $("blueLane").classList.remove("false-offender");
+  $("redLane").classList.remove("false-offender");
+  $("countdown").textContent="—";
+  $("signalMessage").textContent=
+    "ESPERANDO LARGADA";
+
+  $("blueState").textContent="LISTO PARA SALIR";
+  $("redState").textContent="LISTO PARA SALIR";
+
+  $("blueTime").textContent="--.- s";
+  $("redTime").textContent="--.- s";
+
+  $("blueResult").textContent="Sin registro";
+  $("redResult").textContent="Sin registro";
+
+  $("redLane").style.opacity="1";
+}
+
+function startRace(isSolo){
+  borrarRepeticion();
+  solo=isSolo;
+  winnerFirst="";
+  raceSaved=false;
+  keepResult=false;
+
+  azulPosicionado=false;
+  rojoPosicionado=false;
+  faseCarrera="posicionamiento";
+
+  resetDisplay();
+
+  if(solo){
+    $("redLane").style.opacity=".35";
+  }
+
+  actualizarEstadoAutos();
+}
+
+// HISTORIAL
+function parseTime(t){
+  if(!t || String(t).trim()==="-"){
+    return null;
+  }
+
+  const n=parseFloat(
+    String(t).replace(",",".")
+  );
+
+  return Number.isFinite(n)&&n>=0?n:null;
+}
+
+function fmt(t){
+  return t===null?"—":t.toFixed(1)+" s";
+}
+
+function loadHistory(){
+  try{
+    const a=JSON.parse(
+      localStorage.getItem(STORAGE_KEY)||"[]"
+    );
+
+    history=Array.isArray(a)?a:[];
+  }catch(e){
+    history=[];
+  }
+}
+
+function saveHistory(){
+  try{
+    localStorage.setItem(
+      STORAGE_KEY,JSON.stringify(history)
+    );
+
+    $("storageNote").textContent=
+      history.length+" carreras guardadas";
+  }catch(e){
+    $("storageNote").textContent=
+      "Error al guardar: "+e.message;
+  }
+}
+
+function renderHistory(){
+  const body=$("historyBody");
+  body.replaceChildren();
+
+  if(!history.length){
+    const tr=document.createElement("tr");
+    const td=document.createElement("td");
+
+    td.colSpan=7;
+    td.textContent="Todavía no hay carreras";
+
+    tr.appendChild(td);
+    body.appendChild(tr);
+  }
+
+  history.slice().reverse().forEach((x,i)=>{
+    const tr=document.createElement("tr");
+
+    [
+      String(history.length-i).padStart(3,"0"),
+      new Date(x.fecha).toLocaleString("es-AR"),
+      x.modo,
+      x.ganador==="AZUL"?"AZUL - "+(x.pilotoAzul||"AZUL"):
+        x.ganador==="ROJO"?"ROJO - "+(x.pilotoRojo||"ROJO"):x.ganador,
+      fmt(x.azul),
+      fmt(x.rojo),
+      fmt(x.diferencia)
+    ].forEach(v=>{
+      const td=document.createElement("td");
+      td.textContent=v;
+      tr.appendChild(td);
+    });
+
+    body.appendChild(tr);
+  });
+
+  let bestB=null;
+  let bestR=null;
+
+  history.forEach(x=>{
+    if(Number.isFinite(x.azul)){
+      bestB=bestB===null
+        ?x.azul:Math.min(bestB,x.azul);
+    }
+
+    if(Number.isFinite(x.rojo)){
+      bestR=bestR===null
+        ?x.rojo:Math.min(bestR,x.rojo);
+    }
+  });
+
+  $("recordBlue").textContent=fmt(bestB);
+  $("recordRed").textContent=fmt(bestR);
+
+  const vals=[bestB,bestR].filter(
+    v=>v!==null
+  );
+
+  $("recordTrack").textContent=
+    fmt(vals.length?Math.min(...vals):null);
+}
+
+function record(mode,w,b,r){
+  if(raceSaved)return;
+
+  raceSaved=true;
+  keepResult=true;
+
+  history.push({
+    fecha:new Date().toISOString(),
+    modo:mode,
+    ganador:w,
+    pilotoAzul:pilotNames.azul,
+    pilotoRojo:pilotNames.rojo,
+    azul:b,
+    rojo:r,
+    diferencia:
+      b!==null&&r!==null
+        ?Math.abs(b-r)
+        :null
+  });
+
+  saveHistory();
+  renderHistory();
+  registerChampionshipResult(mode,w);
+}
+
+// RESULTADOS
+function results(payload){
+  const parts=payload.split(",");
+
+  if(parts.length!==2)return;
+
+  const b=parseTime(parts[0]);
+  const r=parseTime(parts[1]);
+
+  let w=winnerFirst||(
+    b!==null&&r!==null
+      ?(b<=r?"AZUL":"ROJO")
+      :b!==null?"AZUL"
+      :r!==null?"ROJO"
+      :"SIN GANADOR"
+  );
+
+  if(b===null&&r===null){
+    w="SIN GANADOR";
+  }
+
+  $("blueTime").textContent=
+    b===null?"SIN LLEGADA":fmt(b);
+
+  $("redTime").textContent=
+    r===null?"SIN LLEGADA":fmt(r);
+
+  $("blueResult").textContent=
+    b===null?"SIN LLEGADA":
+    w==="AZUL"?"GANADOR":"FINALIZÓ";
+
+  $("redResult").textContent=
+    r===null?"SIN LLEGADA":
+    w==="ROJO"?"GANADOR":"FINALIZÓ";
+
+  $("countdown").textContent="FIN";
+
+  $("signalMessage").textContent=
+    "CARRERA FINALIZADA";
+
+  setSignal(
+    8,w==="SIN GANADOR"?"red":"green"
+  );
+
+  const winnerTime=
+    w==="AZUL"?b:
+    w==="ROJO"?r:null;
+
+  if(winnerTime!==null){
+    showWinner(w,fmt(winnerTime));
+  }
+
+  faseCarrera="finalizada";
+
+  record("DOS AUTOS",w,b,r);
+  status("Resultados registrados");
+  narrar("Ganó " + (w==="AZUL"?pilotNames.azul:w==="ROJO"?pilotNames.rojo:"ninguno"));
+}
+
+// REPETICIÓN DIFERIDA: se habilita únicamente con ambas vueltas confirmadas.
+// La micro:bit envía VUELTAS:a1,aTotal,r1,rTotal en milisegundos
+// después de finalizar la carrera; no enviamos mensajes extra por Bluetooth.
+let datosRepeticion = null;
+function estadoRepeticion(){
+  $("openReplayBtn").disabled = !datosRepeticion;
+  $("replayNotice").textContent = datosRepeticion
+    ? "Carrera registrada. Podés ver la repetición cuando quieras."
+    : "Disponible cuando se reciban los tiempos de ambas vueltas.";
+}
+function borrarRepeticion(){
+  datosRepeticion = null;
+  estadoRepeticion();
+}
+$("openReplayBtn").onclick = () => {
+  if(!datosRepeticion)return;
+  const d=datosRepeticion;
+  const q=new URLSearchParams({a1:String(d.azul1),at:String(d.azulTotal),r1:String(d.rojo1),rt:String(d.rojoTotal),pb:pilotNames.azul,pr:pilotNames.rojo});
+  const destino=new URL("./replay/index.html",window.location.href);
+  q.set("version","20261022poster");
+  destino.search=q.toString();
+  const marco=$("replayFrame");
+  marco.src=destino.href;
+  $("replayModal").hidden=false;
+  document.body.classList.add("replay-open");
+};
+
+// MENSAJES MICRO:BIT
+function setRaceSafety(){
+  const locked=faseCarrera==="cuenta"||faseCarrera==="corriendo";
+  document.body.classList.toggle("dm-racing",locked);
+  for(const id of ["powerBtn","rainbowBtn","colorLibre","brightness","effectsP1"]){
+    const el=document.getElementById(id);if(el&&locked)el.disabled=true;
+  }
+  // Los selectores de salida deben volver a habilitarse al salir del modo carrera.
+  document.querySelectorAll(".pinbtn").forEach(el=>el.disabled=locked);
+  if(!locked){
+    renderLight();
+  }else{
+    document.getElementById("effectsP1")?.setAttribute("disabled","");
+    document.querySelectorAll(".presets button").forEach(el=>el.disabled=true);
+  }
+}
+function processMessage(raw){
+  const m=raw.trim();
+  const u=m.toUpperCase();
+
+  if(!m)return;
+  if(u.startsWith("VUELTAS:")){
+    const v=m.substring(8).split(",").map(Number);
+    if(v.length===4 && v.every(Number.isFinite) &&
+       v[0]>0 && v[1]>v[0] && v[2]>0 && v[3]>v[2]){
+      datosRepeticion={azul1:v[0],azulTotal:v[1],rojo1:v[2],rojoTotal:v[3]};
+      estadoRepeticion();
+    }else{
+      borrarRepeticion();
+      $("replayNotice").textContent="Repetición no disponible: faltan tiempos válidos de ambos autos.";
+    }
+    return;
+  }
+
+
+  if(u.startsWith("SFX:")){
+    sfx(u.substring(4));
+    return;
+  }
+
+  if(u==="REPOSO"||u==="CONECTADO"){
+    placaListaCampeonato=true;
+    preparacionPendienteCampeonato=false;
+    mangaPreparadaCampeonato=false;
+    confirmarCuentaCampeonato();
+    if(faseCarrera==="finalizada")faseCarrera="reposo";
+    if(!keepResult && faseCarrera!=="cuenta" && faseCarrera!=="corriendo"){
+      faseCarrera="posicionamiento";
+      resetDisplay();
+      actualizarEstadoAutos();
+    }else{
+      status("Sistema preparado");
+    }
+    return;
+  }
+
+  if(u==="POSICIONAR"){
+    if(preparacionPendienteCampeonato) mangaPreparadaCampeonato=true;
+    preparacionPendienteCampeonato=false;
+    placaListaCampeonato=false;
+    // Durante la transición de autos listos a cuenta puede llegar un
+    // POSICIONAR tardío. No parpadear ni modificar el estado en ese caso.
+    if(faseCarrera==="cuenta"||faseCarrera==="corriendo"||esperandoCuentaCampeonato)return;
+    if(azulPosicionado && (solo || rojoPosicionado)){
+      status("PILOTOS PREPARADOS");
+      return;
+    }
+    faseCarrera="posicionamiento";
+    actualizarEstadoAutos();
+    return;
+  }
+
+  if(
+    u.startsWith("AZUL:")||
+    u.startsWith("ROJO:")
+  ){
+    const color=u.startsWith("AZUL:")
+      ?"AZUL":"ROJO";
+
+    const posicionado=u.endsWith(":OK");
+
+    actualizarSensor(color,posicionado);
+    return;
+  }
+
+  if(u==="AUTOS LISTOS"||u==="AUTO LISTO"){
+    narrar("Pilotos preparados");
+    actualizarEstadoAutos();
+    return;
+  }
+
+  if(u==="CUENTA"){
+    preparacionPendienteCampeonato=false;
+    confirmarCuentaCampeonato();
+    faseCarrera="cuenta";mangaPreparadaCampeonato=false;status("PILOTOS PREPARADOS");
+    status("PILOTOS PREPARADOS");
+    setSignal(8,"red");
+    return;
+  }
+
+  const c=u.match(/^COUNT:(\d+)$/);
+
+  if(c){
+    confirmarCuentaCampeonato();
+    faseCarrera="cuenta";mangaPreparadaCampeonato=false;status("PILOTOS PREPARADOS");
+    status("PILOTOS PREPARADOS");
+
+    const n=Number(c[1]);
+    if(n<=3 && n>=1) narrar(String(n));
+
+    $("countdown").textContent=n;
+
+    $("signalMessage").textContent=
+      n<=3?"¡ATENCIÓN!":"PREPARADOS";
+
+    setSignal(n,"red");
+    return;
+  }
+
+  if(u==="GO"){
+    placaListaCampeonato=false;
+    confirmarCuentaCampeonato();
+    narrar("Largada");
+    faseCarrera="corriendo";
+
+    $("countdown").textContent="GO!";
+
+    $("signalMessage").textContent=
+      "¡LARGADA!";
+
+    $("blueState").textContent="EN CARRERA";
+
+    if(!solo){
+      $("redState").textContent="EN CARRERA";
+    }
+
+    setSignal(8,"green");
+    status("¡Largada confirmada!");
+    return;
+  }
+
+  if(u.startsWith("SALIDA FALSA:")){
+    placaListaCampeonato=false;
+    faseCarrera="finalizada";
+    clearWinner();
+
+    const infractor=u.substring("SALIDA FALSA:".length).trim();
+    const esAzul=infractor==="AZUL";
+    const esRojo=infractor==="ROJO";
+
+    $("countdown").classList.add("false-start");
+    $("countdown").textContent="✖";
+
+    $("signalMessage").classList.remove("false-blue","false-red");
+    if(esAzul||esRojo){
+      $("signalMessage").textContent="AUTO "+infractor+" ADELANTADO";
+      $("signalMessage").classList.add(esAzul?"false-blue":"false-red");
+      $(esAzul?"blueLane":"redLane").classList.add("false-offender");
+    }else{
+      $("signalMessage").textContent="SALIDA ANULADA";
+    }
+
+    $("blueResult").textContent=esAzul?"SALIDA FALSA":"SALIDA ANULADA";
+    $("redResult").textContent=esRojo?"SALIDA FALSA":"SALIDA ANULADA";
+    $("blueState").textContent=esAzul?"SE ADELANTÓ":"SALIDA ANULADA";
+    $("redState").textContent=esRojo?"SE ADELANTÓ":"SALIDA ANULADA";
+
+    setSignal(8,"red");
+    status((esAzul||esRojo)?"Salida falsa del auto "+infractor:"Salida falsa: "+infractor);
+
+    keepResult=true;
+    narrar("Salida falsa del auto " + (esAzul?pilotNames.azul:esRojo?pilotNames.rojo:infractor));
+    return;
+  }
+
+  if(u.startsWith("GANA:")){
+    const a=m.match(
+      /^GANA:(Azul|Rojo)\s+(.+)$/i
+    );
+
+    if(!a)return;
+
+    winnerFirst=a[1].toUpperCase();
+
+    const id=winnerFirst==="AZUL"
+      ?"blue":"red";
+
+    $(id+"Time").textContent=a[2];
+    $(id+"Result").textContent="GANADOR";
+
+    clearWinner();
+
+    if(winnerFirst==="AZUL"){
+      $("blueLane").classList.add("winner-blue");
+      $("redLane").classList.add("loser");
+    }else{
+      $("redLane").classList.add("winner-red");
+      $("blueLane").classList.add("loser");
+    }
+
+    status(
+      "Ganó "+winnerFirst+
+      ". Esperando segundo auto..."
+    );
+    return;
+  }
+
+  if(u.startsWith("RESULTADOS:")){
+    placaListaCampeonato=false;
+    results(
+      m.substring("RESULTADOS:".length)
+    );
+    return;
+  }
+
+  if(u.startsWith("TIEMPO:")){
+    const t=m.substring(7);
+    const b=parseTime(t);
+
+    $("blueTime").textContent=t;
+
+    $("blueResult").textContent=
+      "TIEMPO REGISTRADO";
+
+    $("countdown").textContent="FIN";
+
+    $("signalMessage").textContent=
+      "CONTRARRELOJ FINALIZADO";
+
+    setSignal(8,"green");
+
+    if(b!==null){
+      showWinner("AZUL",fmt(b));
+    }
+
+    faseCarrera="finalizada";
+
+    record("SOLO AZUL","AZUL",b,null);
+    return;
+  }
+
+  if(u.startsWith("STATUS:")){
+    status(m.substring(7));
+    return;
+  }
+
+  if(u==="BT:OK"){
+    status("Bluetooth UART activo");
+  }
+}
+
+// RECEPCIÓN UART
+function notify(e){
+  buffer+=new TextDecoder().decode(
+    e.target.value
+  );
+
+  const lines=buffer.split(/\r?\n/);
+
+  buffer=lines.pop()||"";
+
+  lines.forEach(line=>{processMessage(line);setRaceSafety();});
+}
+
+// BLUETOOTH
+async function connect(){
+  audioOn();
+
+  if(!navigator.bluetooth){
+    $("aviso").textContent=
+      "Abrí la página con Chrome Android y HTTPS";
+    return;
+  }
+
+  try{
+    $("connectBtn").disabled=true;
+    $("aviso").textContent="";
+
+    device=await navigator.bluetooth.requestDevice({
+      acceptAllDevices:true,
+      optionalServices:[SERVICE]
+    });
+
+    device.addEventListener(
+      "gattserverdisconnected",()=>{
+        writer=null;
+        notifier=null;
+        buffer="";
+        setConnection(false);
+      }
+    );
+
+    const server=await device.gatt.connect();
+
+    const svc=await server.getPrimaryService(
+      SERVICE
+    );
+
+    writer=await svc.getCharacteristic(
+      WRITE_UUID
+    );
+
+    notifier=await svc.getCharacteristic(
+      NOTIFY_UUID
+    );
+
+    await notifier.startNotifications();
+
+    notifier.addEventListener(
+      "characteristicvaluechanged",notify
+    );
+
+    setConnection(true);
+    status("Bluetooth conectado");
+
+  }catch(e){
+    $("aviso").textContent=
+      "Error Bluetooth: "+e.message;
+
+    if(device&&device.gatt.connected){
+      device.gatt.disconnect();
+    }
+
+    setConnection(false);
+
+  }finally{
+    $("connectBtn").disabled=false;
+  }
+}
+
+function disconnect(){
+  if(device&&device.gatt.connected){
+    device.gatt.disconnect();
+  }else{
+    setConnection(false);
+  }
+}
+
+async function send(s){
+  if((faseCarrera==="cuenta"||faseCarrera==="corriendo") && /^(?:C:|P1:|P16:|R1:|E1:)/.test(s)) return;
+  if(
+    !writer||
+    !device||
+    !device.gatt.connected
+  ){
+    status("Conectá primero la micro:bit");
+    return;
+  }
+
+  try{
+    const b=new TextEncoder().encode(s+"\n");
+
+    if(writer.properties.write){
+      await writer.writeValueWithResponse(b);
+    }else{
+      await writer.writeValueWithoutResponse(b);
+    }
+
+  }catch(e){
+    $("aviso").textContent=
+      "No se pudo enviar: "+e.message;
+  }
+}
+
+// BOTONES DE CARRERA
+$("connectBtn").onclick=()=>{
+  if(device&&device.gatt.connected){
+    disconnect();
+  }else{
+    connect();
+  }
+};
+
+$("dualBtn").onclick=()=>{
+  if(faseCarrera==="cuenta"||faseCarrera==="corriendo")return;
+  audioOn();
+  // Segunda pulsación de carrera simple: conservar los sensores ya posicionados.
+  // Reiniciarlos aquí causaba el destello «POSICIONAR AUTOS» al largar.
+  if(faseCarrera==="posicionamiento" && !solo && azulPosicionado && rojoPosicionado){
+    status("PILOTOS PREPARADOS");
+    send("A");
+    return;
+  }
+  startRace(false);
+  setRaceSafety();
+  send("A");
+};
+
+$("soloBtn").onclick=()=>{
+  if(faseCarrera==="cuenta"||faseCarrera==="corriendo")return;
+  audioOn();
+  // Igual que en dos autos: la segunda pulsación mantiene el sensor
+  // ya confirmado y solicita la cuenta sin preparar la manga otra vez.
+  if(faseCarrera==="posicionamiento" && solo && azulPosicionado){
+    status("PILOTOS PREPARADOS");
+    send("S");
+    return;
+  }
+  startRace(true);
+  setRaceSafety();
+  send("S");
+};
+
+$("resetBtn").onclick=()=>{
+  borrarRepeticion();
+  keepResult=false;
+  raceSaved=false;
+  solo=false;
+
+  azulPosicionado=false;
+  rojoPosicionado=false;
+  faseCarrera="reposo";
+
+  resetDisplay();
+  setRaceSafety();
+  send("B");
+};
+
+// ILUMINACIÓN P1 / P2 / P16
+function hexToRGB(hex){
+  return [1,3,5].map(i=>
+    parseInt(hex.slice(i,i+2),16)
+  );
+}
+
+function scaledRGB(pin){
+  const light=lights[pin];
+  const rgb=hexToRGB(light.color);
+
+  return rgb.map(v=>
+    Math.round(v*light.brightness/100)
+  );
+}
+
+function renderLight(){
+  const light=lights[selectedPin];
+
+  $("colorLibre").value=light.color;
+  $("brightness").value=light.brightness;
+
+  $("brightnessText").textContent=
+    light.brightness+"%";
+
+  const rgb=light.on?scaledRGB(selectedPin):[0,0,0];
+  const css="rgb("+rgb.join(",")+")";
+
+  $("powerBtn").disabled=!connected;
+  $("powerBtn").classList.toggle("off",!light.on);
+  $("powerBtn").textContent=light.on?"● ENCENDIDO":"○ APAGADO";
+  $("powerBtn").setAttribute("aria-pressed",String(light.on));
+  $("powerLabel").textContent=
+    ({P1:"PUENTE P1",P2:"PISTA P2",P16:"uBIT P16"})[selectedPin]+
+    (light.on?" · ENCENDIDA":" · APAGADA");
+  const rainbowActive=selectedPin==="P1"&&!!light.rainbow;
+  $("rainbowRow").style.display=selectedPin==="P1"?"flex":"none";
+  $("rainbowBtn").disabled=!connected||!light.on;
+  $("rainbowBtn").classList.toggle("off",!rainbowActive);
+  $("rainbowBtn").textContent=rainbowActive?"● ARCOÍRIS ON":"○ ACTIVAR";
+  $("rainbowBtn").setAttribute("aria-pressed",String(rainbowActive));
+  $("lightControls").classList.toggle("off",!light.on||rainbowActive);
+  $("colorLibre").disabled=!connected||!light.on||rainbowActive;
+  $("brightness").disabled=!connected||!light.on||rainbowActive;
+  document.querySelectorAll(".presets button")
+    .forEach(b=>b.disabled=!connected||!light.on||rainbowActive);
+
+  $("p2Preview").style.background=css;
+  $("p2Preview").style.boxShadow=
+    "0 0 14px "+css;
+
+  $("pinInfo").textContent=
+    "Controlando salida "+selectedPin+(light.on?"":" (apagada)")+(rainbowActive?" · arcoíris (se pausa durante carrera)":"");
+
+  $("rainbowBtn").onclick=()=>{
+  if(!connected||!lights.P1.on)return;
+  clearTimeout(lightTimer);
+  lights.P1.rainbow=!lights.P1.rainbow;
+  renderLight();
+  // La placa anima P1 por SPI. No se envían frames por Bluetooth.
+  send("R1:"+(lights.P1.rainbow?"1":"0"));
+};
+
+document.querySelectorAll(".pinbtn")
+    .forEach(b=>{
+      b.classList.toggle(
+        "active",
+        b.dataset.pin===selectedPin
+      );
+    });
+}
+
+function selectPin(pin){
+  if(faseCarrera==="cuenta"||faseCarrera==="corriendo")return;
+  if(!lights[pin])return;
+
+  clearTimeout(lightTimer);
+  selectedPin=pin;
+  renderLight();
+}
+
+function updateLight(){
+  if(faseCarrera==="cuenta"||faseCarrera==="corriendo")return;
+  if(!lights[selectedPin].on || (selectedPin==="P1" && lights.P1.rainbow))return;
+  lights[selectedPin].color=
+    $("colorLibre").value;
+
+  lights[selectedPin].brightness=
+    Number($("brightness").value);
+
+  renderLight();
+
+  clearTimeout(lightTimer);
+
+  const pin=selectedPin;
+
+  if(connected){
+    lightTimer=setTimeout(()=>{
+      sendLight(pin);
+    },130);
+  }
+}
+
+function sendLight(pin){
+  const rgb=lights[pin].on?scaledRGB(pin):[0,0,0];
+  const values=rgb.join(",");
+
+  if(pin==="P2"){
+    send("C:"+values);
+  }else{
+    send(pin+":"+values);
+  }
+}
+
+$("powerBtn").onclick=()=>{
+  if(!connected)return;
+  const pin=selectedPin;
+  clearTimeout(lightTimer);
+  lights[pin].on=!lights[pin].on;
+  if(pin==="P1" && !lights[pin].on && lights.P1.rainbow){
+    lights.P1.rainbow=false;
+    send("R1:0");
+  }
+  renderLight();
+  // El apagado no borra el color ni el brillo configurados.
+  sendLight(pin);
+};
+
+document.querySelectorAll(".pinbtn")
+  .forEach(b=>{
+    b.onclick=()=>{
+      selectPin(b.dataset.pin);
+    };
+  });
+
+$("colorLibre").addEventListener(
+  "input",updateLight
+);
+
+$("brightness").addEventListener(
+  "input",updateLight
+);
+
+document.querySelectorAll(".presets button")
+  .forEach(b=>{
+    b.onclick=()=>{
+      const rgb=b.dataset.rgb
+        .split(",")
+        .map(Number);
+
+      $("colorLibre").value="#"+
+        rgb.map(v=>
+          v.toString(16).padStart(2,"0")
+        ).join("");
+
+      $("brightness").value=100;
+      updateLight();
+    };
+  });
+
+// EXPORTAR CSV
+$("exportCsv").onclick=()=>{
+  if(!history.length){
+    status("No hay carreras para exportar");
+    return;
+  }
+
+  const rows=[
+    [
+      "Fecha","Modo","Ganador",
+      "Azul (s)","Rojo (s)","Diferencia (s)"
+    ],
+    ...history.map(x=>[
+      new Date(x.fecha).toLocaleString("es-AR"),
+      x.modo,
+      x.ganador,
+      x.azul??"",
+      x.rojo??"",
+      x.diferencia??""
+    ])
+  ];
+
+  const csv="\ufeff"+
+    rows.map(r=>
+      r.map(v=>
+        '"'+String(v).replace(/"/g,'""')+'"'
+      ).join(";")
+    ).join("\r\n");
+
+  const url=URL.createObjectURL(
+    new Blob(
+      [csv],
+      {type:"text/csv;charset=utf-8"}
+    )
+  );
+
+  const a=document.createElement("a");
+
+  a.href=url;
+  a.download="drift-masters-historial.csv";
+  a.click();
+
+  setTimeout(()=>{
+    URL.revokeObjectURL(url);
+  },2000);
+};
+
+// BORRAR HISTORIAL
+$("clearHistory").onclick=()=>{
+  if(!confirm(
+    "¿Borrar todo el historial y los récords?"
+  )){
+    return;
+  }
+
+  history=[];
+  saveHistory();
+  renderHistory();
+};
+
+// INICIO
+estadoRepeticion();
+loadHistory();
+renderHistory();
+resetDisplay();
+renderLight();
+setConnection(false);
+
+</script>
+  <script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js")
+            .catch(function (error) {
+                console.log("Service Worker:", error);
+            });
+    });
+}
+</script>
+<section id="replayModal" role="dialog" aria-modal="true" aria-label="Race Replay" hidden>
+ <div class="replay-top"><strong>DRIFT MASTERS · RACE REPLAY</strong><button id="replayClose" type="button">✕ VOLVER A DRIFT MASTERS</button></div>
+ <iframe id="replayFrame" title="Repetición de carrera" loading="eager" allow="fullscreen"></iframe>
+</section>
+<script>
+(function(){
+ const cerrar=()=>{document.getElementById('replayModal').hidden=true;document.getElementById('replayFrame').src='about:blank';document.body.classList.remove('replay-open');};
+ document.getElementById('replayClose').addEventListener('click',cerrar);
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('replayModal').hidden)cerrar();});
+})();
+</script>
+
+<script>
+// Complemento exclusivamente del lado web: el firmware Bluetooth conserva su protocolo.
+const DMKEY="dmEnhancementsV1";
+function dmRead(key,fallback){try{const v=JSON.parse(localStorage.getItem(key));return v===null?fallback:v}catch(e){return fallback}}
+let pilotNames=dmRead(DMKEY+"pilots",{azul:"AZUL",rojo:"ROJO"});
+function actualizarNombresCarriles(){
+ document.getElementById('blueLaneTitle').textContent='CARRIL AZUL · 01 - '+pilotNames.azul;
+ document.getElementById('redLaneTitle').textContent='CARRIL ROJO · 02 - '+pilotNames.rojo;
+}
+actualizarNombresCarriles();
+let champ=dmRead(DMKEY+"champ",{active:false,length:3,blue:0,red:0,completed:false});
+let raceMode=dmRead(DMKEY+"raceMode",champ.active?"champ":"single");
+let ultimaPulsacionCampeonato=0;
+let esperandoCuentaCampeonato=false;
+let timerCuentaCampeonato=null;
+let placaListaCampeonato=false; // Solo REPOSO de la micro:bit autoriza nueva manga
+let preparacionPendienteCampeonato=false;
+let mangaPreparadaCampeonato=false;
+function renderRaceMode(){
+ // Los mismos botones de carrera simple cambian de texto al estar
+ // posicionados; no se agregan comandos ni tiempos de bloqueo.
+ const simpleDual=document.getElementById('dualBtn');
+ const simpleSolo=document.getElementById('soloBtn');
+ simpleDual.textContent=faseCarrera==='posicionamiento'&&!solo&&azulPosicionado&&rojoPosicionado
+  ? '🏁 INICIAR CUENTA REGRESIVA' : '🏁 LARGAR 2 AUTOS';
+ simpleSolo.textContent=faseCarrera==='posicionamiento'&&solo&&azulPosicionado
+  ? '🏁 INICIAR CUENTA REGRESIVA' : '🏁 LARGAR 1 AUTO';
+ const isChamp=raceMode==="champ";
+ document.getElementById('raceModeSingle').classList.toggle('active',!isChamp);
+ document.getElementById('raceModeChamp').classList.toggle('active',isChamp);
+ document.getElementById('raceChampOptions').hidden=!isChamp;
+ document.body.classList.toggle('champ-selected',isChamp);
+ const start=document.getElementById('champRaceBtn');
+ if(start){
+  const enPosicion=mangaPreparadaCampeonato && faseCarrera==='posicionamiento';
+  const esperandoPlaca=!placaListaCampeonato && !enPosicion;
+  start.textContent=esperandoPlaca?'⏳ ESPERANDO MICRO:BIT':enPosicion?'🏁 INICIAR CUENTA REGRESIVA':'🏁 LARGAR CARRERA DE CAMPEONATO';
+  start.disabled=!isChamp||champ.completed||!connected||esperandoCuentaCampeonato||preparacionPendienteCampeonato||esperandoPlaca||faseCarrera==='cuenta'||faseCarrera==='corriendo'||(enPosicion&&(!azulPosicionado||!rojoPosicionado));
+ }
+}
+document.getElementById('raceModeSingle').onclick=()=>{
+ raceMode='single';champ.active=false;try{localStorage.setItem(DMKEY+'raceMode',JSON.stringify(raceMode))}catch(e){};dmSave();champRender();renderRaceMode();
+};
+document.getElementById('raceModeChamp').onclick=()=>{
+ raceMode='champ';try{localStorage.setItem(DMKEY+'raceMode',JSON.stringify(raceMode))}catch(e){};renderRaceMode();
+};
+renderRaceMode();
+let voiceEnabled=dmRead(DMKEY+"voice",false);
+let lastVoiceText="",lastVoiceAt=0;
+function narrar(texto){
+ if(!voiceEnabled||!('speechSynthesis' in window)||!texto)return;
+ const now=Date.now();if(texto===lastVoiceText&&now-lastVoiceAt<1800)return;
+ lastVoiceText=texto;lastVoiceAt=now;
+ try{speechSynthesis.cancel();const a=new SpeechSynthesisUtterance(texto);a.lang="es-AR";a.rate=1.06;speechSynthesis.speak(a)}catch(e){}
+}
+function dmSave(){try{localStorage.setItem(DMKEY+"pilots",JSON.stringify(pilotNames));localStorage.setItem(DMKEY+"champ",JSON.stringify(champ));localStorage.setItem(DMKEY+"voice",JSON.stringify(voiceEnabled))}catch(e){}}
+function champRender(){
+ document.getElementById('champLength').value=String(champ.length);
+ document.getElementById('champScore').innerHTML='<span class="blue">'+champ.blue+'</span> — <span class="red">'+champ.red+'</span>';
+ const needed=Math.floor(champ.length/2)+1;
+ document.getElementById('champNotice').textContent=champ.completed?'CAMPEÓN: '+(champ.blue>champ.red?pilotNames.azul:pilotNames.rojo):champ.active?'En juego · gana quien llegue a '+needed+' victorias':'Sin campeonato activo';
+ renderRaceMode();
+}
+function registerChampionshipResult(mode,w){
+ if(!champ.active||champ.completed||mode!=="DOS AUTOS"||(w!=="AZUL"&&w!=="ROJO"))return;
+ if(w==="AZUL")champ.blue++;else champ.red++;
+ if(Math.max(champ.blue,champ.red)>=Math.floor(champ.length/2)+1){champ.completed=true;champ.active=false;narrar('Campeón '+(w==="AZUL"?pilotNames.azul:pilotNames.rojo))}
+ dmSave();champRender();
+}
+function renderAdvancedStats(){
+ const races=history.filter(x=>x.modo==="DOS AUTOS"), both=races.filter(x=>Number.isFinite(x.azul)&&Number.isFinite(x.rojo));
+ const winsA=races.filter(x=>x.ganador==="AZUL").length,winsR=races.filter(x=>x.ganador==="ROJO").length;
+ const avg=(xs)=>xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:null;
+ const a=avg(history.map(x=>x.azul).filter(Number.isFinite)),r=avg(history.map(x=>x.rojo).filter(Number.isFinite));
+ document.getElementById('statRaces').textContent=races.length;
+ document.getElementById('statBlueWins').textContent=winsA;
+ document.getElementById('statRedWins').textContent=winsR;
+ document.getElementById('statBlueAvg').textContent=a===null?'—':a.toFixed(2)+' s';
+ document.getElementById('statRedAvg').textContent=r===null?'—':r.toFixed(2)+' s';
+ const d=avg(both.map(x=>Math.abs(x.azul-x.rojo)));
+ document.getElementById('statDiff').textContent=d===null?'—':d.toFixed(2)+' s';
+ const decided=winsA+winsR;
+ document.getElementById('statRate').textContent='Victorias (carreras decididas): Azul '+(decided?(100*winsA/decided).toFixed(1):'0')+'% · Rojo '+(decided?(100*winsR/decided).toFixed(1):'0')+'%';
+}
+document.getElementById('pilotBlue').value=pilotNames.azul;
+document.getElementById('pilotRed').value=pilotNames.rojo;
+document.getElementById('savePilots').onclick=()=>{pilotNames={azul:document.getElementById('pilotBlue').value.trim()||'AZUL',rojo:document.getElementById('pilotRed').value.trim()||'ROJO'};dmSave();champRender();actualizarNombresCarriles();};
+document.getElementById('champReset').onclick=()=>{
+ if(['cuenta','corriendo'].includes(faseCarrera)){alert('Esperá a que termine la carrera para reiniciar el campeonato.');return;}
+ if(!confirm('¿Reiniciar el campeonato y el marcador?'))return;
+ confirmarCuentaCampeonato();ultimaPulsacionCampeonato=0;
+ mangaPreparadaCampeonato=false;
+ champ={active:false,length:Number(document.getElementById('champLength').value),blue:0,red:0,completed:false};
+ dmSave();champRender();
+ if(connected){placaListaCampeonato=false;preparacionPendienteCampeonato=false;document.getElementById('resetBtn').click();status('Esperando reinicio de la micro:bit');}
+ else {faseCarrera='reposo';azulPosicionado=false;rojoPosicionado=false;keepResult=false;raceSaved=false;resetDisplay();}
+ renderRaceMode();
+};
+function confirmarCuentaCampeonato(){esperandoCuentaCampeonato=false;clearTimeout(timerCuentaCampeonato);}
+
+document.getElementById('champRaceBtn').onclick=()=>{
+ if(raceMode!=='champ'||champ.completed||!connected||document.getElementById('dualBtn').disabled||esperandoCuentaCampeonato||preparacionPendienteCampeonato||faseCarrera==='cuenta'||faseCarrera==='corriendo')return;
+ const ahora=Date.now();
+ if(ahora-ultimaPulsacionCampeonato<180)return; // rebote breve, no bloquea la segunda pulsación normal
+ if(mangaPreparadaCampeonato && faseCarrera==='posicionamiento'){
+   if(!azulPosicionado||!rojoPosicionado)return;
+   ultimaPulsacionCampeonato=ahora;
+   status('PILOTOS PREPARADOS');
+   // Segunda pulsación: únicamente inicia la cuenta en la placa.
+   // NO llamar dualBtn: reiniciaría el estado de sensores y los tiempos.
+   // La micro:bit confirma la cuenta; si no responde, se libera el botón.
+   esperandoCuentaCampeonato=true;
+   clearTimeout(timerCuentaCampeonato);
+   timerCuentaCampeonato=setTimeout(()=>{esperandoCuentaCampeonato=false;renderRaceMode();},1800);
+   audioOn();send('A');renderRaceMode();
+   return;
+ }
+ if(!placaListaCampeonato){status('Esperando REPOSO de la micro:bit para la siguiente carrera');return;}
+ ultimaPulsacionCampeonato=ahora;
+ preparacionPendienteCampeonato=true;
+ mangaPreparadaCampeonato=false;
+ placaListaCampeonato=false;
+ if(!champ.active){champ={active:true,length:Number(document.getElementById('champLength').value),blue:0,red:0,completed:false};dmSave();champRender();}
+ // Primera pulsación: solicita posicionar los dos autos.
+ document.getElementById('dualBtn').click();
+ status('Preparando carrera en la micro:bit…');
+ // Si el dispositivo no acusa posicionamiento, liberar solo tras volver a REPOSO.
+ renderRaceMode();
+};
+setInterval(renderRaceMode,600);
+const vbtn=document.getElementById('voiceBtn');
+function voiceRender(){vbtn.textContent=voiceEnabled?'🔊 LOCUTOR ENCENDIDO':'🔇 LOCUTOR APAGADO'}
+vbtn.onclick=()=>{voiceEnabled=!voiceEnabled;dmSave();voiceRender();if(voiceEnabled)narrar('Locutor activado')};voiceRender();
+const fsbtn=document.getElementById('fullScreenBtn');
+function refreshFullScreenView(){
+ const active=!!document.fullscreenElement;
+ document.body.classList.toggle('dm-theater',active);
+ fsbtn.textContent=active?'⛶ SALIR DE PANTALLA COMPLETA':'⛶ PANTALLA COMPLETA';
+}
+fsbtn.onclick=async()=>{
+ try{
+   if(document.fullscreenElement)await document.exitFullscreen();
+   else await document.documentElement.requestFullscreen();
+ }catch(e){
+   console.warn('No se pudo cambiar a pantalla completa:',e);
+   document.getElementById('aviso').textContent='El navegador no permitió pantalla completa. Probá F11 en Chrome.';
+ }
+ refreshFullScreenView();
+};
+document.addEventListener('fullscreenchange',refreshFullScreenView);
+document.addEventListener('fullscreenerror',refreshFullScreenView);
+// Observe newly registered results and deleted history, without changing the original functions.
+const originalRenderHistory=renderHistory;
+renderHistory=function(){originalRenderHistory();renderAdvancedStats()};
+renderAdvancedStats();champRender();
+// Experimental effects use E1 commands only when the compatible firmware is installed.
+const effectRow=document.getElementById('p1EffectsRow'),effectSelect=document.getElementById('effectsP1');
+const originalRenderLight=renderLight;
+renderLight=function(){originalRenderLight();effectRow.style.display=selectedPin==='P1'?'block':'none';effectSelect.disabled=!connected||!lights.P1.on||faseCarrera==='cuenta'||faseCarrera==='corriendo';};
+effectSelect.onchange=()=>{
+ if(!connected||selectedPin!=='P1'||faseCarrera==='cuenta'||faseCarrera==='corriendo')return;
+ const mode=effectSelect.value;
+ // R1 remains the existing stable command. Effects are managed by the optional experimental firmware.
+ if(mode==='1'){
+   lights.P1.rainbow=true;send('R1:1');
+ }else{
+   lights.P1.rainbow=false;send('E1:'+mode);
+ }
+ renderLight();
+};
+const oldRainbowHandler=document.getElementById('rainbowBtn').onclick;
+document.getElementById('rainbowBtn').onclick=()=>{if(faseCarrera==='cuenta'||faseCarrera==='corriendo')return;oldRainbowHandler();effectSelect.value=lights.P1.rainbow?'1':'0';if(!lights.P1.rainbow)send('E1:0')};
+// Synchronize the new panel after connection or selecting P1.
+renderLight();
+</script>
+<script>
+// Bloquea interacciones de luz durante la carrera incluso en controles añadidos por módulos posteriores.
+document.addEventListener('click',event=>{
+  if(!document.body.classList.contains('dm-racing'))return;
+  const target=event.target.closest('button');
+  if(target&&(target.closest('#rainbowRow,#p1EffectsRow,.pinselector,.presets')||['powerBtn','rainbowBtn','effectsP1'].includes(target.id))){event.stopImmediatePropagation();event.preventDefault();}
+},true);
+</script><script>
+// Preferencia únicamente visual. No envía comandos Bluetooth ni cambia el modo de carrera.
+(function(){
+ const selector=document.getElementById('vehicleType');
+ const blue=document.getElementById('blueCar');
+ const red=document.getElementById('redCar');
+ const label=document.getElementById('vehicleSelectionLabel');
+ const models={
+   drift:{title:'Drift car racing',blue:'drift_supra_azul.png',red:'drift_supra_rojo.png'},
+   yahboom:{title:'Tinybit Yahboom car',blue:'Yahboomazul.png',red:'Yahboomrojo.png'},
+   rc:{title:'RC car',blue:'drift_supra_azul.png',red:'drift_supra_rojo.png'},
+   microbit:{title:'Microbit RC car',blue:'Yahboomazul.png',red:'Yahboomrojo.png'}
+ };
+ function setModel(key){
+   const m=models[key]||models.drift;
+   selector.value=key in models?key:'drift';
+   blue.src='./'+m.blue;
+   red.src='./'+m.red;
+   blue.alt=m.title+' azul';red.alt=m.title+' rojo';
+   label.textContent=m.title;
+   try{localStorage.setItem('dmVehicleTypeV1',selector.value)}catch(e){}
+ }
+ let saved='drift';
+ try{saved=localStorage.getItem('dmVehicleTypeV1')||'drift'}catch(e){}
+ setModel(saved);
+ selector.addEventListener('change',()=>setModel(selector.value));
+ blue.addEventListener('error',()=>{if(!blue.src.includes('drift_supra_azul.png'))label.textContent='No se encontró '+blue.getAttribute('src')+' en GitHub'});
+ red.addEventListener('error',()=>{if(!red.src.includes('drift_supra_rojo.png'))label.textContent='No se encontró '+red.getAttribute('src')+' en GitHub'});
+ const vehiclePicker=document.getElementById('vehiclePicker');
+ const settingsPicker=document.getElementById('settingsPicker');
+ // Ambos menús se cierran al tocar fuera; abrir uno cierra el otro.
+ document.addEventListener('click',e=>{
+   for(const menu of [vehiclePicker,settingsPicker]){
+     if(menu.open&&!menu.contains(e.target))menu.open=false;
+   }
+ });
+ vehiclePicker.addEventListener('toggle',()=>{
+   if(vehiclePicker.open)settingsPicker.open=false;
+ });
+ settingsPicker.addEventListener('toggle',()=>{
+   if(settingsPicker.open)vehiclePicker.open=false;
+ });
+})();
+</script>
+</body>
+</html>
