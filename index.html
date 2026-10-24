@@ -613,6 +613,10 @@ body.champ-selected #dmSimpleConsole{display:none!important}
 .dm-simple-caption{font-size:11px;letter-spacing:1px;color:#9cc0d8;font-weight:900}
 .dm-simple-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;background:#10263a;padding:4px;border-radius:10px}
 .dm-simple-option{padding:12px 5px;border:1px solid transparent;border-radius:8px;background:#142a40;color:#c8deed;font-weight:900}
+.dm-choice-dual{background:linear-gradient(90deg,#0861a3 0%,#0861a3 49.8%,#bd2547 50.2%,#bd2547 100%)!important;color:#fff!important}
+.dm-choice-blue{background:#0861a3!important;color:#fff!important}
+.dm-choice-red{background:#bd2547!important;color:#fff!important}
+.dm-simple-option{min-height:57px;line-height:1.15}
 .dm-simple-option.selected{border-color:#52d7ff;background:linear-gradient(155deg,#125c92,#0b3258);box-shadow:0 0 8px #009fff44;color:#fff}
 .dm-simple-option:disabled{opacity:.45;cursor:not-allowed}
 .dm-simple-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
@@ -840,9 +844,9 @@ body.dm-theater .vehicle-pop{z-index:9999}
     <section class="dm-simple-console" id="dmSimpleConsole" aria-label="Carrera simple">
       <div class="dm-simple-caption">ELEGÍ LA MODALIDAD</div>
       <div class="dm-simple-options" role="group" aria-label="Modalidad de carrera">
-        <button type="button" class="dm-simple-option selected" data-simple-mode="dual">🏎️ 2 AUTOS</button>
-        <button type="button" class="dm-simple-option" data-simple-mode="blue">🔵 1 AZUL</button>
-        <button type="button" class="dm-simple-option" data-simple-mode="red">🔴 1 ROJO</button>
+        <button type="button" class="dm-simple-option dm-choice-dual selected" data-simple-mode="dual">2 AUTOS</button>
+        <button type="button" class="dm-simple-option dm-choice-blue" data-simple-mode="blue">CONTRARRELOJ AZUL</button>
+        <button type="button" class="dm-simple-option dm-choice-red" data-simple-mode="red">CONTRARRELOJ ROJO</button>
       </div>
       <button type="button" id="dmSimpleStart" class="btn green dm-simple-start" disabled>🏁 PREPARAR CARRERA</button>
       <button type="button" id="dmSimpleReset" class="btn dm-simple-reset" disabled>REINICIAR</button>
