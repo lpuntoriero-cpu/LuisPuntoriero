@@ -607,6 +607,23 @@ body.dm-racing #raceSafetyNotice{display:block}
 .race-champ-options[hidden]{display:none!important}
 body.champ-selected #dualBtn,body.champ-selected #soloBtn,body.champ-selected #resetBtn{display:none!important}
 body.champ-selected #soloLaneRow{display:none!important}
+.dm-original-race-actions{display:none!important}
+body.champ-selected #dmSimpleConsole{display:none!important}
+.dm-simple-console{display:grid;gap:10px}
+.dm-simple-caption{font-size:11px;letter-spacing:1px;color:#9cc0d8;font-weight:900}
+.dm-simple-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;background:#10263a;padding:4px;border-radius:10px}
+.dm-simple-option{padding:12px 5px;border:1px solid transparent;border-radius:8px;background:#142a40;color:#c8deed;font-weight:900}
+.dm-simple-option.selected{border-color:#52d7ff;background:linear-gradient(155deg,#125c92,#0b3258);box-shadow:0 0 8px #009fff44;color:#fff}
+.dm-simple-option:disabled{opacity:.45;cursor:not-allowed}
+.dm-simple-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.dm-simple-lane{padding:14px;border-radius:9px;text-align:center;font-weight:900;font-size:15px;transition:opacity .2s,filter .2s}
+.dm-simple-lane.blue{background:#082d49;border:1px solid #00baff;color:#b3e8ff}
+.dm-simple-lane.red{background:#351324;border:1px solid #ff3159;color:#ffb1c3}
+.dm-simple-lane.inactive{opacity:.33;filter:grayscale(1)}
+.dm-simple-notice{background:#102238;border:1px solid #284963;border-radius:8px;text-align:center;padding:10px;color:#b6d5e8;font-size:12px;font-weight:800;min-height:40px}
+.dm-simple-start{width:100%;font-size:15px!important;min-height:49px}
+.dm-simple-reset{width:100%}
+@media(max-width:530px){.dm-simple-option{font-size:10px;padding:11px 3px}}
 #champRaceBtn,#dualBtn,#soloBtn{font-size:14px;padding:13px}
 #champRaceBtn[disabled]{opacity:.42}
 .pilot-line{display:grid;grid-template-columns:62px 92px minmax(0,1fr);gap:9px;align-items:center;margin-bottom:8px;padding:6px;border:1px solid #25465c;border-radius:10px;background:#08192b}
@@ -818,26 +835,28 @@ body.dm-theater .vehicle-pop{z-index:9999}
       <button id="tourCsv" class="btn" type="button">⬇ EXPORTAR RESULTADOS CSV</button><button id="tourPoster" class="btn primary" type="button">🏆 GENERAR PÓSTER PNG</button></div>
 
     </section>
-    <div class="actions">
-
-      <button id="dualBtn" class="btn green" disabled>
-        🏁 LARGAR 2 AUTOS
-      </button>
-
-      <button id="soloBtn" class="btn green" disabled>
-        🏁 LARGAR 1 AUTO
-      </button>
-
-      <label id="soloLaneRow" style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-weight:800" for="soloLaneSelect">CARRIL INDIVIDUAL
-        <select id="soloLaneSelect" style="background:#102840;color:white;border:1px solid #426b86;border-radius:7px;padding:9px">
-          <option value="AZUL">🔵 AZUL</option>
-          <option value="ROJO">🔴 ROJO</option>
-        </select>
+    <section class="dm-simple-console" id="dmSimpleConsole" aria-label="Carrera simple">
+      <div class="dm-simple-caption">ELEGÍ LA MODALIDAD</div>
+      <div class="dm-simple-options" role="group" aria-label="Modalidad de carrera">
+        <button type="button" class="dm-simple-option selected" data-simple-mode="dual">🏎️ 2 AUTOS</button>
+        <button type="button" class="dm-simple-option" data-simple-mode="blue">🔵 1 AZUL</button>
+        <button type="button" class="dm-simple-option" data-simple-mode="red">🔴 1 ROJO</button>
+      </div>
+      <div class="dm-simple-lanes">
+        <div id="dmBluePreview" class="dm-simple-lane blue">🔵 <span>AZUL</span></div>
+        <div id="dmRedPreview" class="dm-simple-lane red">🔴 <span>ROJO</span></div>
+      </div>
+      <div id="dmSimpleNotice" class="dm-simple-notice" aria-live="polite">Listo para preparar la carrera.</div>
+      <button type="button" id="dmSimpleStart" class="btn green dm-simple-start" disabled>🏁 PREPARAR CARRERA</button>
+      <button type="button" id="dmSimpleReset" class="btn dm-simple-reset" disabled>REINICIAR</button>
+    </section>
+    <div class="actions dm-original-race-actions">
+      <button id="dualBtn" class="btn green" disabled>🏁 LARGAR 2 AUTOS</button>
+      <button id="soloBtn" class="btn green" disabled>🏁 LARGAR 1 AUTO</button>
+      <label id="soloLaneRow" for="soloLaneSelect">CARRIL INDIVIDUAL
+        <select id="soloLaneSelect"><option value="AZUL">🔵 AZUL</option><option value="ROJO">🔴 ROJO</option></select>
       </label>
-      <button id="resetBtn" class="btn" disabled>
-        REINICIAR
-      </button>
-
+      <button id="resetBtn" class="btn" disabled>REINICIAR</button>
     </div>
     <div id="statusMessage" class="status">
       Esperando conexión
@@ -2237,7 +2256,53 @@ let timerCuentaCampeonato=null;
 let placaListaCampeonato=false; // Solo REPOSO de la micro:bit autoriza nueva manga
 let preparacionPendienteCampeonato=false;
 let mangaPreparadaCampeonato=false;
+let dmSimpleChoice='dual';
+document.querySelectorAll('[data-simple-mode]').forEach(button=>{
+ button.addEventListener('click',()=>{
+  if(raceMode!=='single'||dmSimpleModoElegido||['cuenta','corriendo'].includes(faseCarrera))return;
+  dmSimpleChoice=button.dataset.simpleMode;
+  $('soloLaneSelect').value=dmSimpleChoice==='red'?'ROJO':'AZUL';
+  $('aviso').textContent='';
+  renderRaceMode();
+ });
+});
+$('dmSimpleStart').onclick=()=>{
+ if(raceMode!=='single'||!connected)return;
+ if(dmSimpleChoice==='red'){
+  $('aviso').textContent='La micro:bit todavía no admite el contrarreloj individual rojo. No se enviaron comandos.';
+  return;
+ }
+ if(dmSimpleChoice==='dual')$('dualBtn').click();
+ else $('soloBtn').click();
+ renderRaceMode();
+};
+$('dmSimpleReset').onclick=()=>{$('resetBtn').click();renderRaceMode();};
+function renderSimpleConsole(){
+ const active=raceMode==='single';
+ const busy=['cuenta','corriendo'].includes(faseCarrera);
+ const locked=!!dmSimpleModoElegido&&faseCarrera==='posicionamiento';
+ document.querySelectorAll('[data-simple-mode]').forEach(b=>{
+   b.classList.toggle('selected',b.dataset.simpleMode===dmSimpleChoice);
+   b.disabled=!active||busy||locked;
+ });
+ $('dmBluePreview').classList.toggle('inactive',dmSimpleChoice==='red');
+ $('dmRedPreview').classList.toggle('inactive',dmSimpleChoice==='blue');
+ const supported=dmSimpleChoice!=='red';
+ const ready=faseCarrera==='posicionamiento'&&(
+  dmSimpleChoice==='dual'&&dmSimpleModoElegido==='dual'&&azulPosicionado&&rojoPosicionado ||
+  dmSimpleChoice==='blue'&&dmSimpleModoElegido==='solo'&&azulPosicionado
+ );
+ $('dmSimpleStart').disabled=!active||!connected||busy||!supported;
+ $('dmSimpleStart').textContent=ready?'🚦 INICIAR CUENTA REGRESIVA':'🏁 PREPARAR CARRERA';
+ $('dmSimpleNotice').textContent=!supported?'🔴 Contrarreloj rojo pendiente de firmware':
+  busy?'CARRERA EN CURSO':
+  ready?'AUTOS POSICIONADOS · LISTO PARA LARGAR':
+  locked?'POSICIONÁ LOS AUTOS EN LOS SENSORES':
+  'LISTO PARA PREPARAR';
+ $('dmSimpleReset').disabled=!connected||busy;
+}
 function renderRaceMode(){
+ renderSimpleConsole();
  const modoSimpleBloqueado=raceMode==='single' && faseCarrera==='posicionamiento' && dmSimpleModoElegido!=='';
  const bloquearCarrera=faseCarrera==='cuenta'||faseCarrera==='corriendo';
  document.getElementById('dualBtn').disabled=!connected||bloquearCarrera||(modoSimpleBloqueado&&dmSimpleModoElegido==='solo');
