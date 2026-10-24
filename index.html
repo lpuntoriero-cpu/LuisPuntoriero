@@ -621,7 +621,9 @@ body.champ-selected #dmSimpleConsole{display:none!important}
 .dm-simple-lane.red{background:#351324;border:1px solid #ff3159;color:#ffb1c3}
 .dm-simple-lane.inactive{opacity:.33;filter:grayscale(1)}
 .dm-simple-notice{background:#102238;border:1px solid #284963;border-radius:8px;text-align:center;padding:10px;color:#b6d5e8;font-size:12px;font-weight:800;min-height:40px}
-.dm-simple-start{width:100%;font-size:15px!important;min-height:49px}
+.dm-simple-start{width:100%;font-size:15px!important;min-height:54px}
+.dm-simple-start.dm-simple-waiting{background:#b98214!important;color:#171b22!important;border-color:#e5ab3e!important;opacity:1!important;cursor:wait;box-shadow:0 0 14px #dca12d40}
+.dm-simple-start.dm-simple-waiting:disabled{opacity:1!important}
 .dm-simple-reset{width:100%}
 @media(max-width:530px){.dm-simple-option{font-size:10px;padding:11px 3px}}
 #champRaceBtn,#dualBtn,#soloBtn{font-size:14px;padding:13px}
@@ -842,11 +844,6 @@ body.dm-theater .vehicle-pop{z-index:9999}
         <button type="button" class="dm-simple-option" data-simple-mode="blue">🔵 1 AZUL</button>
         <button type="button" class="dm-simple-option" data-simple-mode="red">🔴 1 ROJO</button>
       </div>
-      <div class="dm-simple-lanes">
-        <div id="dmBluePreview" class="dm-simple-lane blue">🔵 <span>AZUL</span></div>
-        <div id="dmRedPreview" class="dm-simple-lane red">🔴 <span>ROJO</span></div>
-      </div>
-      <div id="dmSimpleNotice" class="dm-simple-notice" aria-live="polite">Listo para preparar la carrera.</div>
       <button type="button" id="dmSimpleStart" class="btn green dm-simple-start" disabled>🏁 PREPARAR CARRERA</button>
       <button type="button" id="dmSimpleReset" class="btn dm-simple-reset" disabled>REINICIAR</button>
     </section>
@@ -2272,6 +2269,8 @@ $('dmSimpleStart').onclick=()=>{
   $('aviso').textContent='La micro:bit todavía no admite el contrarreloj individual rojo. No se enviaron comandos.';
   return;
  }
+ if(dmSimpleModoElegido && faseCarrera==='posicionamiento' &&
+    !(dmSimpleChoice==='dual' ? azulPosicionado&&rojoPosicionado : azulPosicionado))return;
  if(dmSimpleChoice==='dual')$('dualBtn').click();
  else $('soloBtn').click();
  renderRaceMode();
@@ -2285,20 +2284,21 @@ function renderSimpleConsole(){
    b.classList.toggle('selected',b.dataset.simpleMode===dmSimpleChoice);
    b.disabled=!active||busy||locked;
  });
- $('dmBluePreview').classList.toggle('inactive',dmSimpleChoice==='red');
- $('dmRedPreview').classList.toggle('inactive',dmSimpleChoice==='blue');
  const supported=dmSimpleChoice!=='red';
  const ready=faseCarrera==='posicionamiento'&&(
   dmSimpleChoice==='dual'&&dmSimpleModoElegido==='dual'&&azulPosicionado&&rojoPosicionado ||
   dmSimpleChoice==='blue'&&dmSimpleModoElegido==='solo'&&azulPosicionado
  );
- $('dmSimpleStart').disabled=!active||!connected||busy||!supported;
- $('dmSimpleStart').textContent=ready?'🚦 INICIAR CUENTA REGRESIVA':'🏁 PREPARAR CARRERA';
- $('dmSimpleNotice').textContent=!supported?'🔴 Contrarreloj rojo pendiente de firmware':
-  busy?'CARRERA EN CURSO':
-  ready?'AUTOS POSICIONADOS · LISTO PARA LARGAR':
-  locked?'POSICIONÁ LOS AUTOS EN LOS SENSORES':
-  'LISTO PARA PREPARAR';
+ const start=$('dmSimpleStart');
+ // Al preparar una manga, el botón se vuelve indicador amarillo sin acción.
+ // Sólo permite la segunda pulsación cuando la micro:bit confirmó los sensores.
+ start.disabled=!active||!connected||busy||!supported||(locked&&!ready);
+ start.classList.toggle('dm-simple-waiting',locked&&!ready);
+ start.textContent=!supported?'🔴 ROJO · PENDIENTE DE FIRMWARE':
+  busy?'🏎️ CARRERA EN CURSO':
+  ready?'🚦 INICIAR CUENTA REGRESIVA':
+  locked?'🟡 POSICIONÁ LOS AUTOS':
+  '🏁 PREPARAR CARRERA';
  $('dmSimpleReset').disabled=!connected||busy;
 }
 function renderRaceMode(){
