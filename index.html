@@ -846,7 +846,25 @@ body.dm-theater .vehicle-pop{z-index:9999}
 @keyframes dmLivePulse{50%{opacity:.3;box-shadow:0 0 3px #ff3159}}
 @media(prefers-reduced-motion:reduce){.lane.dm-finish-flash,.lane.dm-launch .car,#dmLiveRace:before{animation:none}}
 </style>
-<style id="dm-music-icon-style">#dmMenuMusic{font-size:26px;min-width:39px;min-height:39px;line-height:1;color:#3dff95!important;text-shadow:0 0 12px #15e97f;opacity:1}#dmMenuMusic.dm-music-off{color:#ff4b65!important;text-shadow:0 0 11px #ff3159;opacity:1}</style><style id="dm-false-x-red">#countdown.false-start{color:#ff254d!important;text-shadow:0 0 15px #ff174e,0 0 30px #b50028!important}</style></head>
+<style id="dm-music-icon-style">#dmMenuMusic{font-size:26px;min-width:39px;min-height:39px;line-height:1;color:#3dff95!important;text-shadow:0 0 12px #15e97f;opacity:1}#dmMenuMusic.dm-music-off{color:#ff4b65!important;text-shadow:0 0 11px #ff3159;opacity:1}</style><style id="dm-false-x-red">#countdown.false-start{color:#ff254d!important;text-shadow:0 0 15px #ff174e,0 0 30px #b50028!important}</style><style id="dm-bluetooth-premium">
+/* Tarjeta Bluetooth: solo presentación visual, sin modificar la conexión BLE */
+header .btstatus{display:flex;align-items:center;gap:10px;min-width:188px;min-height:54px;padding:8px 13px;background:linear-gradient(130deg,#0b1c35f7,#071424f7);border:1px solid #2c4766;border-radius:12px;box-shadow:inset 0 1px 0 #ffffff12,0 5px 17px #0004}
+header .dm-bt-symbol{display:grid;place-items:center;flex:0 0 34px;height:34px;border-radius:9px;background:#153251;color:#67baff;font:900 25px/1 Arial,sans-serif}
+header .dm-bt-details{display:flex;flex-direction:column;gap:6px;min-width:0}
+header .dm-bt-label{color:#7897b7;font-size:9px;font-weight:900;letter-spacing:.12em;white-space:nowrap}
+header .dm-bt-state{display:flex;align-items:center;gap:6px;color:#e2eaf5;font-size:12px;font-weight:800;letter-spacing:.025em}
+header .btstatus .dot{width:8px;height:8px;margin:0;background:#6f859e;box-shadow:none}
+header .btstatus .dot.on{background:#2ff3a6;box-shadow:0 0 0 3px #2ff3a61b,0 0 11px #2ff3a681}
+header .btstatus.dm-connected{border-color:#25846c;box-shadow:inset 0 1px 0 #ffffff13,0 0 16px #23d89e13}
+header .btstatus.dm-connected .dm-bt-symbol{background:#0d3d39;color:#58f4bc}
+header .btstatus.dm-connected .dm-bt-state{color:#d9ffee}
+header #connectBtn.dm-bt-action{min-height:54px;min-width:164px;padding:11px 17px;border-radius:12px;background:linear-gradient(145deg,#137ce7,#0753aa);border:1px solid #459cf4;box-shadow:inset 0 1px 0 #ffffff28,0 6px 18px #006be44a;font-weight:900;font-size:12px;letter-spacing:.055em;transition:background .15s,box-shadow .15s,transform .15s}
+header #connectBtn.dm-bt-action:hover:not(:disabled){background:linear-gradient(145deg,#2394ff,#0a66ce);box-shadow:0 6px 20px #007ee66b;transform:translateY(-1px)}
+header #connectBtn.dm-bt-action.dm-connected{background:linear-gradient(145deg,#1a2b42,#102137);border-color:#55718e;color:#e8f1fc;box-shadow:inset 0 1px 0 #ffffff12}
+header #connectBtn.dm-bt-action.dm-connected:hover:not(:disabled){background:linear-gradient(145deg,#273c58,#142943);border-color:#8db6dc}
+@media(max-width:600px){header .btstatus{min-width:0;padding:8px 10px}header .dm-bt-label{font-size:8px}header #connectBtn.dm-bt-action{min-width:0;padding:10px 12px;font-size:11px}}
+</style>
+</head>
 
 <body>
 <div class="app">
@@ -874,15 +892,13 @@ body.dm-theater .vehicle-pop{z-index:9999}
     <button type="button" id="dmMenuMusic" class="dm-top-icon" title="Reproducir música" aria-label="Reproducir música" aria-pressed="false">♫</button>
     <button id="dmTvBtn" class="dm-top-icon" type="button" title="Abrir pantalla gigante en TV o monitor" aria-label="Abrir pantalla gigante">📺</button>
     <button id="fullScreenBtn" class="dm-top-icon" type="button" title="Pantalla completa" aria-label="Pantalla completa" aria-pressed="false">⛶</button>
-    <div class="btstatus">
-      <span id="btDot" class="dot"></span>
-      <span id="btText">DESCONECTADA</span>
+    <div class="btstatus" id="dmBluetoothPanel" role="status" aria-live="polite">
+      <span class="dm-bt-symbol" aria-hidden="true">ᛒ</span>
+      <span class="dm-bt-details"><span class="dm-bt-label">MICRO:BIT · BLUETOOTH</span>
+        <span class="dm-bt-state"><span id="btDot" class="dot"></span><span id="btText">DESCONECTADA</span></span>
+      </span>
     </div>
-
-    
-    <button id="connectBtn" class="btn primary">
-      CONECTAR BLUETOOTH
-    </button>
+    <button id="connectBtn" class="btn primary dm-bt-action" type="button">CONECTAR BLUETOOTH</button>
   </div>
 </header>
 
@@ -1307,7 +1323,8 @@ function setConnection(ok){
     ok?"CONECTADA":"DESCONECTADA";
 
   $("btDot").classList.toggle("on",ok);
-
+  $("dmBluetoothPanel").classList.toggle("dm-connected",ok);
+  $("connectBtn").classList.toggle("dm-connected",ok);
   $("connectBtn").textContent=
     ok?"DESCONECTAR":"CONECTAR BLUETOOTH";
 
