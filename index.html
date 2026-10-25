@@ -3266,7 +3266,7 @@ renderRaceMode();dmTourRender();
   // Fullscreen solicitado directamente desde el clic real del usuario.
   if(surface.classList.contains('dm-open')){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});closeTV();return}
   surface.classList.add('dm-open');btn.classList.add('is-on');
-  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=31',location.href).href);
+  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=32',location.href).href);
   tv=frame.contentWindow;
   const promise=surface.requestFullscreen?.();
   if(promise&&typeof promise.catch==='function')promise.catch(()=>{ /* Aun sin permiso, la vista cubre toda la ventana */ });
@@ -3570,7 +3570,7 @@ function contact(){
 const t=track.getBoundingClientRect(),f=finish.getBoundingClientRect();
 const ref=blue.getBoundingClientRect();
 // Calibraciones independientes: Tinybit queda como se aprobo; Supra tiene su propio ajuste.
-const ajuste=root.dataset.vehicle==='supra'?12.4:10.4;
+const ajuste=root.dataset.vehicle==='supra'?-9.0:10.4;
 return (f.left-t.left-ref.width/2)/t.width*100+ajuste;
 }
 function spark(){flash.classList.remove('on');void flash.offsetWidth;flash.classList.add('on')}
@@ -3603,6 +3603,28 @@ async function dmPfTransparentTinybit(){
  return dmPfCutoutCache=canvas.toDataURL('image/png');
 }
 
+// Quita el cuadriculado gris/blanco incrustado en los JPG del Supra.
+const dmPfSupraCutoutCache={};
+async function dmPfTransparentSupra(src){
+ if(dmPfSupraCutoutCache[src])return dmPfSupraCutoutCache[src];
+ const img=new Image();img.decoding='async';img.src=src;
+ await new Promise((resolve,reject)=>{if(img.complete&&img.naturalWidth)return resolve();img.onload=resolve;img.onerror=reject});
+ const canvas=document.createElement('canvas');
+ const scale=Math.min(1,900/Math.max(img.naturalWidth,img.naturalHeight));
+ const w=canvas.width=Math.round(img.naturalWidth*scale),h=canvas.height=Math.round(img.naturalHeight*scale);
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,w,h);
+ const data=ctx.getImageData(0,0,w,h),p=data.data,seen=new Uint8Array(w*h),q=new Int32Array(w*h);
+ let head=0,tail=0;
+ const bg=i=>{const k=i*4,r=p[k],g=p[k+1],b=p[k+2];return Math.min(r,g,b)>140&&Math.max(r,g,b)-Math.min(r,g,b)<38};
+ const add=i=>{if(!seen[i]&&bg(i)){seen[i]=1;q[tail++]=i}};
+ for(let x=0;x<w;x++){add(x);add((h-1)*w+x)}
+ for(let y=1;y<h-1;y++){add(y*w);add(y*w+w-1)}
+ while(head<tail){const i=q[head++],x=i%w,y=Math.floor(i/w);if(x)add(i-1);if(x<w-1)add(i+1);if(y)add(i-w);if(y<h-1)add(i+w)}
+ for(let i=0;i<w*h;i++)if(seen[i])p[i*4+3]=0;
+ ctx.putImageData(data,0,0);
+ return dmPfSupraCutoutCache[src]=canvas.toDataURL('image/png');
+}
+
 async function play(data){
 if(!data||!Number.isFinite(Number(data.difference)))return;
 const id=++serial,winnerBlue=data.winner==='AZUL';
@@ -3612,6 +3634,11 @@ const isTinybit=data.vehicle==='yahboom'||data.vehicle==='microbit';
 const assets=isTinybit?['./tinybit.jpg','./tinybit.jpg']:['./supraazul.jpg','./suprarojo.jpg'];
 blue.src=assets[0];red.src=assets[1];
 if(isTinybit){try{const cutout=await dmPfTransparentTinybit();if(serial!==id)return;blue.src=cutout;red.src=cutout;}catch(err){console.warn('Tinybit cutout:',err)}}
+else {try{
+ const cutouts=await Promise.all(assets.map(dmPfTransparentSupra));
+ if(serial!==id)return;
+ blue.src=cutouts[0];red.src=cutouts[1];
+}catch(err){console.warn('Supra cutout:',err)}}
 blue.classList.add('dm-pf-clean-photo');
 red.classList.add('dm-pf-clean-photo');
 $pf('dmPfBlueName').textContent=data.blueName||'AZUL';$pf('dmPfRedName').textContent=data.redName||'ROJO';
