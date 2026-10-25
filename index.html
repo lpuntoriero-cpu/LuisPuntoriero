@@ -825,6 +825,24 @@ body.dm-theater .vehicle-pop{z-index:9999}
 .dm-master-muted :is(button,input,select){pointer-events:none}
 #dmAllLightsBtn:disabled{opacity:.45;cursor:not-allowed}
 </style>
+<style id="dm-visual-pack-v1">
+/* Experimentos visuales 1-5; sin modificar el protocolo BLE */
+#signalStrip .led{position:relative;border:2px solid #627286;background:radial-gradient(circle at 38% 25%,#516174,#263244 52%,#101723 83%);box-shadow:inset 0 3px 7px #020812,inset 0 -1px 3px #8da3ba55,0 2px 2px #0009}
+#signalStrip .led:after{content:"";position:absolute;left:17%;top:10%;width:48%;height:29%;border-radius:50%;background:linear-gradient(#ffffff85,#ffffff06);transform:rotate(-24deg);pointer-events:none}
+#signalStrip .led.red{background:radial-gradient(circle at 34% 27%,#ffe1e7,#ff425f 39%,#c51237 67%,#580919 95%);border-color:#ff95a8;box-shadow:inset 0 0 7px #ffdce488,0 0 12px #ff3159c9,0 0 25px #ff315966}
+#signalStrip .led.green{background:radial-gradient(circle at 34% 27%,#effff5,#4bffc0 37%,#00aa64 70%,#03472b 95%);border-color:#bbffe0;box-shadow:inset 0 0 7px #ecfff4aa,0 0 13px #32ff9acb,0 0 25px #23ff8b88}
+.lane.dm-finish-flash{animation:dmLaneArrivalFlash .16s steps(2,end) 4!important}
+.lane:not(.redlane).dm-finish-flash{--dm-race-flash:#00baff}
+.lane.redlane.dm-finish-flash{--dm-race-flash:#ff3159}
+@keyframes dmLaneArrivalFlash{0%,100%{box-shadow:0 0 14px var(--dm-race-flash),inset 0 0 14px var(--dm-race-flash)}50%{box-shadow:0 0 52px 12px var(--dm-race-flash),inset 0 0 45px var(--dm-race-flash);border-color:#fff}}
+.lane.dm-launch .car{animation:dmCarLaunch .72s ease-out both}
+@keyframes dmCarLaunch{0%{transform:translateY(0) scale(1)}26%{transform:translateY(-7px) scale(1.045)}45%{transform:translateY(5px) scale(.98)}70%{transform:translateY(-4px) scale(1.02)}100%{transform:translateY(0) scale(1)}}
+#dmLiveRace{display:none;align-items:center;justify-content:center;gap:7px;color:#ffb6c5;font-size:11px;font-weight:900;letter-spacing:1.5px;margin:5px auto}
+#dmLiveRace.dm-visible{display:flex}
+#dmLiveRace:before{content:"";width:9px;height:9px;background:#ff3f64;border-radius:50%;box-shadow:0 0 10px #ff3159;animation:dmLivePulse 1s ease-in-out infinite}
+@keyframes dmLivePulse{50%{opacity:.3;box-shadow:0 0 3px #ff3159}}
+@media(prefers-reduced-motion:reduce){.lane.dm-finish-flash,.lane.dm-launch .car,#dmLiveRace:before{animation:none}}
+</style>
 </head>
 
 <body>
@@ -3196,5 +3214,56 @@ renderRaceMode();dmTourRender();
 })();
 </script>
 
+<script id="dm-visual-pack-script">
+(function(){
+ const get=id=>document.getElementById(id);
+ const center=get('signalStrip')?.parentElement;
+ if(!center)return;
+ const live=document.createElement('div');
+ live.id='dmLiveRace';live.textContent='EN VIVO';
+ center.appendChild(live);
+ let lastRunning=false,lastWinner='',lastMode='',lastCount='',launchAt=0,winAt=0,lastRecord=0;
+ let soundUnlocked=false;
+ document.addEventListener('pointerdown',()=>{soundUnlocked=true},{once:true});
+ function shortSound(kind){
+  if(!soundUnlocked||!audio)return;
+  try{
+   if(kind==='start'){
+    const t=audio.currentTime;let o=audio.createOscillator(),g=audio.createGain();
+    o.type='sawtooth';o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(370,t+.42);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.043,t+.05);g.gain.exponentialRampToValueAtTime(.0001,t+.48);
+    o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+.49);
+   }else{
+    beep(880,.10);beep(1175,.10,.13);beep(1568,.22,.27);
+   }
+  }catch(e){}
+ }
+ function update(){
+  const running=typeof faseCarrera!=='undefined'&&faseCarrera==='corriendo';
+  live.classList.toggle('dm-visible',running);
+  if(running&&!lastRunning){
+   launchAt=Date.now();
+   ['blueLane','redLane'].forEach(id=>{
+    const lane=get(id);if(!lane)return;
+    lane.classList.remove('dm-launch');void lane.offsetWidth;lane.classList.add('dm-launch');
+    setTimeout(()=>lane.classList.remove('dm-launch'),850);
+   });
+   shortSound('start');
+  }
+  lastRunning=running;
+  const winner=typeof winnerFirst==='string'?winnerFirst:'';
+  const winLane=winner==='AZUL'?'blueLane':winner==='ROJO'?'redLane':'';
+  if(winLane&&winner!==lastWinner){
+   const lane=get(winLane);
+   if(lane){lane.classList.remove('dm-finish-flash');void lane.offsetWidth;lane.classList.add('dm-finish-flash');setTimeout(()=>lane.classList.remove('dm-finish-flash'),760)}
+  }
+  lastWinner=winner;
+  // El mensaje existente de nuevo récord puede aparecer en distintas modalidades.
+  const texts=[get('aviso'),get('statusMessage'),get('replayNotice')].map(e=>e?.textContent||'').join(' ');
+  if(/nuevo r[eé]cord/i.test(texts)&&Date.now()-lastRecord>5000){lastRecord=Date.now();shortSound('record')}
+ }
+ setInterval(update,120);
+})();
+</script>
 </body>
 </html>
