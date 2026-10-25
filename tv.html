@@ -284,6 +284,8 @@ window.opener?.postMessage({type:'DM_TV_READY'},location.origin);
 .dm-pf-red .dm-pf-car{filter:drop-shadow(0 0 13px #ff365e88)}
 .dm-pf-finish{position:absolute;left:79%;top:10px;bottom:10px;width:clamp(18px,2vw,35px);z-index:3;background:repeating-conic-gradient(#f2f2f2 0 25%,#172034 0 50%) 0/32px 32px}
 .dm-pf-beam{position:absolute;left:calc(79% + clamp(8px,1vw,17px));top:10px;bottom:10px;width:3px;background:#fff;z-index:6;box-shadow:0 0 12px #fff,0 0 27px #ff365e}
+.dm-pf-car.dm-pf-tiny-photo{mix-blend-mode:multiply;filter:contrast(1.2) brightness(1.22) drop-shadow(0 0 13px #178fff88)}
+.dm-pf-red .dm-pf-car.dm-pf-tiny-photo{filter:contrast(1.2) brightness(1.22) drop-shadow(0 0 13px #ff375d88)}
 .dm-pf-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9;background:#061128e9;opacity:0;visibility:hidden;transition:opacity .2s;text-align:center}
 .dm-pf-overlay.show{opacity:1;visibility:visible}
 .dm-pf-overlay strong{font:italic 1000 clamp(38px,7vw,95px)/1 Impact,system-ui,sans-serif;color:#fff;text-shadow:0 0 36px #fb376b}
