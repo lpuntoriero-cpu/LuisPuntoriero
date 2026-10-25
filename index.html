@@ -607,6 +607,17 @@ body.dm-racing #raceSafetyNotice{display:block}
 .race-champ-options[hidden]{display:none!important}
 body.champ-selected #dualBtn,body.champ-selected #soloBtn,body.champ-selected #resetBtn{display:none!important}
 body.champ-selected #soloLaneRow{display:none!important}
+.race-pilots-tab{margin:10px 0;border:1px solid #355b78;border-radius:10px;background:#081a2b;overflow:hidden}
+.race-pilots-tab summary{cursor:pointer;padding:13px;font-weight:900;color:#bdeaff;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.race-pilots-tab summary::-webkit-details-marker{display:none}
+.race-pilots-tab summary:after{content:'⌄';font-size:18px}
+.race-pilots-tab[open] summary:after{content:'⌃'}
+.race-pilots-hint{font-size:10px;color:#88aeca;font-weight:700}
+.race-pilots-content{padding:10px 13px 13px;border-top:1px solid #25435d}
+.race-pilots-content h2{display:none}
+body:has(#tourPanel:not([hidden])) #racePilotsTab{display:none}
+.record-owner{display:block;font-size:11px;color:#b5d9ee;margin-top:4px;overflow-wrap:anywhere}
+
 .dm-original-race-actions{display:none!important}
 body.champ-selected #dmSimpleConsole{display:none!important}
 .dm-simple-console{display:grid;gap:10px}
@@ -819,6 +830,16 @@ body.dm-theater .vehicle-pop{z-index:9999}
       <button id="raceModeChamp" class="mode-choice" type="button">⚔ DUELO</button>
       <button id="raceModeTour" class="mode-choice" type="button">🏆 TORNEO</button>
     </div>
+    <details id="racePilotsTab" class="race-pilots-tab">
+      <summary>🏎️ PILOTOS <span class="race-pilots-hint">EDITAR NOMBRES</span></summary>
+      <div class="race-pilots-content">
+ <h2>🏎️ PILOTOS</h2>
+ <div class="pilot-line"><img src="./casco_azul.svg" alt="Casco azul"><label for="pilotBlue">AZUL · 01</label><input id="pilotBlue" maxlength="24" placeholder="Piloto azul"></div>
+ <div class="pilot-line"><img src="./casco_rojo.svg" alt="Casco rojo"><label for="pilotRed">ROJO · 02</label><input id="pilotRed" maxlength="24" placeholder="Piloto rojo"></div>
+ <div class="upgrade-buttons"><button id="savePilots" class="btn primary" type="button">GUARDAR NOMBRES</button></div>
+ <p class="detail">Los nombres se guardan en este dispositivo y se registran en las nuevas carreras.</p>
+      </div>
+    </details>
     <div id="raceChampOptions" class="race-champ-options" hidden>
       <div class="upgrade-field"><label for="champLength">Formato</label><select id="champLength"><option value="3">Mejor de 3</option><option value="5">Mejor de 5</option></select></div>
       <div id="champScore"><span class="blue">0</span> — <span class="red">0</span></div>
@@ -941,26 +962,19 @@ body.dm-theater .vehicle-pop{z-index:9999}
 
 <section class="upgrade-grid" aria-label="Mejoras de carrera">
 <div class="panel">
- <h2>🏎️ PILOTOS</h2>
- <div class="pilot-line"><img src="./casco_azul.svg" alt="Casco azul"><label for="pilotBlue">AZUL · 01</label><input id="pilotBlue" maxlength="24" placeholder="Piloto azul"></div>
- <div class="pilot-line"><img src="./casco_rojo.svg" alt="Casco rojo"><label for="pilotRed">ROJO · 02</label><input id="pilotRed" maxlength="24" placeholder="Piloto rojo"></div>
- <div class="upgrade-buttons"><button id="savePilots" class="btn primary" type="button">GUARDAR NOMBRES</button></div>
- <p class="detail">Los nombres se guardan en este dispositivo y se registran en las nuevas carreras.</p>
-</div>
-<div class="panel">
  <h2>📊 ESTADÍSTICAS Y RÉCORDS</h2><h3 class="mini-section-title">RÉCORDS DE PISTA</h3>
     <div class="recgrid">
       <div class="rec">
         <label>RÉCORD AZUL</label>
-        <strong id="recordBlue">—</strong>
+        <strong id="recordBlue">—</strong><span class="record-owner" id="recordBlueOwner">—</span>
       </div>
       <div class="rec">
         <label>RÉCORD ROJO</label>
-        <strong id="recordRed">—</strong>
+        <strong id="recordRed">—</strong><span class="record-owner" id="recordRedOwner">—</span>
       </div>
       <div class="rec">
         <label>RÉCORD ABSOLUTO</label>
-        <strong id="recordTrack">—</strong>
+        <strong id="recordTrack">—</strong><span class="record-owner" id="recordTrackOwner">—</span>
       </div>
     </div>
   <h3 class="mini-section-title">ESTADÍSTICAS DE CARRERA</h3>
@@ -1401,30 +1415,21 @@ function renderHistory(){
     body.appendChild(tr);
   });
 
-  let bestB=null;
-  let bestR=null;
-
+  let blueBest=null,redBest=null;
   history.forEach(x=>{
-    if(Number.isFinite(x.azul)){
-      bestB=bestB===null
-        ?x.azul:Math.min(bestB,x.azul);
-    }
-
-    if(Number.isFinite(x.rojo)){
-      bestR=bestR===null
-        ?x.rojo:Math.min(bestR,x.rojo);
-    }
+    if(Number.isFinite(x.azul)&&(!blueBest||x.azul<blueBest.time))
+      blueBest={time:x.azul,pilot:x.pilotoAzul||'AZUL',lane:'AZUL'};
+    if(Number.isFinite(x.rojo)&&(!redBest||x.rojo<redBest.time))
+      redBest={time:x.rojo,pilot:x.pilotoRojo||'ROJO',lane:'ROJO'};
   });
-
-  $("recordBlue").textContent=fmt(bestB);
-  $("recordRed").textContent=fmt(bestR);
-
-  const vals=[bestB,bestR].filter(
-    v=>v!==null
-  );
-
-  $("recordTrack").textContent=
-    fmt(vals.length?Math.min(...vals):null);
+  const overall=!blueBest?redBest:!redBest?blueBest:
+    blueBest.time<=redBest.time?blueBest:redBest;
+  $('recordBlue').textContent=fmt(blueBest?.time??null);
+  $('recordRed').textContent=fmt(redBest?.time??null);
+  $('recordTrack').textContent=fmt(overall?.time??null);
+  $('recordBlueOwner').textContent=blueBest?.pilot||'SIN RÉCORD';
+  $('recordRedOwner').textContent=redBest?.pilot||'SIN RÉCORD';
+  $('recordTrackOwner').textContent=overall?overall.pilot+' · '+overall.lane:'SIN RÉCORD';
 }
 
 function record(mode,w,b,r){
@@ -2329,6 +2334,7 @@ function renderRaceMode(){
  document.getElementById('raceModeChamp').classList.toggle('active',isChamp);
  document.getElementById('raceChampOptions').hidden=!isChamp;
  document.body.classList.toggle('champ-selected',isChamp||isTour);
+ document.getElementById('racePilotsTab').hidden=isTour;
  const start=document.getElementById('champRaceBtn');
  if(start){
   const enPosicion=mangaPreparadaCampeonato && faseCarrera==='posicionamiento';
