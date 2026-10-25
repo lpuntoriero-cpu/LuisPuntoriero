@@ -375,6 +375,27 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .dm-data-layout .historygrid td,.dm-data-layout .historygrid th{padding:7px 6px}
 @media(max-width:950px){.dm-data-layout{grid-template-columns:minmax(0,1fr)}.dm-data-layout .historygrid table{min-width:630px}}
 .historygrid td.history-winning-time{background:#124a30!important;color:#aaffcb!important;font-weight:900;box-shadow:inset 0 0 0 1px #39e790,inset 0 0 12px #26d87633}
+/* Ranking, comparación y récords: solo interfaz */
+.dm-ranking-panel{margin-bottom:10px}
+.dm-ranking-table{min-width:430px!important}
+.dm-ranking-table td:nth-child(3){font-weight:900;color:#8ae6ad}
+.dm-race-gap{margin:12px 0 6px;padding:12px 14px;border:1px solid #597c94;border-radius:10px;background:#0c263a;text-align:center;color:#d9f3ff;font-weight:800}
+.dm-race-gap[hidden],.dm-record-toast[hidden],.dm-tour-podium[hidden]{display:none!important}
+.dm-race-gap strong{color:#6af0aa;font-size:20px}
+.dm-race-gap .dm-gap-bar{height:9px;border-radius:20px;background:linear-gradient(90deg,#158fdf 50%,#f23860 50%);margin:10px auto 0;max-width:350px;position:relative}
+.dm-race-gap .dm-gap-bar:after{content:'';position:absolute;left:50%;top:-4px;height:17px;border-left:3px solid #e8f6ff}
+.dm-record-toast{position:fixed;z-index:115;left:50%;top:13%;transform:translateX(-50%);width:min(92vw,520px);padding:24px 20px;text-align:center;pointer-events:none;background:radial-gradient(ellipse at top,#704714,#191a24 75%);border:2px solid #f3c85b;border-radius:18px;box-shadow:0 0 45px #f4bc56aa;color:#fff2bd;animation:dmRecordPop .65s ease-out both}
+.dm-record-icon{font-size:48px;animation:dmRecordPulse 1.1s ease-in-out infinite alternate}
+.dm-record-title{font-size:clamp(23px,4vw,36px);font-weight:1000;color:#ffe594}
+.dm-record-name{font-size:clamp(24px,4vw,42px);font-weight:900;overflow-wrap:anywhere}
+.dm-record-time{font-size:clamp(26px,4vw,38px);font-weight:900;color:#fff}
+@keyframes dmRecordPop{from{opacity:0;transform:translate(-50%,-26px) scale(.7)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes dmRecordPulse{from{transform:scale(1)}to{transform:scale(1.2)}}
+.dm-tour-podium{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:16px}
+.dm-podium-place{padding:12px 8px;border:1px solid #91734d;border-radius:11px;background:#081929;color:#f6e4b7}
+.dm-podium-place:first-child{grid-column:1/-1;border-color:#ffd66e;background:#3a2b14}
+.dm-podium-place strong{display:block;font-size:clamp(17px,3vw,28px);margin:5px 0;overflow-wrap:anywhere}
+.dm-podium-place span{font-size:11px;color:#c7d5e3}
 /* HISTORIAL Y RÉCORDS: ANCHO CORREGIDO */
 .historygrid{
   display:grid;
@@ -891,6 +912,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
       <div id="tourChampion" class="dm-tour-champion" hidden aria-live="polite">
         <div class="dm-tour-champion-title">🏆 CAMPEÓN DEL TORNEO</div>
         <div id="tourChampionName" class="dm-tour-champion-name"></div>
+        <div id="tourPodium" class="dm-tour-podium" hidden></div>
       </div>
       <h3 class="mini-section-title">RESULTADOS</h3><div class="tablewrap"><table><thead><tr><th>INSTANCIA</th><th>AZUL</th><th>ROJO</th><th>GANADOR</th><th>TIEMPO AZUL</th><th>TIEMPO ROJO</th></tr></thead><tbody id="tourRows"></tbody></table></div>
       <div class="upgrade-buttons"><button id="tourExit" class="btn" type="button">↩ VOLVER A CARRERA SIMPLE</button>
@@ -1021,6 +1043,11 @@ body.dm-theater .vehicle-pop{z-index:9999}
 
 </section>
 <section class="historygrid">
+  <div class="panel dm-ranking-panel">
+    <h2>🏅 RANKING DE PILOTOS</h2>
+    <div class="tablewrap"><table class="dm-ranking-table"><thead><tr><th>#</th><th>PILOTO</th><th>VICTORIAS</th><th>CARRERAS</th><th>MEJOR TIEMPO</th></tr></thead><tbody id="dmRankingBody"></tbody></table></div>
+    <p class="detail">Ranking calculado del historial guardado en este dispositivo.</p>
+  </div>
 
   <div class="panel">
     <div class="headrow">
@@ -1052,12 +1079,19 @@ body.dm-theater .vehicle-pop{z-index:9999}
       </table>
     </div>
 
+    <div id="dmRaceGap" class="dm-race-gap" hidden aria-live="polite"></div>
     <p id="storageNote" class="detail"></p>
   </div>
 </section>
 </div>
 </div>
 
+<div id="dmRecordToast" class="dm-record-toast" role="status" aria-live="polite" hidden>
+  <div class="dm-record-icon">🏆</div>
+  <div id="dmRecordTitle" class="dm-record-title">¡NUEVO RÉCORD!</div>
+  <div id="dmRecordName" class="dm-record-name"></div>
+  <div id="dmRecordTime" class="dm-record-time"></div>
+</div>
 <div id="winOverlay">
   <div id="winBanner" class="winBanner">
     <div class="small">GANADOR DE LA CARRERA</div>
@@ -1440,6 +1474,8 @@ function dmHistoryWinner(x){
 }
 
 function renderHistory(){
+  dmRenderRanking();
+  dmRenderRaceGap();
   const body=$("historyBody");
   body.replaceChildren();
 
@@ -1495,12 +1531,90 @@ function renderHistory(){
   $('recordTrackOwner').textContent=overall?overall.pilot+' · '+overall.lane:'SIN RÉCORD';
 }
 
+// Datos derivados del historial, sin modificar Bluetooth ni los resultados.
+let dmRecordToastTimer=null;
+function dmShowNewRecord(kind,pilot,seconds){
+ const toast=$('dmRecordToast');
+ clearTimeout(dmRecordToastTimer);
+ toast.hidden=false;
+ toast.style.animation='none';
+ void toast.offsetWidth;
+ toast.style.animation='';
+ $('dmRecordTitle').textContent='🏆 ¡NUEVO RÉCORD '+kind+'!';
+ $('dmRecordName').textContent=pilot;
+ $('dmRecordTime').textContent=fmt(seconds);
+ dmRecordToastTimer=setTimeout(()=>{toast.hidden=true},4600);
+}
+function dmCheckNewRecord(entry,older){
+ const candidates=[];
+ for(const [lane,key] of [['AZUL','azul'],['ROJO','rojo']]){
+  const time=entry[key];if(!Number.isFinite(time))continue;
+  const previous=older.map(x=>x[key]).filter(Number.isFinite);
+  if(!previous.length||time<Math.min(...previous)){
+   candidates.push({lane,time,pilot:dmHistoryPilot(entry[lane==='AZUL'?'pilotoAzul':'pilotoRojo'],lane)});
+  }
+ }
+ if(!candidates.length)return;
+ const best=candidates.reduce((a,b)=>a.time<=b.time?a:b);
+ const oldAll=older.flatMap(x=>[x.azul,x.rojo]).filter(Number.isFinite);
+ const absolute=!oldAll.length||best.time<Math.min(...oldAll);
+ dmShowNewRecord(absolute?'ABSOLUTO':'CARRIL '+best.lane,best.pilot,best.time);
+}
+function dmRenderRanking(){
+ const body=$('dmRankingBody');if(!body)return;
+ const pilots=new Map();
+ for(const x of history){
+  for(const [lane,key] of [['AZUL','azul'],['ROJO','rojo']]){
+   if(!Number.isFinite(x[key]))continue;
+   const name=dmHistoryPilot(x[lane==='AZUL'?'pilotoAzul':'pilotoRojo'],lane);
+   const id=name.toLocaleLowerCase('es-AR');
+   if(!pilots.has(id))pilots.set(id,{name,wins:0,races:0,best:Infinity});
+   const p=pilots.get(id);p.races++;p.best=Math.min(p.best,x[key]);
+   if(x.ganador===lane)p.wins++;
+  }
+ }
+ const entries=[...pilots.values()].sort((a,b)=>b.wins-a.wins||a.best-b.best||b.races-a.races);
+ body.replaceChildren();
+ if(!entries.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='Todavía no hay pilotos registrados';tr.append(td);body.append(tr);return}
+ entries.forEach((p,i)=>{const tr=document.createElement('tr');for(const val of [i+1,p.name,p.wins,p.races,fmt(p.best)]){const td=document.createElement('td');td.textContent=val;tr.append(td)}body.append(tr)});
+}
+function dmRenderRaceGap(){
+ const el=$('dmRaceGap');if(!el)return;
+ const last=history.at(-1);
+ if(!last||!Number.isFinite(last.azul)||!Number.isFinite(last.rojo)||last.ganador==='SIN GANADOR'){el.hidden=true;return}
+ const winner=dmHistoryWinner(last);
+ const diff=Math.abs(last.azul-last.rojo);
+ el.hidden=false;el.replaceChildren();
+ const label=document.createElement('div');
+ label.textContent=winner+' ganó por ';
+ const strong=document.createElement('strong');strong.textContent=diff.toFixed(1)+' s';
+ label.append(strong);el.append(label);
+ const bar=document.createElement('div');bar.className='dm-gap-bar';el.append(bar);
+}
+function dmRenderPodium(){
+ const pod=$('tourPodium');if(!pod)return;
+ const completed=dmTour&&dmTourNext()===null;
+ pod.hidden=!completed;pod.replaceChildren();if(!completed)return;
+ const rounds=dmTour.rounds,final=rounds.at(-1)[0];
+ const first=final.winner,second=final.blue===first?final.red:final.blue;
+ const semi=rounds.length>1?rounds.at(-2):[];
+ const semifinalists=semi.map(m=>m.blue===m.winner?m.red:m.blue).filter(id=>id!==null&&id!==undefined);
+ for(const [label,id] of [['🥇 CAMPEÓN',first],['🥈 SUBCAMPEÓN',second],...semifinalists.map(id=>['🥉 SEMIFINALISTA',id])]){
+  if(id===null||id===undefined)continue;
+  const card=document.createElement('div');card.className='dm-podium-place';
+  const top=document.createElement('span');top.textContent=label;
+  const name=document.createElement('strong');name.textContent=dmTour.players[id];
+  card.append(top,name);pod.append(card);
+ }
+}
+
 function record(mode,w,b,r){
   if(raceSaved)return;
 
   raceSaved=true;
   keepResult=true;
 
+  const dmPreviousHistory=history.slice();
   history.push({
     fecha:new Date().toISOString(),
     modo:raceMode==='champ'&&champ.active&&mode==='DOS AUTOS'?'DUELO':mode,
@@ -1521,6 +1635,7 @@ function record(mode,w,b,r){
   }
   saveHistory();
   renderHistory();
+  dmCheckNewRecord(history[history.length-1],dmPreviousHistory);
   registerChampionshipResult(mode,w);
 }
 
@@ -2698,12 +2813,13 @@ function dmTourRecorded(w,b,r,entry){
 function dmTourRender(){
  const next=dmTourNext(),btn=$('tourGo');
  $('tourBracket').replaceChildren();$('tourCurrent').replaceChildren();$('tourRows').replaceChildren();
- if(!dmTour){$('tourChampion').hidden=true;$('tourInfo').textContent='Cargá 8 o 16 pilotos y creá el torneo.';btn.disabled=true;return}
+ if(!dmTour){$('tourChampion').hidden=true;$('tourPodium').hidden=true;$('tourInfo').textContent='Cargá 8 o 16 pilotos y creá el torneo.';btn.disabled=true;return}
  $('tourName').value=dmTour.name;$('tourSize').value=String(dmTour.size);
  const championBox=$('tourChampion');
  const championId=!next?dmTour.rounds.at(-1)[0].winner:null;
  championBox.hidden=championId===null||championId===undefined;
  $('tourChampionName').textContent=championBox.hidden?'':dmTour.players[championId];
+ dmRenderPodium();
  if(next){
   for(const side of ['blue','red']){
    const el=document.createElement('div');el.className='dm-tour-card'+(side==='red'?' red':'');
