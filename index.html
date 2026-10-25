@@ -1757,7 +1757,7 @@ function results(payload){
   record("DOS AUTOS",w,b,r);
   status("Resultados registrados");
   // Foto finish solo con dos llegadas validas y diferencia estrictamente menor a 20 centesimas.
-  if(b!==null&&r!==null&&Math.abs(b-r)<0.20&&w!=="SIN GANADOR"){
+  if(b!==null&&r!==null&&Math.abs(b-r)<=1.00&&w!=="SIN GANADOR"){
     const photoData={id:Date.now(),winner:w,difference:Math.abs(b-r),blueName:pilotNames.azul,redName:pilotNames.rojo,blueTime:fmt(b),redTime:fmt(r),vehicle:document.getElementById('vehicleType')?.value||'drift'};
     window.dmPhotoFinishState=photoData;
     setTimeout(()=>window.dmPhotoFinishPlay?.(photoData),300);
