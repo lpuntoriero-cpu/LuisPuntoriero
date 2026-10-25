@@ -3266,7 +3266,7 @@ renderRaceMode();dmTourRender();
   // Fullscreen solicitado directamente desde el clic real del usuario.
   if(surface.classList.contains('dm-open')){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});closeTV();return}
   surface.classList.add('dm-open');btn.classList.add('is-on');
-  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=33',location.href).href);
+  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=34',location.href).href);
   tv=frame.contentWindow;
   const promise=surface.requestFullscreen?.();
   if(promise&&typeof promise.catch==='function')promise.catch(()=>{ /* Aun sin permiso, la vista cubre toda la ventana */ });
@@ -3570,7 +3570,7 @@ function contact(){
 const t=track.getBoundingClientRect(),f=finish.getBoundingClientRect();
 const ref=blue.getBoundingClientRect();
 // Calibraciones independientes: Tinybit queda como se aprobo; Supra tiene su propio ajuste.
-const ajuste=root.dataset.vehicle==='supra'?5.0:10.4;
+const ajuste=root.dataset.vehicle==='supra'?4.0:10.4;
 return (f.left-t.left-ref.width/2)/t.width*100+ajuste;
 }
 function spark(){flash.classList.remove('on');void flash.offsetWidth;flash.classList.add('on')}
