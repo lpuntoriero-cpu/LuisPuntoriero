@@ -3424,5 +3424,49 @@ renderRaceMode();dmTourRender();
  state();
 })();
 </script>
+
+<style id="dm-theater-fit-v1">
+/* Carrera simple y duelo: sin barra interior; Torneo conserva el desplazamiento. */
+body.dm-theater:not(.dm-fit-tournament) .below{
+  max-height:none!important;
+  overflow:hidden!important;
+  flex:0 0 auto;
+  zoom:var(--dm-bottom-zoom,1);
+}
+body.dm-theater:not(.dm-fit-tournament) .top{
+  min-height:0;
+}
+</style>
+<script id="dm-theater-fit-script">
+(()=>{
+ const lower=document.querySelector('.below'),header=document.querySelector('.app > header');
+ if(!lower)return;
+ let queued=false;
+ function fit(){
+  queued=false;
+  const full=document.body.classList.contains('dm-theater');
+  const tour=typeof raceMode!=='undefined'&&raceMode==='tour';
+  document.body.classList.toggle('dm-fit-tournament',!!tour);
+  if(!full||tour){lower.style.removeProperty('--dm-bottom-zoom');return}
+  lower.style.setProperty('--dm-bottom-zoom','1');
+  // Reservar sitio para los carriles y el semáforo, sin perder controles de carrera.
+  const headerH=header?header.getBoundingClientRect().height:70;
+  const available=Math.max(100,window.innerHeight-headerH-175-32);
+  const original=lower.scrollHeight;
+  const ratio=original>available?Math.max(.35,Math.min(1,available/original)):1;
+  lower.style.setProperty('--dm-bottom-zoom',String(Math.floor(ratio*1000)/1000));
+ }
+ function schedule(){if(!queued){queued=true;requestAnimationFrame(fit)}}
+ window.addEventListener('resize',schedule);
+ document.addEventListener('fullscreenchange',schedule);
+ for(const id of ['fullScreenBtn','raceModeSingle','raceModeChamp','raceModeTour','tourExit']){
+  document.getElementById(id)?.addEventListener('click',()=>{schedule();requestAnimationFrame(schedule)});
+ }
+ const control=document.querySelector('.below > .panel:first-child');
+ if(control)new MutationObserver(schedule).observe(control,{subtree:true,attributes:true,attributeFilter:['hidden','class','style']});
+ setInterval(()=>{if(document.body.classList.contains('dm-theater'))schedule()},800);
+ schedule();
+})();
+</script>
 </body>
 </html>
