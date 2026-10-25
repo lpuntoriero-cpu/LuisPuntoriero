@@ -847,14 +847,16 @@ body.dm-theater .vehicle-pop{z-index:9999}
 @media(prefers-reduced-motion:reduce){.lane.dm-finish-flash,.lane.dm-launch .car,#dmLiveRace:before{animation:none}}
 </style>
 <style id="dm-music-icon-style">#dmMenuMusic{font-size:26px;min-width:39px;min-height:39px;line-height:1;color:#3dff95!important;text-shadow:0 0 12px #15e97f;opacity:1}#dmMenuMusic.dm-music-off{color:#ff4b65!important;text-shadow:0 0 11px #ff3159;opacity:1}</style><style id="dm-false-x-red">#countdown.false-start{color:#ff254d!important;text-shadow:0 0 15px #ff174e,0 0 30px #b50028!important}</style><style id="dm-brand-banner">
-.dm-brand{position:relative;padding:14px 22px 4px 4px;overflow:hidden;isolation:isolate}
+.dm-racing-header{position:relative;isolation:isolate;background:linear-gradient(90deg,#071b3047,transparent 55%,#081a2c2b);border-bottom-color:#12649a}
+.dm-racing-header>.dm-header-speed{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.dm-racing-header>.dm-header-speed i{position:absolute;left:-40%;width:38%;height:2px;opacity:0;background:linear-gradient(90deg,transparent,#5fd0ff70 70%,transparent);animation:dmHeaderSweep 5.8s linear infinite}
+.dm-racing-header>.dm-header-speed i:nth-child(1){top:25%}
+.dm-racing-header>.dm-header-speed i:nth-child(2){top:53%;width:30%;animation-delay:1.8s}
+.dm-racing-header>.dm-header-speed i:nth-child(3){top:79%;width:35%;animation-delay:3.6s;background:linear-gradient(90deg,transparent,#ff31594f 70%,transparent)}
+@keyframes dmHeaderSweep{0%{transform:translateX(0);opacity:0}13%{opacity:.65}75%{opacity:.48}100%{transform:translateX(375%);opacity:0}}
+.dm-racing-header>.dm-brand,.dm-racing-header>.btbar{position:relative;z-index:1}
+.dm-brand{position:relative;padding:10px 14px 4px 4px;isolation:isolate}
 .dm-brand .check{position:absolute;left:0;right:0;top:0;height:6px;z-index:-1;opacity:.85;background:conic-gradient(#fff 25%,#0a1426 0 50%,#fff 0 75%,#0a1426 0) 0 0/12px 12px;-webkit-mask-image:linear-gradient(90deg,#000 15%,transparent);mask-image:linear-gradient(90deg,#000 15%,transparent)}
-.dm-brand .speed{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
-.dm-brand .speed i{position:absolute;left:-45%;height:2px;width:45%;opacity:0;background:linear-gradient(90deg,transparent,#5fd0ff 70%,transparent);animation:dmZoom 2.8s linear infinite}
-.dm-brand .speed i:nth-child(1){top:30%}
-.dm-brand .speed i:nth-child(2){top:55%;animation-delay:.9s;width:30%}
-.dm-brand .speed i:nth-child(3){top:78%;animation-delay:1.7s;background:linear-gradient(90deg,transparent,var(--red) 70%,transparent)}
-@keyframes dmZoom{0%{transform:translateX(0);opacity:0}15%{opacity:.8}100%{transform:translateX(330%);opacity:0}}
 .dm-brand .logo{display:flex;flex-wrap:wrap;gap:.22em;transform:skewX(-6deg);transform-origin:left}
 .dm-brand .logo span{display:inline-block}
 .dm-brand .logo .drift{color:var(--text);text-shadow:0 0 18px #3aa8ff88;animation:dmInL .8s cubic-bezier(.2,.8,.2,1) both}
@@ -868,17 +870,17 @@ body.dm-theater .vehicle-pop{z-index:9999}
 .dm-brand .subtitle .sep{flex:0 0 5px;width:5px;height:5px;background:var(--red);transform:rotate(45deg)}
 .dm-brand .byline{display:flex;align-items:center;gap:.6em}
 .dm-brand .byline::before{content:"";width:1.8em;height:.16em;transform:skewX(-30deg);background:linear-gradient(90deg,var(--red),#ff7a2d)}
-@media(prefers-reduced-motion:reduce){.dm-brand *{animation:none!important}.dm-brand .speed i{opacity:.35}}
+@media(prefers-reduced-motion:reduce){.dm-brand *{animation:none!important}.dm-racing-header>.dm-header-speed{display:none}}
 </style>
 </head>
 
 <body>
 <div class="app">
 
-<header>
+<header class="dm-racing-header">
+  <div class="speed dm-header-speed" aria-hidden="true"><i></i><i></i><i></i></div>
   <div class="dm-brand">
     <div class="check" aria-hidden="true"></div>
-    <div class="speed" aria-hidden="true"><i></i><i></i><i></i></div>
     <div class="logo"><span class="drift">DRIFT</span><span class="masters">MASTERS</span></div>
     <div class="subtitle">DUAL LANE<i class="sep" aria-hidden="true"></i>RACE CONTROL</div>
     <div class="byline">by <span>Luis Puntoriero</span></div>
