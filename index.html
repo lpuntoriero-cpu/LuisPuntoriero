@@ -872,6 +872,28 @@ body.dm-theater .vehicle-pop{z-index:9999}
 .dm-brand .byline::before{content:"";width:1.8em;height:.16em;transform:skewX(-30deg);background:linear-gradient(90deg,var(--red),#ff7a2d)}
 @media(prefers-reduced-motion:reduce){.dm-brand *{animation:none!important}.dm-racing-header>.dm-header-speed{display:none}}
 </style>
+<style id="dm-bluetooth-v2">
+/* Bluetooth de control: interfaz visual independiente del servicio BLE */
+header .dm-bt-panel{display:flex;align-items:center;gap:10px;min-height:52px;min-width:192px;padding:8px 12px;border-radius:11px;border:1px solid #385472;background:linear-gradient(140deg,#0e243a,#081628);box-shadow:inset 0 1px #ffffff12}
+header .dm-bt-symbol{display:grid;place-items:center;position:relative;flex:0 0 34px;width:34px;height:34px;border-radius:9px;background:#163553;color:#75beff;font:800 26px/1 Arial,sans-serif}
+header .btstatus:not(.dm-connected) .dm-bt-symbol::after{content:"";position:absolute;inset:-3px;border-radius:12px;border:1px solid #67baff;opacity:0;animation:dmBtRing 3.1s ease-out infinite}
+@keyframes dmBtRing{0%{transform:scale(.9);opacity:.45}100%{transform:scale(1.34);opacity:0}}
+header .dm-bt-info{display:flex;flex-direction:column;gap:5px}
+header .dm-bt-label{font-size:10px;letter-spacing:.06em;font-weight:800;color:#9db8d4;white-space:nowrap}
+header .dm-bt-state{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800}
+header .dm-bt-panel .dot{width:8px;height:8px;margin:0;background:#ff4a68;box-shadow:0 0 0 3px #ff4a6820,0 0 9px #ff4a6870}
+header .dm-bt-panel .dot.on{background:#2ff3a6;box-shadow:0 0 0 3px #2ff3a620,0 0 9px #2ff3a670}
+header .dm-bt-panel.dm-connected{border-color:#2c806c}
+header .dm-bt-panel.dm-connected .dm-bt-symbol{background:#103b39;color:#62f1bf;box-shadow:0 0 0 1px #2ff3a655,0 0 14px #2ff3a633}
+header #connectBtn.dm-bt-action{min-height:52px;border-radius:11px;padding:10px 14px;letter-spacing:.025em;font-size:11px}
+header #connectBtn.dm-bt-action:not(.dm-connected){animation:dmBtGlow 3.8s ease-in-out infinite}
+@keyframes dmBtGlow{50%{box-shadow:inset 0 1px 0 #ffffff28,0 6px 22px #0a8bff70}}
+header #connectBtn.dm-bt-action:not(.dm-connected)::before{content:"ᛒ";margin-right:.5em;font-size:1.2em;vertical-align:-1px}
+header #connectBtn.dm-bt-action.dm-connected{background:transparent;box-shadow:none;border-color:#405972;color:#b9cde3}
+header #connectBtn.dm-bt-action.dm-connected:hover:not(:disabled){background:#3a1220;border-color:#ff5b78;color:#ffd9e0}
+@media(max-width:600px){header .dm-bt-panel{flex:1;min-width:0;padding:8px}header #connectBtn.dm-bt-action{flex:0 0 auto;padding:10px;font-size:10px}header .dm-bt-label{font-size:9px}}
+@media(prefers-reduced-motion:reduce){header .btstatus .dm-bt-symbol::after,header #connectBtn.dm-bt-action{animation:none!important}}
+</style>
 </head>
 
 <body>
@@ -902,15 +924,11 @@ body.dm-theater .vehicle-pop{z-index:9999}
     <button type="button" id="dmMenuMusic" class="dm-top-icon" title="Reproducir música" aria-label="Reproducir música" aria-pressed="false">♫</button>
     <button id="dmTvBtn" class="dm-top-icon" type="button" title="Abrir pantalla gigante en TV o monitor" aria-label="Abrir pantalla gigante">📺</button>
     <button id="fullScreenBtn" class="dm-top-icon" type="button" title="Pantalla completa" aria-label="Pantalla completa" aria-pressed="false">⛶</button>
-    <div class="btstatus">
-      <span id="btDot" class="dot"></span>
-      <span id="btText">DESCONECTADA</span>
+    <div class="btstatus dm-bt-panel" id="dmBluetoothPanel" role="status" aria-live="polite">
+      <span class="dm-bt-symbol" aria-hidden="true">ᛒ</span>
+      <span class="dm-bt-info"><span class="dm-bt-label">MICRO:BIT · BLUETOOTH</span><span class="dm-bt-state"><span id="btDot" class="dot"></span><span id="btText">DESCONECTADA</span></span></span>
     </div>
-
-    
-    <button id="connectBtn" class="btn primary">
-      CONECTAR BLUETOOTH
-    </button>
+    <button id="connectBtn" class="btn primary dm-bt-action" type="button">CONECTAR BLUETOOTH</button>
   </div>
 </header>
 
@@ -1335,6 +1353,8 @@ function setConnection(ok){
     ok?"CONECTADA":"DESCONECTADA";
 
   $("btDot").classList.toggle("on",ok);
+  $("dmBluetoothPanel").classList.toggle("dm-connected",ok);
+  $("connectBtn").classList.toggle("dm-connected",ok);
 
   $("connectBtn").textContent=
     ok?"DESCONECTAR":"CONECTAR BLUETOOTH";
