@@ -754,6 +754,8 @@ body.dm-theater .vehicle-pop{z-index:9999}
 .dm-tour-winner{color:#60e9ad;font-weight:bold}
 .dm-tour-champion{margin:17px 0 12px;padding:23px 14px 26px;text-align:center;border:2px solid #d8ae48;border-radius:15px;background:radial-gradient(ellipse at 50% 0%,#76531e66,transparent 72%),linear-gradient(150deg,#1f1a18,#071a2b 70%);box-shadow:0 0 23px #e3ad3840,inset 0 0 25px #d9a63d20}
 .dm-tour-champion[hidden]{display:none!important}
+.dm-duel-winner{margin:15px 0 10px;background:radial-gradient(ellipse at 50% 0%,#76531e66,transparent 72%),linear-gradient(145deg,#261b14,#071a2b 75%)}
+.dm-duel-winner .dm-tour-champion-name{font-size:clamp(44px,7vw,88px)}
 .dm-tour-champion-title{font-size:clamp(15px,2.1vw,23px);letter-spacing:1.8px;color:#ffd67e;font-weight:900}
 .dm-tour-champion-name{font-size:clamp(42px,7vw,84px);line-height:1.12;font-weight:1000;color:#fff1b7;text-shadow:0 0 14px #e6b044aa,0 3px 1px #553b13;overflow-wrap:anywhere;margin-top:10px}
 @media(max-width:540px){.dm-tour-roster{grid-template-columns:1fr}.race-mode-switch .mode-choice{padding:10px 3px;font-size:10px}}
@@ -868,7 +870,11 @@ body.dm-theater .vehicle-pop{z-index:9999}
     <div id="raceChampOptions" class="race-champ-options" hidden>
       <div class="upgrade-field"><label for="champLength">Formato</label><select id="champLength"><option value="3">Mejor de 3</option><option value="5">Mejor de 5</option></select></div>
       <div id="champScore"><span class="blue">0</span> — <span class="red">0</span></div>
-      <div id="champNotice">Campeonato listo</div>
+      <div id="champNotice">Duelo listo</div>
+      <div id="duelWinner" class="dm-tour-champion dm-duel-winner" hidden aria-live="polite">
+        <div class="dm-tour-champion-title">🏆 GANADOR DEL DUELO</div>
+        <div id="duelWinnerName" class="dm-tour-champion-name"></div>
+      </div>
       <div class="upgrade-buttons"><button id="champRaceBtn" class="btn green" type="button" disabled>🏁 LARGAR CARRERA DEL DUELO</button><button id="champReset" class="btn" type="button">REINICIAR</button></div>
       <p class="detail">La primera largada inicia automáticamente el campeonato con dos autos. Las siguientes suman victorias al marcador. Para empezar uno nuevo, usá REINICIAR.</p>
     </div>
@@ -2438,7 +2444,10 @@ function champRender(){
  document.getElementById('champLength').value=String(champ.length);
  document.getElementById('champScore').innerHTML='<span class="blue">'+champ.blue+'</span> — <span class="red">'+champ.red+'</span>';
  const needed=Math.floor(champ.length/2)+1;
- document.getElementById('champNotice').textContent=champ.completed?'CAMPEÓN: '+(champ.blue>champ.red?pilotNames.azul:pilotNames.rojo):champ.active?'En juego · gana quien llegue a '+needed+' victorias':'Sin campeonato activo';
+ const won=!!champ.completed;
+ document.getElementById('duelWinner').hidden=!won;
+ document.getElementById('duelWinnerName').textContent=won?(champ.blue>champ.red?pilotNames.azul:pilotNames.rojo):'';
+ document.getElementById('champNotice').textContent=won?'DUELO FINALIZADO':champ.active?'En juego · gana quien llegue a '+needed+' victorias':'Duelo listo';
  renderRaceMode();
 }
 function registerChampionshipResult(mode,w){
