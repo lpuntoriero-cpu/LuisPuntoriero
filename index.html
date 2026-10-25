@@ -3038,6 +3038,9 @@ renderRaceMode();dmTourRender();
    blue:{pilot:pilotNames.azul,time:val('blueTime'),lap:shown('blueLap1')?val('blueLap1'):'',result:val('blueResult'),win:document.getElementById('blueLane')?.classList.contains('winner-blue'),lose:document.getElementById('blueLane')?.classList.contains('loser')},
    red:{pilot:pilotNames.rojo,time:val('redTime'),lap:shown('redLap1')?val('redLap1'):'',result:val('redResult'),win:document.getElementById('redLane')?.classList.contains('winner-red'),lose:document.getElementById('redLane')?.classList.contains('loser')},
    count:val('countdown'),message:val('signalMessage'),footer:title,
+   phase:faseCarrera,winnerColor:color,
+   winnerFirst:winnerFirst||'',
+   raceStartEpoch:visualRaceStart?Date.now()-(performance.now()-visualRaceStart):0,
    signal:[...document.querySelectorAll('#signalStrip .led')].map(el=>el.classList.contains('green')?'green':el.classList.contains('red')?'red':'off'),
    // La TV calcula los relojes por su cuenta: requestAnimationFrame de la ventana
    // principal se pausa cuando esta queda oculta en pantalla completa.
