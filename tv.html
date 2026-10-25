@@ -163,7 +163,7 @@ function drawLocalClocks(){
  requestAnimationFrame(drawLocalClocks);
 }
 requestAnimationFrame(drawLocalClocks);
-let dmIntroStart=0,dmIntroPhase='',dmIntroReady=false;
+let dmIntroStart=0,dmIntroPhase='',dmIntroReady=false,dmIntroAnnouncedAt=0;
 function dmUpdateIntro(phase,s,images){
  const intro=$('dmPilotIntro');
  // Presentar al abrir la TV en reposo, y otra vez al preparar una manga.
@@ -177,6 +177,10 @@ function dmUpdateIntro(phase,s,images){
  }
  if(!preparation)dmIntroStart=0;
  const visible=preparation&&dmIntroStart>0&&Date.now()-dmIntroStart<3000;
+ if(visible&&dmIntroAnnouncedAt!==dmIntroStart){
+  dmIntroAnnouncedAt=dmIntroStart;
+  window.parent.postMessage({type:'DM_TV_PILOT_INTRO'},location.origin);
+ }
  intro.classList.toggle('show',visible);
  $('introBlueName').textContent=s.blue?.pilot||'AZUL';
  $('introRedName').textContent=s.red?.pilot||'ROJO';
