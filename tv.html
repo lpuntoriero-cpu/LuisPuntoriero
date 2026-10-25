@@ -223,17 +223,17 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
   clock.classList.toggle('dm-long-time',v.length>11);
   clock.classList.toggle('dm-very-long',v.length>16);
  }
- for(const color of ['blue','red']){const d=s[color]||{};$(color+'Pilot').textContent=d.pilot||color.toUpperCase();if(!(tvClock.started&&tvClock[color+'Active']))$(color+'Time').textContent=d.time||'--.-- s';$(color+'Lap').textContent=d.lap||'';$(color+'Result').textContent=d.result||'';const isWinner=!!d.win||(phase==='finalizada'&&tvWinner===color&&String(d.result||'').trim().toUpperCase()==='GANADOR');$(color+'Result').classList.toggle('win',isWinner);$(color+'Lane').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('lose',!!d.lose)}
+ for(const color of ['blue','red']){const d=s[color]||{};$(color+'Pilot').textContent=d.pilot||color.toUpperCase();if(!(tvClock.started&&tvClock[color+'Active']))$(color+'Time').textContent=d.time||'--.-- s';$(color+'Lap').textContent=d.lap||'';$(color+'Result').textContent=d.result||'';const isWinner=(phase==='finalizada'||phase==='corriendo')&&tvWinner===color&&String(d.result||'').trim().toUpperCase()==='GANADOR'||!!d.win;$(color+'Result').classList.toggle('win',isWinner);$(color+'Lane').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('lose',!!d.lose)}
  if(!tvGoEpoch||phase!=='corriendo'){
   $('count').textContent=s.count||'—';
   $('count').classList.toggle('go',false);
  }
  $('count').classList.toggle('cancelled',String(s.count||'').trim()==='ANULADA');
- const finished=String($('count').textContent||'').trim()==='FIN';
+ const finished=String(s.count||'').trim()==='FIN'||(phase==='finalizada'&&tvWinner&&Date.now()-tvWinnerAt>=5500&&String(s.count||'').trim()!=='ANULADA');
  $('count').classList.toggle('finished-red',finished);
  const falseStart=String(s.count||'').trim()==='✖';
- $('count').style.color=falseStart?'#ff254d':(phase==='finalizada'||String(s.count||'').trim()==='—')?'#f8f9ff':'';
- $('count').style.textShadow=falseStart?'0 0 20px #ff174e,0 0 38px #a8002d':(phase==='finalizada'||String(s.count||'').trim()==='—')?'0 0 25px #85d7ff':'';
+ $('count').style.color=finished?'#ff3159':falseStart?'#ff254d':(phase==='finalizada'||String(s.count||'').trim()==='—')?'#f8f9ff':'';
+ $('count').style.textShadow=finished?'0 0 24px #ff3159,0 0 38px #a8002d':falseStart?'0 0 20px #ff174e,0 0 38px #a8002d':(phase==='finalizada'||String(s.count||'').trim()==='—')?'0 0 25px #85d7ff':'';
  $('message').textContent=s.message||'ESPERANDO LARGADA';
  $('footer').textContent=s.footer||'🏁 DRIFT MASTERS · RACE CONTROL';
  // Primero luce el festejo del semáforo; después aparece el cartel.
