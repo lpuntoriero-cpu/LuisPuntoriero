@@ -190,6 +190,9 @@ button:disabled{opacity:.4;cursor:not-allowed}
 @keyframes dmWinnerStatusGlow{to{box-shadow:0 0 23px #36ec8980}}
 @media(prefers-reduced-motion:reduce){.result.dm-result-winner{animation:none}}
 
+/* Evitar desborde del cartel de carrera anulada. */
+#countdown.dm-cancelled-count,
+body.dm-theater .top #countdown.dm-cancelled-count{font-size:clamp(19px,2.2vw,32px);max-width:100%;white-space:nowrap;letter-spacing:-.02em}
 /* GANADOR */
 .lane.winner-blue{
   border-color:#8deaff;
@@ -1724,6 +1727,7 @@ function results(payload){
   $("blueResult").classList.toggle("dm-result-winner",w==="AZUL"&&b!==null);
   $("redResult").classList.toggle("dm-result-winner",w==="ROJO"&&r!==null);
   $("countdown").textContent=b===null&&r===null?"ANULADA":"FIN";
+  $("countdown").classList.toggle("dm-cancelled-count",b===null&&r===null);
 
   const descalificado=b===null&&r!==null?"AZUL":r===null&&b!==null?"ROJO":"";
   const nombreDescalificado=descalificado
@@ -1971,6 +1975,7 @@ function processMessage(raw){
     const esRojo=infractor==="ROJO";
 
     dmCountStyle(null);
+    $("countdown").classList.remove("dm-cancelled-count");
     $("countdown").classList.add("false-start");
     $("countdown").textContent="✖";
 
