@@ -805,8 +805,11 @@ body.dm-theater .vehicle-pop{z-index:9999}
 </style>
 <style>
 .dm-master-powerbar{margin:10px 0 12px;padding:10px;border:1px solid #385775;border-radius:10px;background:linear-gradient(90deg,#0b2036,#111c30);gap:10px;flex-wrap:wrap}
-#dmAllLightsBtn{font-weight:900;letter-spacing:.4px;border:1px solid #ff6485;color:#ffe1e7;background:#581b2e;box-shadow:0 0 12px #ff315940}
-#dmAllLightsBtn.dm-all-off{border-color:#60ebae;color:#caffdf;background:#124330;box-shadow:0 0 10px #23dc8c33}
+#dmAllLightsBtn{min-width:116px;font-size:18px;font-weight:1000;letter-spacing:1px;border:2px solid #74ffad;color:#e6ffee;background:linear-gradient(145deg,#14794b,#0b3b29);box-shadow:0 0 15px #21e97f80,inset 0 0 12px #3bff8540;transition:background .2s,box-shadow .2s}
+#dmAllLightsBtn.dm-all-off{border-color:#ff617a;color:#ffe8ec;background:linear-gradient(145deg,#8b1b32,#471323);box-shadow:0 0 16px #ff315980,inset 0 0 12px #ff466640}
+.dm-master-muted{opacity:.28;filter:grayscale(.85) brightness(.6);pointer-events:none}
+.dm-master-powerbar{opacity:1!important;filter:none!important;pointer-events:auto!important}
+.dm-master-muted :is(button,input,select){pointer-events:none}
 #dmAllLightsBtn:disabled{opacity:.45;cursor:not-allowed}
 </style>
 </head>
@@ -986,8 +989,8 @@ body.dm-theater .vehicle-pop{z-index:9999}
     </div>
 
     <div class="powerbar dm-master-powerbar">
-      <span class="powerlabel">💡 TODAS LAS LUCES · P1 / P2 / P16</span>
-      <button id="dmAllLightsBtn" class="powerbtn" type="button" disabled aria-pressed="true">⏻ APAGAR TODAS</button>
+      <span class="powerlabel">💡 ILUMINACIÓN GENERAL · P1 / P2 / P16</span>
+      <button id="dmAllLightsBtn" class="powerbtn" type="button" disabled aria-pressed="true" title="Encender o apagar todas las luces">I · ON</button>
     </div>
 
     <div class="powerbar">
@@ -2340,7 +2343,13 @@ function dmMasterLightUI(){
  const off=!!dmAllLightsSnapshot;
  const race=faseCarrera==='cuenta'||faseCarrera==='corriendo';
  btn.disabled=!connected||race||dmAllLightsBusy;
- btn.textContent=dmAllLightsBusy?'ACTUALIZANDO...':off?'⏻ ENCENDER TODAS':'⏻ APAGAR TODAS';
+ btn.textContent=dmAllLightsBusy?'···':off?'O · OFF':'I · ON';
+ const root=btn.closest('.panel')||btn.parentElement.parentElement;
+ if(root){
+  root.querySelectorAll('.pinselector,.powerbar,.lightcontrols,.presets,#p1EffectsRow,#effectRow,#rainbowRow').forEach(el=>{
+   if(el!==btn.closest('.dm-master-powerbar'))el.classList.toggle('dm-master-muted',off);
+  });
+ }
  btn.classList.toggle('dm-all-off',off);
  btn.setAttribute('aria-pressed',String(!off));
 }
