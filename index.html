@@ -894,6 +894,13 @@ header #connectBtn.dm-bt-action.dm-connected:hover:not(:disabled){background:#3a
 @media(max-width:600px){header .dm-bt-panel{flex:1;min-width:0;padding:8px}header #connectBtn.dm-bt-action{flex:0 0 auto;padding:10px;font-size:10px}header .dm-bt-label{font-size:9px}}
 @media(prefers-reduced-motion:reduce){header .btstatus .dm-bt-symbol::after,header #connectBtn.dm-bt-action{animation:none!important}}
 </style>
+<style id="dm-vehicle-picker-layer-fix">
+/* Selector de vehículo siempre por encima del contenido de pista */
+header.dm-racing-header{z-index:200;overflow:visible}
+header.dm-racing-header>.btbar{z-index:201}
+header.dm-racing-header .vehicle-picker[open]{z-index:250}
+header.dm-racing-header .vehicle-picker[open] .vehicle-pop{z-index:251}
+</style>
 </head>
 
 <body>
