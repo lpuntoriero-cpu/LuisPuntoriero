@@ -3242,7 +3242,7 @@ renderRaceMode();dmTourRender();
    blue:{pilot:pilotNames.azul,time:val('blueTime'),lap:shown('blueLap1')?val('blueLap1'):'',result:val('blueResult'),win:document.getElementById('blueLane')?.classList.contains('winner-blue'),lose:document.getElementById('blueLane')?.classList.contains('loser')},
    red:{pilot:pilotNames.rojo,time:val('redTime'),lap:shown('redLap1')?val('redLap1'):'',result:val('redResult'),win:document.getElementById('redLane')?.classList.contains('winner-red'),lose:document.getElementById('redLane')?.classList.contains('loser')},
    count:val('countdown'),message:val('signalMessage'),footer:title,
-   phase:faseCarrera,winnerColor:color,photoFinish:window.dmPhotoFinishBroadcast||null,
+   phase:faseCarrera,raceCompleted:keepResult||faseCarrera==='finalizada',photoFinishAvailable:!!window.dmPhotoFinishState,winnerColor:color,photoFinish:window.dmPhotoFinishBroadcast||null,
    winnerFirst:winnerFirst||'',
    raceStartEpoch:visualRaceStart?Date.now()-(performance.now()-visualRaceStart):0,
    signal:[...document.querySelectorAll('#signalStrip .led')].map(el=>el.classList.contains('green')?'green':el.classList.contains('red')?'red':'off'),
@@ -3266,7 +3266,7 @@ renderRaceMode();dmTourRender();
   // Fullscreen solicitado directamente desde el clic real del usuario.
   if(surface.classList.contains('dm-open')){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});closeTV();return}
   surface.classList.add('dm-open');btn.classList.add('is-on');
-  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=39',location.href).href);
+  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=40',location.href).href);
   tv=frame.contentWindow;
   const promise=surface.requestFullscreen?.();
   if(promise&&typeof promise.catch==='function')promise.catch(()=>{ /* Aun sin permiso, la vista cubre toda la ventana */ });
@@ -3277,10 +3277,17 @@ renderRaceMode();dmTourRender();
  window.addEventListener('message',e=>{
   if(e.origin!==location.origin||e.source!==frame.contentWindow)return;
   if(e.data?.type==='DM_TV_READY'&&tv)publish();
-  if(e.data?.type==='DM_TV_PILOT_INTRO'&&tv&&surface.classList.contains('dm-open')){
+  if(e.data?.type==='DM_TV_PILOT_INTRO'&&tv&&surface.classList.contains('dm-open')&&!keepResult&&faseCarrera!=='finalizada'){
    const azul=String(pilotNames.azul||'Azul').trim();
    const rojo=String(pilotNames.rojo||'Rojo').trim();
    narrar('Prepárense para el duelo. '+azul+' versus '+rojo);
+  }
+  if(e.data?.type==='DM_TV_REPLAY_PHOTO_FINISH'&&tv&&surface.classList.contains('dm-open')&&window.dmPhotoFinishState){
+    const data=window.dmPhotoFinishState;
+    const packet={...data,id:Date.now()+(window.dmPfRepeatSerial=(window.dmPfRepeatSerial||0)+1)};
+    window.dmPhotoFinishBroadcast=packet;
+    publish();
+    setTimeout(()=>{if(window.dmPhotoFinishBroadcast?.id===packet.id)window.dmPhotoFinishBroadcast=null},2500);
   }
   if(e.data?.type==='DM_TV_START_COUNT'&&tv&&surface.classList.contains('dm-open'))dmRequestCount();
  });
