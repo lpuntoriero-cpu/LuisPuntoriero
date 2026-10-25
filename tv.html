@@ -54,12 +54,24 @@ footer{text-align:center;flex:0 0 auto;min-height:4vh;font-size:clamp(15px,2.2vw
 .lane.tv-launch .car{animation:tvCarLaunch .72s ease-out}
 @keyframes tvCarLaunch{25%{transform:translateY(-1.3vh) scale(1.04)}55%{transform:translateY(.8vh) scale(.98)}80%{transform:translateY(-.4vh)}}
 @media(prefers-reduced-motion:reduce){.lane.tv-winner-flash,.lane.tv-launch .car,#tvLive:before{animation:none}}
+</style><style id="dm-pilot-intro-style">
+#dmPilotIntro{position:fixed;inset:0;z-index:65;display:flex;align-items:center;justify-content:center;background:linear-gradient(120deg,#031d39f2 0%,#081323f2 49%,#3a0816f2 100%);opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s;pointer-events:none}
+#dmPilotIntro.show{opacity:1;visibility:visible}
+#dmPilotIntro .intro-card{width:min(95vw,1100px);padding:30px 24px;text-align:center}
+#dmPilotIntro .intro-title{font:900 clamp(22px,3.5vw,48px) system-ui,sans-serif;color:#fff;letter-spacing:.12em;text-shadow:0 0 20px #a7d3ff}
+#dmPilotIntro .intro-pilots{display:flex;gap:clamp(15px,4vw,55px);justify-content:center;align-items:center;margin-top:24px}
+#dmPilotIntro .intro-player{flex:1;min-width:0;font:900 clamp(15px,2.5vw,34px) system-ui,sans-serif;overflow:hidden;text-overflow:ellipsis}
+#dmPilotIntro .intro-player.blue{color:#5bd2ff}#dmPilotIntro .intro-player.red{color:#ff647c}
+#dmPilotIntro .intro-player img{display:block;max-width:100%;width:clamp(140px,27vw,350px);height:clamp(130px,21vw,265px);object-fit:contain;margin:auto;filter:drop-shadow(0 15px 20px #0008)}
+#dmPilotIntro .intro-versus{color:#fff;font:1000 clamp(24px,5vw,68px) system-ui,sans-serif;text-shadow:0 0 20px #fff6}
+@media(max-width:540px){#dmPilotIntro .intro-card{padding:14px}#dmPilotIntro .intro-pilots{gap:8px}}
 </style></head>
 <body><main><header><div><div class="brand">DRIFT <span>MASTERS</span></div><div class="sub">DUAL LANE · RACE CONTROL</div></div><div style="display:flex;gap:18px;align-items:center"><div id="tvLive">EN VIVO</div><div class="status" id="connection">ESPERANDO CONTROL PRINCIPAL</div></div></header>
 <div class="arena"><section class="lane blue" id="blueLane"><div class="lane-title">🔵 CARRIL AZUL</div><div class="pilot" id="bluePilot">AZUL</div><img class="car" src="./drift_supra_azul.png" alt="Auto azul"><div class="clock" id="blueTime">--.-- s</div><div class="lap" id="blueLap">VUELTA 1 · --.-- s</div><div class="result" id="blueResult">LISTO PARA SALIR</div></section>
 <section class="center"><div class="tv-signal" id="tvSignal" aria-label="Semáforo de ocho luces"><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span></div><div id="count" class="count">—</div><div class="message" id="message">ESPERANDO LARGADA</div></section>
 <section class="lane red" id="redLane"><div class="lane-title">🔴 CARRIL ROJO</div><div class="pilot" id="redPilot">ROJO</div><img class="car" src="./drift_supra_rojo.png" alt="Auto rojo"><div class="clock" id="redTime">--.-- s</div><div class="lap" id="redLap">VUELTA 1 · --.-- s</div><div class="result" id="redResult">LISTO PARA SALIR</div></section></div>
 <footer id="footer">🏁 DRIFT MASTERS · RACE CONTROL</footer></main>
+<div id="dmPilotIntro"><div class="intro-card"><div class="intro-title">🏁 PRESENTACIÓN DE PILOTOS</div><div class="intro-pilots"><div class="intro-player blue"><img id="introBlueCar" src="./drift_supra_azul.png" alt=""><div id="introBlueName">AZUL</div></div><div class="intro-versus">VS</div><div class="intro-player red"><img id="introRedCar" src="./drift_supra_rojo.png" alt=""><div id="introRedName">ROJO</div></div></div></div></div>
 <div id="cover"><div id="banner"><small>🏆 GANADOR DE LA CARRERA</small><strong id="winnerName">AZUL</strong><em id="winnerTime"></em></div></div>
 
 <script>
@@ -138,6 +150,21 @@ function drawLocalClocks(){
  requestAnimationFrame(drawLocalClocks);
 }
 requestAnimationFrame(drawLocalClocks);
+let dmIntroStart=0,dmIntroShown=false,dmIntroPhase='reposo';
+function dmUpdateIntro(phase,s,images){
+ const intro=$('dmPilotIntro');
+ if(phase==='posicionamiento'&&dmIntroPhase!=='posicionamiento'&&!dmIntroShown){
+  dmIntroStart=Date.now();dmIntroShown=true;
+ }
+ if(phase==='reposo'||phase==='finalizada')dmIntroShown=false;
+ const visible=phase==='posicionamiento'&&dmIntroStart>0&&Date.now()-dmIntroStart<3000;
+ intro.classList.toggle('show',visible);
+ $('introBlueName').textContent=s.blue?.pilot||'AZUL';
+ $('introRedName').textContent=s.red?.pilot||'ROJO';
+ if($('introBlueCar').getAttribute('src')!==images[0])$('introBlueCar').src=images[0];
+ if($('introRedCar').getAttribute('src')!==images[1])$('introRedCar').src=images[1];
+ dmIntroPhase=phase;
+}
 function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  last=Date.now();raceClock=s.raceClock||{running:false,startEpoch:0,blueRunning:false,redRunning:false};syncClock(s);
  const vehicle=s.vehicleType||'drift';
@@ -148,6 +175,7 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
   const img=document.querySelector('#'+lane+'Lane img.car');
   if(img&&img.getAttribute('src')!==images[i])img.setAttribute('src',images[i]);
  });
+ dmUpdateIntro(s.phase||'reposo',s,images);
  if(Array.isArray(s.signal)&&s.signal.length===8)tvSignalState=s.signal;
  // El estado se basa en eventos: no depender del refresco de la ventana principal.
  const phase=s.phase||'reposo';
