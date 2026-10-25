@@ -65,6 +65,18 @@ footer{text-align:center;flex:0 0 auto;min-height:4vh;font-size:clamp(15px,2.2vw
 #dmPilotIntro .intro-player img{display:block;max-width:100%;width:clamp(140px,27vw,350px);height:clamp(130px,21vw,265px);object-fit:contain;margin:auto;filter:drop-shadow(0 15px 20px #0008)}
 #dmPilotIntro .intro-versus{color:#fff;font:1000 clamp(24px,5vw,68px) system-ui,sans-serif;text-shadow:0 0 20px #fff6}
 @media(max-width:540px){#dmPilotIntro .intro-card{padding:14px}#dmPilotIntro .intro-pilots{gap:8px}}
+</style><style id="dm-tv-layout-fixes">
+/* Ajuste de resultados largos sin desbordar las tarjetas. */
+.lane .clock{max-width:100%;min-width:0;text-align:center}
+.lane .clock.dm-long-time{font-size:clamp(15px,2.25vw,42px);font-style:normal;letter-spacing:-.035em;overflow-wrap:normal;white-space:nowrap}
+.lane .clock.dm-long-time.dm-very-long{font-size:clamp(13px,1.75vw,32px)}
+/* Reserva espacio para el pie amarillo cuando aparece el botón de largada. */
+.center{min-width:0;min-height:0;overflow:hidden}
+#tvStartCount:not([hidden]){display:block;flex:0 0 auto;max-width:96%;width:100%;min-width:0;margin:0 auto!important;padding:clamp(6px,.85vh,13px) clamp(5px,.65vw,12px)!important;font-size:clamp(11px,1.15vw,20px)!important;line-height:1.2;overflow-wrap:break-word}
+.center:has(#tvStartCount:not([hidden])) .tv-signal{height:min(34vh,300px);width:min(85%,150px);margin-bottom:0}
+.center:has(#tvStartCount:not([hidden])) .count{font-size:clamp(34px,6vw,110px)}
+.center:has(#tvStartCount:not([hidden])){justify-content:space-between;gap:.6vh}
+footer{position:relative;z-index:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style></head>
 <body><main><header><div><div class="brand">DRIFT <span>MASTERS</span></div><div class="sub">DUAL LANE · RACE CONTROL</div></div><div style="display:flex;gap:18px;align-items:center"><div id="tvLive">EN VIVO</div><div class="status" id="connection">ESPERANDO CONTROL PRINCIPAL</div></div></header>
 <div class="arena"><section class="lane blue" id="blueLane"><div class="lane-title">🔵 CARRIL AZUL</div><div class="pilot" id="bluePilot">AZUL</div><img class="car" src="./drift_supra_azul.png" alt="Auto azul"><div class="clock" id="blueTime">--.-- s</div><div class="lap" id="blueLap">VUELTA 1 · --.-- s</div><div class="result" id="blueResult">LISTO PARA SALIR</div></section>
@@ -203,6 +215,12 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  startBtn.hidden=!(s.countReady&&phase==='posicionamiento');
  startBtn.disabled=!s.countReady;
  $('connection').textContent=s.connected?'● BLUETOOTH CONECTADO':'○ BLUETOOTH DESCONECTADO';
+ for(const color of ['blue','red']){
+  const v=String(s[color]?.time||'');
+  const clock=$(color+'Time');
+  clock.classList.toggle('dm-long-time',v.length>11);
+  clock.classList.toggle('dm-very-long',v.length>16);
+ }
  for(const color of ['blue','red']){const d=s[color]||{};$(color+'Pilot').textContent=d.pilot||color.toUpperCase();if(!(tvClock.started&&tvClock[color+'Active']))$(color+'Time').textContent=d.time||'--.-- s';$(color+'Lap').textContent=d.lap||'';$(color+'Result').textContent=d.result||'';$(color+'Result').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('lose',!!d.lose)}
  if(!tvGoEpoch||phase!=='corriendo'){
   $('count').textContent=s.count||'—';
