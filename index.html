@@ -1708,25 +1708,25 @@ function results(payload){
   }
 
   $("blueTime").textContent=
-    b===null?"SIN LLEGADA":fmt(b);
+    b===null?"DESCALIFICADO":fmt(b);
 
   $("redTime").textContent=
-    r===null?"SIN LLEGADA":fmt(r);
+    r===null?"DESCALIFICADO":fmt(r);
 
   $("blueResult").textContent=
-    b===null?"SIN LLEGADA":
+    b===null?(r===null?"ANULADA POR TIEMPO":"DESCALIFICADO"):
     w==="AZUL"?"GANADOR":"FINALIZÓ";
 
   $("redResult").textContent=
-    r===null?"SIN LLEGADA":
+    r===null?(b===null?"ANULADA POR TIEMPO":"DESCALIFICADO"):
     w==="ROJO"?"GANADOR":"FINALIZÓ";
 
   $("blueResult").classList.toggle("dm-result-winner",w==="AZUL"&&b!==null);
   $("redResult").classList.toggle("dm-result-winner",w==="ROJO"&&r!==null);
-  $("countdown").textContent="FIN";
+  $("countdown").textContent=b===null&&r===null?"ANULADA":"FIN";
 
   $("signalMessage").textContent=
-    "CARRERA FINALIZADA";
+    b===null&&r===null?"ANULADA POR TIEMPO · 90 s":(b===null||r===null?"SEGUNDO AUTO DESCALIFICADO":"CARRERA FINALIZADA");
 
   dmFinishSignal();
 
