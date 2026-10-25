@@ -2350,7 +2350,7 @@ function renderSimpleConsole(){
  start.textContent=!supported?'🔴 ROJO · PENDIENTE DE FIRMWARE':
   busy?'🏎️ CARRERA EN CURSO':
   ready?'🚦 INICIAR CUENTA REGRESIVA':
-  locked?'🟡 POSICIONÁ LOS AUTOS':
+  locked?(dmSimpleChoice==='dual'?'🟡 POSICIONÁ LOS AUTOS':'🟡 POSICIONÁ EL AUTO AZUL'):
   '🏁 PREPARAR CARRERA';
  $('dmSimpleReset').disabled=!connected||busy;
 }
