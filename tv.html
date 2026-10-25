@@ -208,8 +208,9 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
   $('count').textContent=s.count||'—';
   $('count').classList.toggle('go',false);
  }
- $('count').style.color=(phase==='finalizada'||String(s.count||'').trim()==='—')?'#f8f9ff':'';
- $('count').style.textShadow=(phase==='finalizada'||String(s.count||'').trim()==='—')?'0 0 25px #85d7ff':'';
+ const falseStart=String(s.count||'').trim()==='✖';
+ $('count').style.color=falseStart?'#ff254d':(phase==='finalizada'||String(s.count||'').trim()==='—')?'#f8f9ff':'';
+ $('count').style.textShadow=falseStart?'0 0 20px #ff174e,0 0 38px #a8002d':(phase==='finalizada'||String(s.count||'').trim()==='—')?'0 0 25px #85d7ff':'';
  $('message').textContent=s.message||'ESPERANDO LARGADA';
  $('footer').textContent=s.footer||'🏁 DRIFT MASTERS · RACE CONTROL';
  // Primero luce el festejo del semáforo; después aparece el cartel.
