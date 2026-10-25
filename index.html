@@ -798,6 +798,11 @@ body.dm-theater .vehicle-pop{z-index:9999}
 .dm-p1-effects select:disabled{opacity:.52;cursor:not-allowed}
 .dm-p1-effects .detail{margin-top:9px;line-height:1.4}
 </style>
+<style>
+/* Estado del conteo coherente con la pantalla gigante */
+#countdown.dm-go{color:#38ffa4;text-shadow:0 0 28px #00ff88}
+#countdown.dm-finish,#countdown.dm-idle{color:#f8f9ff;text-shadow:0 0 22px #85d7ff}
+</style>
 </head>
 
 <body>
@@ -1324,6 +1329,18 @@ for(let i=0;i<8;i++){
   $("signalStrip").appendChild(led);
 }
 
+let dmGoTimeout=null;
+function dmCancelGoTimeout(){if(dmGoTimeout!==null){clearTimeout(dmGoTimeout);dmGoTimeout=null}}
+function dmCountStyle(mode){
+ const el=$("countdown");
+ el.classList.remove("dm-go","dm-finish","dm-idle");
+ if(mode)el.classList.add("dm-"+mode);
+}
+function dmFinishSignal(){
+ dmCancelGoTimeout();
+ dmCountStyle("finish");
+ setSignal(8,"red");
+}
 function setSignal(n,mode="red"){
   for(let i=0;i<8;i++){
     $("signalStrip").children[i].className=
@@ -1379,6 +1396,8 @@ function resetDisplay(){
   stopVisualClocks();
   winnerAnnounced=false;
   clearWinner();
+  dmCancelGoTimeout();
+  dmCountStyle("idle");
   setSignal(0,"off");
 
   $("countdown").classList.remove("false-start");
@@ -1662,9 +1681,7 @@ function results(payload){
   $("signalMessage").textContent=
     "CARRERA FINALIZADA";
 
-  setSignal(
-    8,w==="SIN GANADOR"?"red":"green"
-  );
+  dmFinishSignal();
 
   const winnerTime=
     w==="AZUL"?b:
@@ -1859,6 +1876,8 @@ function processMessage(raw){
     visualClockFinished.red=false;
     winnerAnnounced=false;
 
+    dmCancelGoTimeout();
+    dmCountStyle("go");
     $("countdown").textContent="GO!";
 
     $("signalMessage").textContent=
@@ -1871,6 +1890,16 @@ function processMessage(raw){
     }
 
     setSignal(8,"green");
+    const goStamp=visualRaceStart;
+    dmGoTimeout=setTimeout(()=>{
+      dmGoTimeout=null;
+      if(faseCarrera==="corriendo"&&visualRaceStart===goStamp){
+        $("countdown").textContent="";
+        dmCountStyle(null);
+        setSignal(0,"off");
+        $("signalMessage").textContent="CARRERA EN CURSO";
+      }
+    },3000);
     status("¡Largada confirmada!");
     return;
   }
@@ -1963,7 +1992,7 @@ function processMessage(raw){
     $("redResult").textContent="TIEMPO REGISTRADO";
     $("countdown").textContent="FIN";
     $("signalMessage").textContent="CONTRARRELOJ FINALIZADO";
-    setSignal(8,"green");
+    dmFinishSignal();
     if(seconds!==null)showWinner("ROJO",fmt(seconds));
     faseCarrera="finalizada";
     record("SOLO ROJO","ROJO",null,seconds);
@@ -1984,7 +2013,7 @@ function processMessage(raw){
     $("signalMessage").textContent=
       "CONTRARRELOJ FINALIZADO";
 
-    setSignal(8,"green");
+    dmFinishSignal();
 
     if(b!==null){
       showWinner("AZUL",fmt(b));
