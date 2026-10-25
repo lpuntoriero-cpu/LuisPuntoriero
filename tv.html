@@ -338,7 +338,7 @@ $('tvStartCount').addEventListener('click',()=>{
 });
 window.addEventListener('message',e=>{if(e.origin!==location.origin)return;if(e.data?.type==='DM_TV_STATE'){source=e.source;render(e.data)}});
 let bc=null;try{bc=new BroadcastChannel('drift-masters-tv');bc.onmessage=e=>render(e.data)}catch(e){}
-setInterval(()=>{if(Date.now()-last>3500)$('connection').textContent='ESPERANDO CONTROL PRINCIPAL';if(window.opener&&Date.now()-last>1500)window.opener.postMessage({type:'DM_TV_READY'},location.origin)},1500);
+setInterval(()=>{if(Date.now()-last>3500)updateTvBluetooth(false);if(window.opener&&Date.now()-last>1500)window.opener.postMessage({type:'DM_TV_READY'},location.origin)},1500);
 
 window.opener?.postMessage({type:'DM_TV_READY'},location.origin);
 </script><style id="dm-photo-finish-styles">
