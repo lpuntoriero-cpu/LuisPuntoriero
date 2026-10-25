@@ -363,6 +363,17 @@ button:disabled{opacity:.4;cursor:not-allowed}
   margin-top:9px;
 }
 
+/* Estadísticas y carreras, dos columnas en escritorio */
+.dm-data-layout{display:grid;grid-template-columns:minmax(340px,.95fr) minmax(0,1.45fr);gap:10px;align-items:start;margin-top:10px}
+.dm-data-layout .upgrade-grid,.dm-data-layout .historygrid{margin:0;min-width:0;width:100%;display:block}
+.dm-data-layout .panel{min-width:0;height:100%}
+.dm-data-layout .recgrid.dm-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dm-data-layout .upgrade-stat{padding:8px 10px;font-size:11px}
+.dm-data-layout .upgrade-stat strong{font-size:17px}
+.dm-data-layout .headrow{gap:8px}
+.dm-data-layout .historygrid table{min-width:630px;font-size:10px}
+.dm-data-layout .historygrid td,.dm-data-layout .historygrid th{padding:7px 6px}
+@media(max-width:950px){.dm-data-layout{grid-template-columns:minmax(0,1fr)}.dm-data-layout .historygrid table{min-width:630px}}
 /* HISTORIAL Y RÉCORDS: ANCHO CORREGIDO */
 .historygrid{
   display:grid;
@@ -963,16 +974,17 @@ body.dm-theater .vehicle-pop{z-index:9999}
 
 
 
-<section class="upgrade-grid" aria-label="Mejoras de carrera">
+<div class="dm-data-layout">
+<section class="upgrade-grid" aria-label="Estadísticas y récords">
 <div class="panel">
  <h2>📊 ESTADÍSTICAS Y RÉCORDS</h2><h3 class="mini-section-title">RÉCORDS DE PISTA</h3>
     <div class="recgrid">
       <div class="rec">
-        <label>RÉCORD AZUL</label>
+        <label>RÉCORD CARRIL AZUL</label>
         <strong id="recordBlue">—</strong><span class="record-owner" id="recordBlueOwner">—</span>
       </div>
       <div class="rec">
-        <label>RÉCORD ROJO</label>
+        <label>RÉCORD CARRIL ROJO</label>
         <strong id="recordRed">—</strong><span class="record-owner" id="recordRedOwner">—</span>
       </div>
       <div class="rec">
@@ -981,8 +993,8 @@ body.dm-theater .vehicle-pop{z-index:9999}
       </div>
     </div>
   <h3 class="mini-section-title">ESTADÍSTICAS DE CARRERA</h3>
- <div class="recgrid"><div class="upgrade-stat">CARRERAS<strong id="statRaces">0</strong></div><div class="upgrade-stat">AZUL · VICTORIAS<strong id="statBlueWins">0</strong></div><div class="upgrade-stat">ROJO · VICTORIAS<strong id="statRedWins">0</strong></div></div>
- <div class="recgrid" style="margin-top:8px"><div class="upgrade-stat">PROM. AZUL<strong id="statBlueAvg">—</strong></div><div class="upgrade-stat">PROM. ROJO<strong id="statRedAvg">—</strong></div><div class="upgrade-stat">DIF. PROM.<strong id="statDiff">—</strong></div></div>
+ <div class="recgrid dm-stats-grid"><div class="upgrade-stat">AZUL · VICTORIAS<strong id="statBlueWins">0</strong></div><div class="upgrade-stat">ROJO · VICTORIAS<strong id="statRedWins">0</strong></div></div>
+ <div class="recgrid dm-stats-grid" style="margin-top:8px"><div class="upgrade-stat">PROM. AZUL<strong id="statBlueAvg">—</strong></div><div class="upgrade-stat">PROM. ROJO<strong id="statRedAvg">—</strong></div></div>
  <p id="statRate" class="detail">Porcentajes de victorias: —</p>
 </div>
 
@@ -1021,10 +1033,8 @@ body.dm-theater .vehicle-pop{z-index:9999}
 
     <p id="storageNote" class="detail"></p>
   </div>
-
-
-
 </section>
+</div>
 </div>
 
 <div id="winOverlay">
@@ -2397,13 +2407,10 @@ function renderAdvancedStats(){
  const winsA=races.filter(x=>x.ganador==="AZUL").length,winsR=races.filter(x=>x.ganador==="ROJO").length;
  const avg=(xs)=>xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:null;
  const a=avg(history.map(x=>x.azul).filter(Number.isFinite)),r=avg(history.map(x=>x.rojo).filter(Number.isFinite));
- document.getElementById('statRaces').textContent=races.length;
  document.getElementById('statBlueWins').textContent=winsA;
  document.getElementById('statRedWins').textContent=winsR;
  document.getElementById('statBlueAvg').textContent=a===null?'—':a.toFixed(2)+' s';
  document.getElementById('statRedAvg').textContent=r===null?'—':r.toFixed(2)+' s';
- const d=avg(both.map(x=>Math.abs(x.azul-x.rojo)));
- document.getElementById('statDiff').textContent=d===null?'—':d.toFixed(2)+' s';
  const decided=winsA+winsR;
  document.getElementById('statRate').textContent='Victorias (carreras decididas): Azul '+(decided?(100*winsA/decided).toFixed(1):'0')+'% · Rojo '+(decided?(100*winsR/decided).toFixed(1):'0')+'%';
 }
