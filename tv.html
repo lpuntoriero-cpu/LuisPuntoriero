@@ -197,7 +197,7 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  const vehicle=s.vehicleType||'drift';
  const images=vehicle==='yahboom'||vehicle==='microbit'
   ?['./Yahboomazul.png','./Yahboomrojo.png']
-  :['./drift_supra_azul.png','./drift_supra_rojo.png'];
+  :['./pp.jpg','./pp1.jpg'];
  ['blue','red'].forEach((lane,i)=>{
   const img=document.querySelector('#'+lane+'Lane img.car');
   if(img&&img.getAttribute('src')!==images[i])img.setAttribute('src',images[i]);
