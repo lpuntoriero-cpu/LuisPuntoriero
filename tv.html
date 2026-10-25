@@ -68,7 +68,7 @@ footer{text-align:center;flex:0 0 auto;min-height:4vh;font-size:clamp(15px,2.2vw
 </style></head>
 <body><main><header><div><div class="brand">DRIFT <span>MASTERS</span></div><div class="sub">DUAL LANE · RACE CONTROL</div></div><div style="display:flex;gap:18px;align-items:center"><div id="tvLive">EN VIVO</div><div class="status" id="connection">ESPERANDO CONTROL PRINCIPAL</div></div></header>
 <div class="arena"><section class="lane blue" id="blueLane"><div class="lane-title">🔵 CARRIL AZUL</div><div class="pilot" id="bluePilot">AZUL</div><img class="car" src="./drift_supra_azul.png" alt="Auto azul"><div class="clock" id="blueTime">--.-- s</div><div class="lap" id="blueLap">VUELTA 1 · --.-- s</div><div class="result" id="blueResult">LISTO PARA SALIR</div></section>
-<section class="center"><div class="tv-signal" id="tvSignal" aria-label="Semáforo de ocho luces"><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span></div><div id="count" class="count">—</div><div class="message" id="message">ESPERANDO LARGADA</div></section>
+<section class="center"><div class="tv-signal" id="tvSignal" aria-label="Semáforo de ocho luces"><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span></div><div id="count" class="count">—</div><div class="message" id="message">ESPERANDO LARGADA</div><button id="tvStartCount" type="button" hidden style="margin:18px auto 0;padding:16px 24px;border:2px solid #55ffa0;border-radius:14px;background:#104b34;color:#e4ffed;font-weight:900;font-size:clamp(13px,1.6vw,24px);box-shadow:0 0 20px #2cff8455;cursor:pointer">🚦 INICIAR CUENTA REGRESIVA</button></section>
 <section class="lane red" id="redLane"><div class="lane-title">🔴 CARRIL ROJO</div><div class="pilot" id="redPilot">ROJO</div><img class="car" src="./drift_supra_rojo.png" alt="Auto rojo"><div class="clock" id="redTime">--.-- s</div><div class="lap" id="redLap">VUELTA 1 · --.-- s</div><div class="result" id="redResult">LISTO PARA SALIR</div></section></div>
 <footer id="footer">🏁 DRIFT MASTERS · RACE CONTROL</footer></main>
 <div id="dmPilotIntro"><div class="intro-card"><div class="intro-title">🏁 PRESENTACIÓN DE PILOTOS</div><div class="intro-pilots"><div class="intro-player blue"><img id="introBlueCar" src="./drift_supra_azul.png" alt=""><div id="introBlueName">AZUL</div></div><div class="intro-versus">VS</div><div class="intro-player red"><img id="introRedCar" src="./drift_supra_rojo.png" alt=""><div id="introRedName">ROJO</div></div></div></div></div>
@@ -199,6 +199,9 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  }
  tvPhase=phase;
  $('tvLive').classList.toggle('active',phase==='corriendo');
+ const startBtn=$('tvStartCount');
+ startBtn.hidden=!(s.countReady&&phase==='posicionamiento');
+ startBtn.disabled=!s.countReady;
  $('connection').textContent=s.connected?'● BLUETOOTH CONECTADO':'○ BLUETOOTH DESCONECTADO';
  for(const color of ['blue','red']){const d=s[color]||{};$(color+'Pilot').textContent=d.pilot||color.toUpperCase();if(!(tvClock.started&&tvClock[color+'Active']))$(color+'Time').textContent=d.time||'--.-- s';$(color+'Lap').textContent=d.lap||'';$(color+'Result').textContent=d.result||'';$(color+'Result').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('lose',!!d.lose)}
  if(!tvGoEpoch||phase!=='corriendo'){
@@ -221,6 +224,11 @@ if(show){
 }
 oldShow=show;
 }
+$('tvStartCount').addEventListener('click',()=>{
+ if($('tvStartCount').hidden||$('tvStartCount').disabled)return;
+ $('tvStartCount').disabled=true;
+ window.parent.postMessage({type:'DM_TV_START_COUNT'},location.origin);
+});
 window.addEventListener('message',e=>{if(e.origin!==location.origin)return;if(e.data?.type==='DM_TV_STATE'){source=e.source;render(e.data)}});
 let bc=null;try{bc=new BroadcastChannel('drift-masters-tv');bc.onmessage=e=>render(e.data)}catch(e){}
 setInterval(()=>{if(Date.now()-last>3500)$('connection').textContent='ESPERANDO CONTROL PRINCIPAL';if(window.opener&&Date.now()-last>1500)window.opener.postMessage({type:'DM_TV_READY'},location.origin)},1500);
