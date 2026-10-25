@@ -843,7 +843,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
 @keyframes dmLivePulse{50%{opacity:.3;box-shadow:0 0 3px #ff3159}}
 @media(prefers-reduced-motion:reduce){.lane.dm-finish-flash,.lane.dm-launch .car,#dmLiveRace:before{animation:none}}
 </style>
-</head>
+<style id="dm-music-icon-style">#dmMenuMusic{font-size:24px;min-width:39px;min-height:39px;line-height:1;color:#b3ffee}#dmMenuMusic.dm-music-off{color:#8fa4b6;opacity:.75}</style></head>
 
 <body>
 <div class="app">
@@ -868,14 +868,15 @@ body.dm-theater .vehicle-pop{z-index:9999}
       </div>
     </details>
     <button id="voiceBtn" class="dm-top-icon" type="button" title="Activar locutor" aria-label="Activar locutor" aria-pressed="false">🔇</button>
+    <button type="button" id="dmMenuMusic" class="dm-top-icon" title="Reproducir música" aria-label="Reproducir música" aria-pressed="false">♫̸</button>
     <button id="dmTvBtn" class="dm-top-icon" type="button" title="Abrir pantalla gigante en TV o monitor" aria-label="Abrir pantalla gigante">📺</button>
     <button id="fullScreenBtn" class="dm-top-icon" type="button" title="Pantalla completa" aria-label="Pantalla completa" aria-pressed="false">⛶</button>
     <div class="btstatus">
       <span id="btDot" class="dot"></span>
       <span id="btText">DESCONECTADA</span>
     </div>
-<button type="button" id="dmMenuMusic" title="Reproducir o pausar música del menú" aria-pressed="false" style="border:1px solid #416f83;border-radius:8px;background:#122c3b;color:#b9ffeb;padding:9px 12px;cursor:pointer;font-weight:900">♫ MÚSICA</button>
-    <button type="button" id="dmTestSound" title="Escuchar sonido de largada y habilitar audio en Chrome" style="border:1px solid #4a7991;border-radius:8px;background:#142638;color:#c8f5ff;padding:9px 12px;cursor:pointer;font-weight:800" aria-label="Probar sonido de largada">🔊 PROBAR V8</button>
+
+    
     <button id="connectBtn" class="btn primary">
       CONECTAR BLUETOOTH
     </button>
@@ -3258,12 +3259,6 @@ renderRaceMode();dmTourRender();
   }catch(e){const test=document.getElementById('dmTestSound');if(test)test.title='Audio no disponible: '+e.message}
  }
  window.dmPlayVisualSound=shortSound;
- const testSound=document.getElementById('dmTestSound');
- if(testSound)testSound.addEventListener('click',async()=>{
-   testSound.textContent='🔊 REPRODUCIENDO';
-   await shortSound('start');
-   setTimeout(()=>{testSound.textContent='🔊 PROBAR V8'},1750);
- });
  function update(){
   const running=typeof faseCarrera!=='undefined'&&faseCarrera==='corriendo';
   live.classList.toggle('dm-visible',running);
@@ -3298,7 +3293,9 @@ renderRaceMode();dmTourRender();
  let userPaused=false;
  function state(){
   const playing=!music.paused;
-  btn.textContent=playing?'♫ PAUSAR':'♫ MÚSICA';
+  btn.textContent=playing?'♫':'♫̸';
+  btn.classList.toggle('dm-music-off',!playing);
+  btn.setAttribute('aria-label',playing?'Pausar música':'Reproducir música');
   btn.setAttribute('aria-pressed',String(playing));
   btn.title=playing?'Pausar música del menú':'Reproducir música del menú';
  }
@@ -3308,7 +3305,7 @@ renderRaceMode();dmTourRender();
    else{userPaused=false;music.currentTime=music.currentTime||0;await music.play()}
    state();
   }catch(e){
-   btn.textContent='♫ ARCHIVO PENDIENTE';
+   btn.textContent='♫̸';
    btn.title='Falta incorporar 01. Main Menu.mp3 al repositorio: '+e.message;
   }
  });
