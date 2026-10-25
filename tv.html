@@ -55,11 +55,11 @@ let tvSignalState=Array(8).fill('off'),tvWinner='',tvWinnerAt=0,tvGoEpoch=0,tvPh
 function drawSignal(){
  const now=Date.now();
  const goAge=tvGoEpoch?now-tvGoEpoch:Infinity;
- const celebrating=!!tvWinner&&now-tvWinnerAt<4500;
+ const celebrating=!!tvWinner&&now-tvWinnerAt<1000;
  document.querySelectorAll('#tvSignal .tv-led').forEach((el,i)=>{
   let color=tvSignalState[i]||'off';
   if(celebrating){
-   color=(Math.floor((now-tvWinnerAt)/140)+i)%4<2?(tvWinner==='blue'?'blue':'celebrate-red'):'off';
+   color=(Math.floor((now-tvWinnerAt)/55)+i)%4<2?(tvWinner==='blue'?'blue':'celebrate-red'):'off';
   }else if(tvGoEpoch&&goAge>=3000&&color==='green'){
    color='off';
   }
@@ -76,7 +76,7 @@ function drawEffects(){
  // La recepción de estados puede pausarse en pantalla completa: controlar
  // la duración del cartel con el reloj de esta misma pantalla.
  const age=tvWinner?Date.now()-tvWinnerAt:Infinity;
- const show=!!tvWinner&&age>=4500&&age<9000;
+ const show=!!tvWinner&&age>=1000&&age<5500;
  $('cover').classList.toggle('show',show);
  if(show){
   $('banner').classList.toggle('red',tvWinner==='red');
@@ -139,7 +139,7 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  // Primero luce el festejo del semáforo; después aparece el cartel.
 // Independiente de los 5 s que dura el cartel en la ventana principal.
 const celebrationAge=tvWinner?Date.now()-tvWinnerAt:Infinity;
-const show=!!tvWinner&&celebrationAge>=4500&&celebrationAge<9000;
+const show=!!tvWinner&&celebrationAge>=1000&&celebrationAge<5500;
 const c=$('cover');c.classList.toggle('show',show);
 $('banner').classList.toggle('red',tvWinner==='red');
 if(show){
