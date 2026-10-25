@@ -1145,8 +1145,8 @@ function stopVisualClocks(){
 function paintRaceClocks(){
  if(visualRaceRunning && faseCarrera==="corriendo" && visualRaceStart){
    const elapsed=Math.max(0,(performance.now()-visualRaceStart)/1000).toFixed(2)+" s";
-   if(!visualClockFinished.blue)$("blueTime").textContent=elapsed;
-   if(!solo&&!visualClockFinished.red)$("redTime").textContent=elapsed;
+   if((!solo||!dmSoloRojo())&&!visualClockFinished.blue)$("blueTime").textContent=elapsed;
+   if((!solo||dmSoloRojo())&&!visualClockFinished.red)$("redTime").textContent=elapsed;
  }
  requestAnimationFrame(paintRaceClocks);
 }
@@ -1797,7 +1797,7 @@ function processMessage(raw){
   }
 
   if(u==="AUTOS LISTOS"||u==="AUTO LISTO"){
-    narrar("Pilotos preparados");
+    narrar(solo?"Auto preparado":"Pilotos preparados");
     actualizarEstadoAutos();
     return;
   }
@@ -2464,7 +2464,7 @@ function renderSimpleConsole(){
  // Sólo permite la segunda pulsación cuando la micro:bit confirmó los sensores.
  start.disabled=!active||!connected||busy||!supported||(locked&&!ready);
  start.classList.toggle('dm-simple-waiting',locked&&!ready);
- start.textContent=!supported?'🔴 ROJO · PENDIENTE DE FIRMWARE':
+ start.textContent=!supported?'MODALIDAD NO DISPONIBLE':
   busy?'🏎️ CARRERA EN CURSO':
   ready?'🚦 INICIAR CUENTA REGRESIVA':
   locked?(dmSimpleChoice==='dual'?'🟡 POSICIONÁ LOS AUTOS':dmSimpleChoice==='red'?'🟡 POSICIONÁ EL AUTO ROJO':'🟡 POSICIONÁ EL AUTO AZUL'):
@@ -2485,7 +2485,7 @@ function renderRaceMode(){
  const simpleSolo=document.getElementById('soloBtn');
  simpleDual.textContent=faseCarrera==='posicionamiento'&&!solo&&azulPosicionado&&rojoPosicionado
   ? '🏁 INICIAR CUENTA REGRESIVA' : '🏁 LARGAR 2 AUTOS';
- simpleSolo.textContent=faseCarrera==='posicionamiento'&&solo&&azulPosicionado
+ simpleSolo.textContent=faseCarrera==='posicionamiento'&&solo&&(dmSoloRojo()?rojoPosicionado:azulPosicionado)
   ? '🏁 INICIAR CUENTA REGRESIVA' : '🏁 LARGAR 1 AUTO';
  const isChamp=raceMode==="champ";
  const isTour=raceMode==="tour";
