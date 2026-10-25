@@ -3262,7 +3262,7 @@ renderRaceMode();dmTourRender();
   // Fullscreen solicitado directamente desde el clic real del usuario.
   if(surface.classList.contains('dm-open')){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});closeTV();return}
   surface.classList.add('dm-open');btn.classList.add('is-on');
-  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=24',location.href).href);
+  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=25',location.href).href);
   tv=frame.contentWindow;
   const promise=surface.requestFullscreen?.();
   if(promise&&typeof promise.catch==='function')promise.catch(()=>{ /* Aun sin permiso, la vista cubre toda la ventana */ });
@@ -3557,7 +3557,7 @@ if(!data||!Number.isFinite(Number(data.difference)))return;
 const id=++serial,winnerBlue=data.winner==='AZUL';
 root.dataset.winner=data.winner;
 const isTinybit=data.vehicle==='yahboom'||data.vehicle==='microbit';
-const assets=isTinybit?['./kufl5gj78bphep00q671myepq691.jpg','./kufl5gj78bphep00q671myepq691.jpg']:['./drift_supra_azul.png','./drift_supra_rojo.png'];
+const assets=isTinybit?['./kufl5gj78bphep00q671myepq691.jpg','./kufl5gj78bphep00q671myepq691.jpg']:['./pp.jpg','./pp1.jpg'];
 blue.src=assets[0];red.src=assets[1];
 blue.classList.toggle('dm-pf-tiny-photo',isTinybit);
 red.classList.toggle('dm-pf-tiny-photo',isTinybit);
