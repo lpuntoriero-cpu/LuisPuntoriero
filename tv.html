@@ -19,8 +19,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:1vw;fle
 .lap{font-size:clamp(12px,1.4vw,28px);color:#add9ef;min-height:1.7em;margin-top:.4vh}
 .result{font-size:clamp(13px,1.4vw,30px);font-weight:800;min-height:2em;padding:.2em .7em;color:#b1c5d7}
 .result.win{border:2px solid #62ef9c;border-radius:40px;background:#103d31;color:#c5ffdf;text-shadow:0 0 12px #4cff95}
-.center{border-radius:1.2vw;background:linear-gradient(180deg,#101f35,#080f20);border:1px solid #294966;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2vh;padding:1vw;text-align:center}
-.tv-signal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(5px,.9vw,18px);width:min(100%,180px);margin-bottom:1vh}
+.center{border-radius:1.2vw;background:linear-gradient(180deg,#101f35,#080f20);border:1px solid #294966;display:flex;align-items:center;justify-content:space-evenly;flex-direction:column;gap:1vh;padding:1vw;text-align:center}
+.tv-signal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:clamp(5px,.7vw,15px);width:min(100%,190px);height:min(45vh,420px);flex:0 1 auto;margin:0 auto 1vh}
 .tv-led{aspect-ratio:1;border-radius:50%;border:2px solid #405367;background:#172237;box-shadow:inset 0 0 16px #000b;transition:background .09s,box-shadow .09s}
 .tv-led.red{background:#ff2d48;border-color:#ff8292;box-shadow:0 0 18px #ff244f,0 0 32px #ff244f99,inset 0 0 8px #ffb1bc}
 .tv-led.green{background:#20ff8a;border-color:#b4ffcf;box-shadow:0 0 18px #00ff77,0 0 32px #00ff7799,inset 0 0 8px #ceffe0}
@@ -44,39 +44,26 @@ footer{text-align:center;flex:0 0 auto;min-height:4vh;font-size:clamp(15px,2.2vw
 <section class="lane red" id="redLane"><div class="lane-title">🔴 CARRIL ROJO</div><div class="pilot" id="redPilot">ROJO</div><img class="car" src="./drift_supra_rojo.png" alt="Auto rojo"><div class="clock" id="redTime">--.-- s</div><div class="lap" id="redLap">VUELTA 1 · --.-- s</div><div class="result" id="redResult">LISTO PARA SALIR</div></section></div>
 <footer id="footer">🏁 DRIFT MASTERS · RACE CONTROL</footer></main>
 <div id="cover"><div id="banner"><small>🏆 GANADOR DE LA CARRERA</small><strong id="winnerName">AZUL</strong><em id="winnerTime"></em></div></div>
-<div id="hint"><button id="fullscreen">⛶ PANTALLA COMPLETA</button> · ESC para salir</div>
+
 <script>
 const $=id=>document.getElementById(id);let source=null;let last=0;let oldShow=false;
 let raceClock={running:false,startEpoch:0,blueRunning:false,redRunning:false};
 let tvClock={started:0,blueActive:false,redActive:false};
-let previouslyGo=false;
-function isGo(s){return String(s.count||'').trim().toUpperCase().includes('GO')||String(s.message||'').toUpperCase().includes('LARGADA')}
+
 function syncClock(s){
- const go=isGo(s);
  const c=s.raceClock||{};
- const hasSourceClock=!!(c.running&&c.startEpoch);
- if(hasSourceClock){
+ const active=!!(c.running&&c.startEpoch);
+ if(active){
   tvClock.started=c.startEpoch;
   tvClock.blueActive=!!c.blueRunning;
   tvClock.redActive=!!c.redRunning;
- }else if(go&&!previouslyGo){
-  // Respaldo: largada recibida, pero Chrome puede suspender el ciclo
-  // de animación de la ventana que conserva el Bluetooth.
-  tvClock.started=Date.now();
-  tvClock.blueActive=true;
-  tvClock.redActive=true;
+ }else{
+  // No iniciar nunca por textos persistentes como GO o LARGADA.
+  // Única fuente autorizada: estado real de carrera desde MakeCode.
+  tvClock.blueActive=false;
+  tvClock.redActive=false;
+  if(!s.blue?.win&&!s.red?.win)tvClock.started=0;
  }
- if(s.blue?.win||s.blue?.result?.includes('FINALIZ')||s.blue?.result?.includes('LLEGADA'))tvClock.blueActive=false;
- if(s.red?.win||s.red?.result?.includes('FINALIZ')||s.red?.result?.includes('LLEGADA'))tvClock.redActive=false;
- if(!go&&!hasSourceClock&&['—','8','7','6','5','4','3','2','1'].includes(String(s.count||'').trim())){
-  tvClock.started=0;tvClock.blueActive=false;tvClock.redActive=false;
- }
- if(s.blue?.win||s.red?.win){
-  // Los resultados oficiales se capturan por separado al recibir el dato final.
-  if(s.blue?.win)tvClock.blueActive=false;
-  if(s.red?.win)tvClock.redActive=false;
- }
- previouslyGo=go;
 }
 function drawLocalClocks(){
  if(tvClock.started){
@@ -100,6 +87,6 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
 window.addEventListener('message',e=>{if(e.origin!==location.origin)return;if(e.data?.type==='DM_TV_STATE'){source=e.source;render(e.data)}});
 let bc=null;try{bc=new BroadcastChannel('drift-masters-tv');bc.onmessage=e=>render(e.data)}catch(e){}
 setInterval(()=>{if(Date.now()-last>3500)$('connection').textContent='ESPERANDO CONTROL PRINCIPAL';if(window.opener&&Date.now()-last>1500)window.opener.postMessage({type:'DM_TV_READY'},location.origin)},1500);
-$('fullscreen').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.().catch(()=>{})};
+
 window.opener?.postMessage({type:'DM_TV_READY'},location.origin);
 </script></body></html>
