@@ -150,14 +150,20 @@ function drawLocalClocks(){
  requestAnimationFrame(drawLocalClocks);
 }
 requestAnimationFrame(drawLocalClocks);
-let dmIntroStart=0,dmIntroShown=false,dmIntroPhase='reposo';
+let dmIntroStart=0,dmIntroPhase='',dmIntroReady=false;
 function dmUpdateIntro(phase,s,images){
  const intro=$('dmPilotIntro');
- if(phase==='posicionamiento'&&dmIntroPhase!=='posicionamiento'&&!dmIntroShown){
-  dmIntroStart=Date.now();dmIntroShown=true;
+ // Presentar al abrir la TV en reposo, y otra vez al preparar una manga.
+ // Nunca tapar la cuenta regresiva, GO, el ganador ni FIN.
+ const preparation=phase==='reposo'||phase==='posicionamiento';
+ if(!dmIntroReady){
+  dmIntroReady=true;
+  if(preparation)dmIntroStart=Date.now();
+ }else if(phase==='posicionamiento'&&dmIntroPhase!=='posicionamiento'){
+  dmIntroStart=Date.now();
  }
- if(phase==='reposo'||phase==='finalizada')dmIntroShown=false;
- const visible=phase==='posicionamiento'&&dmIntroStart>0&&Date.now()-dmIntroStart<3000;
+ if(!preparation)dmIntroStart=0;
+ const visible=preparation&&dmIntroStart>0&&Date.now()-dmIntroStart<3000;
  intro.classList.toggle('show',visible);
  $('introBlueName').textContent=s.blue?.pilot||'AZUL';
  $('introRedName').textContent=s.red?.pilot||'ROJO';
