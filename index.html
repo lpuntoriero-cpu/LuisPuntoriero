@@ -874,6 +874,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
       <span id="btDot" class="dot"></span>
       <span id="btText">DESCONECTADA</span>
     </div>
+<button type="button" id="dmTestSound" title="Escuchar sonido de largada y habilitar audio en Chrome" style="border:1px solid #4a7991;border-radius:8px;background:#142638;color:#c8f5ff;padding:9px 12px;cursor:pointer;font-weight:800" aria-label="Probar sonido de largada">🔊 PROBAR SONIDO</button>
     <button id="connectBtn" class="btn primary">
       CONECTAR BLUETOOTH
     </button>
@@ -3231,20 +3232,41 @@ renderRaceMode();dmTourRender();
   // Un gesto real del usuario habilita audio incluso si la carrera luego usa fullscreen.
   audioOn();
  },{capture:true});
- function shortSound(kind){
-  if(!soundUnlocked||!audio||audio.state!=="running")return;
+ async function shortSound(kind){
   try{
-   if(kind==='start'){
-    const t=audio.currentTime;let o=audio.createOscillator(),g=audio.createGain();
-    o.type='sawtooth';o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(370,t+.42);
-    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.043,t+.05);g.gain.exponentialRampToValueAtTime(.0001,t+.48);
-    o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+.49);
-   }else{
-    beep(880,.10);beep(1175,.10,.13);beep(1568,.22,.27);
+   // La largada llega por BLE; preparar el contexto al pulsar PROBAR SONIDO
+   // o cualquier control y reanudarlo si Chrome lo suspende.
+   audioOn();
+   if(!audio)return;
+   if(audio.state!=='running')await audio.resume();
+   if(audio.state!=='running'){
+    const test=document.getElementById('dmTestSound');
+    if(test)test.title='Chrome bloqueó el audio. Pulsá PROBAR SONIDO para habilitarlo.';
+    return;
    }
-  }catch(e){}
+   const when=audio.currentTime+.015;
+   if(kind==='start'){
+    const o=audio.createOscillator(),g=audio.createGain();
+    o.type='sawtooth';
+    o.frequency.setValueAtTime(95,when);
+    o.frequency.exponentialRampToValueAtTime(520,when+.5);
+    g.gain.setValueAtTime(.0001,when);
+    g.gain.exponentialRampToValueAtTime(.14,when+.035);
+    g.gain.exponentialRampToValueAtTime(.0001,when+.62);
+    o.connect(g);g.connect(audio.destination);
+    o.start(when);o.stop(when+.64);
+   }else{
+    beep(880,.14,.02);beep(1175,.14,.20);beep(1568,.28,.38);
+   }
+  }catch(e){const test=document.getElementById('dmTestSound');if(test)test.title='Audio no disponible: '+e.message}
  }
  window.dmPlayVisualSound=shortSound;
+ const testSound=document.getElementById('dmTestSound');
+ if(testSound)testSound.addEventListener('click',async()=>{
+   testSound.textContent='🔊 REPRODUCIENDO';
+   await shortSound('start');
+   setTimeout(()=>{testSound.textContent='🔊 PROBAR SONIDO'},800);
+ });
  function update(){
   const running=typeof faseCarrera!=='undefined'&&faseCarrera==='corriendo';
   live.classList.toggle('dm-visible',running);
