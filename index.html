@@ -3433,6 +3433,14 @@ body.dm-theater:not(.dm-fit-tournament) .below{
   flex:0 0 auto;
   zoom:var(--dm-bottom-zoom,1);
 }
+/* Editar pilotos: scroll solo en controles; nunca desplazar los autos. */
+body.dm-theater:not(.dm-fit-tournament):has(#racePilotsTab[open]) .below{
+  max-height:31vh!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  zoom:1!important;
+  scrollbar-gutter:stable;
+}
 body.dm-theater:not(.dm-fit-tournament) .top{
   min-height:0;
 }
@@ -3447,7 +3455,8 @@ body.dm-theater:not(.dm-fit-tournament) .top{
   const full=document.body.classList.contains('dm-theater');
   const tour=typeof raceMode!=='undefined'&&raceMode==='tour';
   document.body.classList.toggle('dm-fit-tournament',!!tour);
-  if(!full||tour){lower.style.removeProperty('--dm-bottom-zoom');return}
+  const pilotsOpen=!!document.getElementById('racePilotsTab')?.open;
+  if(!full||tour||pilotsOpen){lower.style.removeProperty('--dm-bottom-zoom');return}
   lower.style.setProperty('--dm-bottom-zoom','1');
   // Reservar sitio para los carriles y el semáforo, sin perder controles de carrera.
   const headerH=header?header.getBoundingClientRect().height:70;
@@ -3463,7 +3472,8 @@ body.dm-theater:not(.dm-fit-tournament) .top{
   document.getElementById(id)?.addEventListener('click',()=>{schedule();requestAnimationFrame(schedule)});
  }
  const control=document.querySelector('.below > .panel:first-child');
- if(control)new MutationObserver(schedule).observe(control,{subtree:true,attributes:true,attributeFilter:['hidden','class','style']});
+ if(control)new MutationObserver(schedule).observe(control,{subtree:true,attributes:true,attributeFilter:['hidden','class','style','open']});
+ document.getElementById('racePilotsTab')?.addEventListener('toggle',schedule);
  setInterval(()=>{if(document.body.classList.contains('dm-theater'))schedule()},800);
  schedule();
 })();
