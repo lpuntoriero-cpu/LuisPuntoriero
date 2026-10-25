@@ -200,7 +200,7 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  if((s.phase==='reposo'||s.phase==='posicionamiento'||s.phase==='cuenta')&&window.dmPhotoFinishLastId){window.dmPhotoFinishReset?.();window.dmPhotoFinishLastId=null}
  // Fuente principal: datos guardados. Respaldo: relojes finales visibles en la TV.
  const parseFinalTime=value=>{
-  const match=String(value??'').replace(',','.').match(/(?:^|\\s)(\\d+(?:\\.\\d+)?)\\s*s?\\s*$/i);
+  const match=String(value??'').replace(',','.').match(/(?:^|\s)(\d+(?:\.\d+)?)\s*s?\s*$/i);
   return match?Number(match[1]):null;
  };
  let finalData=s.photoFinishData||null;
