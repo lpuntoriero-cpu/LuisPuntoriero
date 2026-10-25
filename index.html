@@ -843,7 +843,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
 @keyframes dmLivePulse{50%{opacity:.3;box-shadow:0 0 3px #ff3159}}
 @media(prefers-reduced-motion:reduce){.lane.dm-finish-flash,.lane.dm-launch .car,#dmLiveRace:before{animation:none}}
 </style>
-<style id="dm-music-icon-style">#dmMenuMusic{font-size:24px;min-width:39px;min-height:39px;line-height:1;color:#b3ffee}#dmMenuMusic.dm-music-off{color:#8fa4b6;opacity:.75}</style></head>
+<style id="dm-music-icon-style">#dmMenuMusic{font-size:26px;min-width:39px;min-height:39px;line-height:1;color:#3dff95!important;text-shadow:0 0 12px #15e97f;opacity:1}#dmMenuMusic.dm-music-off{color:#ff4b65!important;text-shadow:0 0 11px #ff3159;opacity:1}</style></head>
 
 <body>
 <div class="app">
@@ -868,7 +868,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
       </div>
     </details>
     <button id="voiceBtn" class="dm-top-icon" type="button" title="Activar locutor" aria-label="Activar locutor" aria-pressed="false">🔇</button>
-    <button type="button" id="dmMenuMusic" class="dm-top-icon" title="Reproducir música" aria-label="Reproducir música" aria-pressed="false">♫̸</button>
+    <button type="button" id="dmMenuMusic" class="dm-top-icon" title="Reproducir música" aria-label="Reproducir música" aria-pressed="false">♫</button>
     <button id="dmTvBtn" class="dm-top-icon" type="button" title="Abrir pantalla gigante en TV o monitor" aria-label="Abrir pantalla gigante">📺</button>
     <button id="fullScreenBtn" class="dm-top-icon" type="button" title="Pantalla completa" aria-label="Pantalla completa" aria-pressed="false">⛶</button>
     <div class="btstatus">
@@ -3293,7 +3293,7 @@ renderRaceMode();dmTourRender();
  let userPaused=false;
  function state(){
   const playing=!music.paused;
-  btn.textContent=playing?'♫':'♫̸';
+  btn.textContent='♫';
   btn.classList.toggle('dm-music-off',!playing);
   btn.setAttribute('aria-label',playing?'Pausar música':'Reproducir música');
   btn.setAttribute('aria-pressed',String(playing));
@@ -3305,7 +3305,7 @@ renderRaceMode();dmTourRender();
    else{userPaused=false;music.currentTime=music.currentTime||0;await music.play()}
    state();
   }catch(e){
-   btn.textContent='♫̸';
+   btn.textContent='♫';
    btn.title='Falta incorporar 01. Main Menu.mp3 al repositorio: '+e.message;
   }
  });
