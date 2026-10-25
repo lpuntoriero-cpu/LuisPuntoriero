@@ -2434,7 +2434,7 @@ function registerChampionshipResult(mode,w){
  dmSave();champRender();
 }
 function renderAdvancedStats(){
- const races=history.filter(x=>x.modo==="DOS AUTOS"), both=races.filter(x=>Number.isFinite(x.azul)&&Number.isFinite(x.rojo));
+ const races=history.filter(x=>x.modo==="DOS AUTOS"||x.modo==="DUELO"), both=races.filter(x=>Number.isFinite(x.azul)&&Number.isFinite(x.rojo));
  const winsA=races.filter(x=>x.ganador==="AZUL").length,winsR=races.filter(x=>x.ganador==="ROJO").length;
  const avg=(xs)=>xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:null;
  const a=avg(history.map(x=>x.azul).filter(Number.isFinite)),r=avg(history.map(x=>x.rojo).filter(Number.isFinite));
