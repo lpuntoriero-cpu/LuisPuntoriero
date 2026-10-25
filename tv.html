@@ -222,7 +222,7 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
   clock.classList.toggle('dm-long-time',v.length>11);
   clock.classList.toggle('dm-very-long',v.length>16);
  }
- for(const color of ['blue','red']){const d=s[color]||{};$(color+'Pilot').textContent=d.pilot||color.toUpperCase();if(!(tvClock.started&&tvClock[color+'Active']))$(color+'Time').textContent=d.time||'--.-- s';$(color+'Lap').textContent=d.lap||'';$(color+'Result').textContent=d.result||'';$(color+'Result').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('lose',!!d.lose)}
+ for(const color of ['blue','red']){const d=s[color]||{};$(color+'Pilot').textContent=d.pilot||color.toUpperCase();if(!(tvClock.started&&tvClock[color+'Active']))$(color+'Time').textContent=d.time||'--.-- s';$(color+'Lap').textContent=d.lap||'';$(color+'Result').textContent=d.result||'';const isWinner=!!d.win||(phase==='finalizada'&&tvWinner===color&&String(d.result||'').trim().toUpperCase()==='GANADOR');$(color+'Result').classList.toggle('win',isWinner);$(color+'Lane').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('lose',!!d.lose)}
  if(!tvGoEpoch||phase!=='corriendo'){
   $('count').textContent=s.count||'—';
   $('count').classList.toggle('go',false);
