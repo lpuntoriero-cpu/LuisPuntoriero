@@ -3262,7 +3262,7 @@ renderRaceMode();dmTourRender();
   // Fullscreen solicitado directamente desde el clic real del usuario.
   if(surface.classList.contains('dm-open')){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});closeTV();return}
   surface.classList.add('dm-open');btn.classList.add('is-on');
-  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=23',location.href).href);
+  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=24',location.href).href);
   tv=frame.contentWindow;
   const promise=surface.requestFullscreen?.();
   if(promise&&typeof promise.catch==='function')promise.catch(()=>{ /* Aun sin permiso, la vista cubre toda la ventana */ });
@@ -3526,6 +3526,9 @@ body.dm-theater:not(.dm-fit-tournament) .top{
 .dm-pf-winner{text-align:center;flex:1.2;font:1000 clamp(18px,3.9vw,53px)/1.1 system-ui,sans-serif;color:#64dcff;text-shadow:0 0 18px #0d8cff}
 .dm-pf-winner small{display:block;font-size:clamp(13px,2.5vw,27px);color:#ffd564;margin-top:6px}
 @media(max-width:650px){.dm-pf-board{width:100vw;height:100dvh;border-radius:0}.dm-pf-name{font-size:12px;padding:5px}.dm-pf-car{width:clamp(90px,22vw,130px)}.dm-pf-bottom{gap:5px}.dm-pf-time{padding:6px;font-size:12px}.dm-pf-winner{font-size:22px}}
+/* La fotografia original del Tinybit se usa solo en foto finish, sin girar los sensores. */
+.dm-pf-car.dm-pf-tiny-photo{mix-blend-mode:multiply;filter:contrast(1.2) brightness(1.22) drop-shadow(0 0 13px #178fff88)}
+.dm-pf-red .dm-pf-car.dm-pf-tiny-photo{filter:contrast(1.2) brightness(1.22) drop-shadow(0 0 13px #ff375d88)}
 </style>
 <div id="dmPhotoFinish" class="dm-pf" aria-hidden="true">
 <div class="dm-pf-board"><div class="dm-pf-heading"><div class="dm-pf-brand">DRIFT <span>MASTERS</span></div><div id="dmPfHeadline" class="dm-pf-headline">FOTO FINISH</div></div>
@@ -3553,8 +3556,11 @@ async function play(data){
 if(!data||!Number.isFinite(Number(data.difference)))return;
 const id=++serial,winnerBlue=data.winner==='AZUL';
 root.dataset.winner=data.winner;
-const assets=(data.vehicle==='yahboom'||data.vehicle==='microbit')?['./Yahboomazul.png','./Yahboomrojo.png']:['./drift_supra_azul.png','./drift_supra_rojo.png'];
+const isTinybit=data.vehicle==='yahboom'||data.vehicle==='microbit';
+const assets=isTinybit?['./kufl5gj78bphep00q671myepq691.jpg','./kufl5gj78bphep00q671myepq691.jpg']:['./drift_supra_azul.png','./drift_supra_rojo.png'];
 blue.src=assets[0];red.src=assets[1];
+blue.classList.toggle('dm-pf-tiny-photo',isTinybit);
+red.classList.toggle('dm-pf-tiny-photo',isTinybit);
 $pf('dmPfBlueName').textContent=data.blueName||'AZUL';$pf('dmPfRedName').textContent=data.redName||'ROJO';
 $pf('dmPfBlueTime').textContent=(data.blueName||'AZUL')+' · '+data.blueTime;
 $pf('dmPfRedTime').textContent=(data.redName||'ROJO')+' · '+data.redTime;
