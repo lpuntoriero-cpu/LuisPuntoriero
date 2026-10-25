@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DRIFT MASTERS · PANTALLA GIGANTE</title>
+<style>
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{color:#fff;font-family:system-ui,Arial;background:radial-gradient(ellipse at 2% 4%,#07395d,transparent 48%),radial-gradient(ellipse at 98% 0%,#571027,transparent 45%),#030815;overflow:hidden}
+main{height:100dvh;display:flex;flex-direction:column;padding:1.5vh 2vw;gap:1.2vh}
+header{display:flex;align-items:center;justify-content:space-between;gap:1vw;flex:0 0 auto}
+.brand{font-weight:1000;letter-spacing:-.05em;font-style:italic;font-size:clamp(24px,3.6vw,74px);text-shadow:0 0 25px #009bff99}.brand span{color:#ff3159}
+.sub{font-size:clamp(10px,1vw,20px);letter-spacing:.28em;color:#7ad8ff}
+.status{font-size:clamp(11px,1.2vw,25px);border:1px solid #446785;border-radius:30px;padding:.5em 1.1em;background:#0c1c31}
+.arena{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,18%) minmax(0,1fr);gap:1.2vw;min-height:0;flex:1}
+.lane{position:relative;display:flex;align-items:center;flex-direction:column;min-height:0;overflow:hidden;border-radius:1.4vw;padding:1.3vw 1vw 1vw;border:2px solid #069af0;background:linear-gradient(180deg,#063654bf,#061322);box-shadow:inset 0 0 36px #068bf129}
+.lane.red{border-color:#ff3159;background:linear-gradient(180deg,#47182ebf,#180c17);box-shadow:inset 0 0 36px #ff315929}
+.lane.win{box-shadow:0 0 35px #06baff99,inset 0 0 45px #06baff33}.lane.red.win{box-shadow:0 0 35px #ff315999,inset 0 0 45px #ff315933}.lane.lose{opacity:.55}
+.lane-title{font-size:clamp(13px,2vw,39px);font-weight:1000;letter-spacing:.05em;color:#8bdaff}.red .lane-title{color:#ff9bb3}
+.pilot{font-size:clamp(16px,3.2vw,66px);font-weight:900;max-width:95%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.car{flex:1;min-height:0;width:90%;object-fit:contain;filter:drop-shadow(0 10px 18px #000c)}
+.clock{font-size:clamp(35px,6.5vw,130px);font-weight:1000;font-style:italic;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap;text-shadow:0 0 23px #00aaff;color:#e6f9ff}.red .clock{color:#ffe0e9;text-shadow:0 0 23px #ff3159}
+.lap{font-size:clamp(12px,1.4vw,28px);color:#add9ef;min-height:1.7em;margin-top:.4vh}
+.result{font-size:clamp(13px,1.4vw,30px);font-weight:800;min-height:2em;padding:.2em .7em;color:#b1c5d7}
+.result.win{border:2px solid #62ef9c;border-radius:40px;background:#103d31;color:#c5ffdf;text-shadow:0 0 12px #4cff95}
+.center{border-radius:1.2vw;background:linear-gradient(180deg,#101f35,#080f20);border:1px solid #294966;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2vh;padding:1vw;text-align:center}
+.count{font-size:clamp(40px,8vw,170px);font-weight:1000;color:#f8f9ff;line-height:1;text-shadow:0 0 25px #85d7ff}
+.count.go{color:#38ffa4;text-shadow:0 0 35px #00ff88}
+.message{font-size:clamp(11px,1.6vw,30px);font-weight:850;color:#bed4ee;overflow-wrap:anywhere}
+footer{text-align:center;flex:0 0 auto;min-height:4vh;font-size:clamp(15px,2.2vw,42px);font-weight:900;color:#fbd982;text-shadow:0 0 15px #b9902b}
+#cover{position:fixed;inset:0;z-index:20;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;background:#010715b3}
+#cover.show{opacity:1}
+#banner{border:3px solid #c4ddff;border-radius:24px;padding:3vh 6vw;text-align:center;background:linear-gradient(130deg,#073c63,#091c34);box-shadow:0 0 65px #00baffb8;max-width:92vw}
+#banner.red{background:linear-gradient(130deg,#59112c,#1b1023);border-color:#ffc4d4;box-shadow:0 0 65px #ff3159b8}
+#banner small{font-size:clamp(16px,2.3vw,42px);letter-spacing:.24em}
+#banner strong{display:block;font-size:clamp(40px,7vw,135px);overflow-wrap:anywhere}
+#banner em{display:block;font-style:normal;font-size:clamp(24px,3.5vw,72px)}
+#hint{position:fixed;bottom:8px;right:12px;font-size:11px;color:#6d89a5;z-index:30}button{background:#112c46;border:1px solid #456b87;border-radius:8px;color:white;padding:8px;cursor:pointer}
+@media(max-width:740px){main{padding:7px}.arena{grid-template-columns:minmax(0,1fr) 21% minmax(0,1fr)}.lane{padding:8px 2px}.pilot{font-size:17px}.clock{font-size:clamp(20px,5vw,42px)}.count{font-size:45px}.message{font-size:10px}}
+</style></head>
+<body><main><header><div><div class="brand">DRIFT <span>MASTERS</span></div><div class="sub">DUAL LANE · RACE CONTROL</div></div><div class="status" id="connection">ESPERANDO CONTROL PRINCIPAL</div></header>
+<div class="arena"><section class="lane blue" id="blueLane"><div class="lane-title">🔵 CARRIL AZUL</div><div class="pilot" id="bluePilot">AZUL</div><img class="car" src="./drift_supra_azul.png" alt="Auto azul"><div class="clock" id="blueTime">--.-- s</div><div class="lap" id="blueLap">VUELTA 1 · --.-- s</div><div class="result" id="blueResult">LISTO PARA SALIR</div></section>
+<section class="center"><div id="count" class="count">—</div><div class="message" id="message">ESPERANDO LARGADA</div></section>
+<section class="lane red" id="redLane"><div class="lane-title">🔴 CARRIL ROJO</div><div class="pilot" id="redPilot">ROJO</div><img class="car" src="./drift_supra_rojo.png" alt="Auto rojo"><div class="clock" id="redTime">--.-- s</div><div class="lap" id="redLap">VUELTA 1 · --.-- s</div><div class="result" id="redResult">LISTO PARA SALIR</div></section></div>
+<footer id="footer">🏁 DRIFT MASTERS · RACE CONTROL</footer></main>
+<div id="cover"><div id="banner"><small>🏆 GANADOR DE LA CARRERA</small><strong id="winnerName">AZUL</strong><em id="winnerTime"></em></div></div>
+<div id="hint"><button id="fullscreen">⛶ PANTALLA COMPLETA</button> · ESC para salir</div>
+<script>
+const $=id=>document.getElementById(id);let source=null;let last=0;let oldShow=false;
+function render(s){if(!s||s.type!=='DM_TV_STATE')return;last=Date.now();
+ $('connection').textContent=s.connected?'● BLUETOOTH CONECTADO':'○ BLUETOOTH DESCONECTADO';
+ for(const color of ['blue','red']){const d=s[color]||{};$(color+'Pilot').textContent=d.pilot||color.toUpperCase();$(color+'Time').textContent=d.time||'--.-- s';$(color+'Lap').textContent=d.lap||'';$(color+'Result').textContent=d.result||'';$(color+'Result').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('lose',!!d.lose)}
+ $('count').textContent=s.count||'—';$('count').classList.toggle('go',String(s.count).toUpperCase().includes('GO'));
+ $('message').textContent=s.message||'ESPERANDO LARGADA';$('footer').textContent=s.footer||'🏁 DRIFT MASTERS · RACE CONTROL';
+ const show=!!s.winnerOverlay;const c=$('cover');c.classList.toggle('show',show);$('banner').classList.toggle('red',s.winnerColor==='red');if(show){$('winnerName').textContent=s.winnerName||'';$('winnerTime').textContent=s.winnerTime||''}oldShow=show;
+}
+window.addEventListener('message',e=>{if(e.origin!==location.origin)return;if(e.data?.type==='DM_TV_STATE'){source=e.source;render(e.data)}});
+let bc=null;try{bc=new BroadcastChannel('drift-masters-tv');bc.onmessage=e=>render(e.data)}catch(e){}
+setInterval(()=>{if(Date.now()-last>3500)$('connection').textContent='ESPERANDO CONTROL PRINCIPAL';if(window.opener&&Date.now()-last>1500)window.opener.postMessage({type:'DM_TV_READY'},location.origin)},1500);
+$('fullscreen').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.().catch(()=>{})};
+window.opener?.postMessage({type:'DM_TV_READY'},location.origin);
+</script></body></html>
