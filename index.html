@@ -1269,9 +1269,9 @@ function actualizarEstadoAutos(){
 
   if(solo){
     status(
-      azulPosicionado
-        ?"AUTO AZUL LISTO"
-        :"FALTA AUTO AZUL"
+      (dmSoloRojo()?rojoPosicionado:azulPosicionado)
+        ?(dmSoloRojo()?"AUTO ROJO LISTO":"AUTO AZUL LISTO")
+        :(dmSoloRojo()?"FALTA AUTO ROJO":"FALTA AUTO AZUL")
     );
     return;
   }
@@ -1389,9 +1389,11 @@ function resetDisplay(){
   $("redResult").textContent="Sin registro";
 
   $("redLane").style.opacity="1";
+  $("blueLane").style.opacity="1";
 }
 
 let dmSimpleModoElegido='';
+const dmSoloRojo=()=>solo&&$('soloLaneSelect').value==='ROJO';
 function startRace(isSolo){
   stopVisualClocks();
   winnerAnnounced=false;
@@ -1409,7 +1411,7 @@ function startRace(isSolo){
   resetDisplay();
 
   if(solo){
-    $("redLane").style.opacity=".35";
+    $(dmSoloRojo()?"blueLane":"redLane").style.opacity=".35";
   }
 
   actualizarEstadoAutos();
@@ -1844,9 +1846,9 @@ function processMessage(raw){
     $("signalMessage").textContent=
       "¡LARGADA!";
 
-    $("blueState").textContent="EN CARRERA";
+    if(!dmSoloRojo())$("blueState").textContent="EN CARRERA";
 
-    if(!solo){
+    if(!solo||dmSoloRojo()){
       $("redState").textContent="EN CARRERA";
     }
 
@@ -1934,6 +1936,20 @@ function processMessage(raw){
     return;
   }
 
+  if(u.startsWith("TIEMPO_ROJO:")){
+    stopVisualClocks();
+    const value=m.substring("TIEMPO_ROJO:".length);
+    const seconds=parseTime(value);
+    $("redTime").textContent=value;
+    $("redResult").textContent="TIEMPO REGISTRADO";
+    $("countdown").textContent="FIN";
+    $("signalMessage").textContent="CONTRARRELOJ FINALIZADO";
+    setSignal(8,"green");
+    if(seconds!==null)showWinner("ROJO",fmt(seconds));
+    faseCarrera="finalizada";
+    record("SOLO ROJO","ROJO",null,seconds);
+    return;
+  }
   if(u.startsWith("TIEMPO:")){
     stopVisualClocks();
     const t=m.substring(7);
@@ -2111,22 +2127,18 @@ $("dualBtn").onclick=()=>{
 
 $("soloBtn").onclick=()=>{
   if(raceMode==='single'&&dmSimpleModoElegido==='dual')return;
-  if($('soloLaneSelect').value==='ROJO'){
-    $('aviso').textContent='El modo individual ROJO necesita una actualización del firmware micro:bit. Por seguridad no se inicia con el sensor azul.';
-    return;
-  }
   if(faseCarrera==="cuenta"||faseCarrera==="corriendo")return;
   audioOn();
   // Igual que en dos autos: la segunda pulsación mantiene el sensor
   // ya confirmado y solicita la cuenta sin preparar la manga otra vez.
-  if(faseCarrera==="posicionamiento" && solo && azulPosicionado){
+  if(faseCarrera==="posicionamiento" && solo && (dmSoloRojo()?rojoPosicionado:azulPosicionado)){
     status("PILOTOS PREPARADOS");
-    send("S");
+    send(dmSoloRojo()?"SR":"S");
     return;
   }
   startRace(true);
   setRaceSafety();
-  send("S");
+  send(dmSoloRojo()?"SR":"S");
 };
 
 $("resetBtn").onclick=()=>{
@@ -2427,12 +2439,8 @@ document.querySelectorAll('[data-simple-mode]').forEach(button=>{
 });
 $('dmSimpleStart').onclick=()=>{
  if(raceMode!=='single'||!connected)return;
- if(dmSimpleChoice==='red'){
-  $('aviso').textContent='La micro:bit todavía no admite el contrarreloj individual rojo. No se enviaron comandos.';
-  return;
- }
  if(dmSimpleModoElegido && faseCarrera==='posicionamiento' &&
-    !(dmSimpleChoice==='dual' ? azulPosicionado&&rojoPosicionado : azulPosicionado))return;
+    !(dmSimpleChoice==='dual' ? azulPosicionado&&rojoPosicionado : dmSimpleChoice==='red'?rojoPosicionado:azulPosicionado))return;
  if(dmSimpleChoice==='dual')$('dualBtn').click();
  else $('soloBtn').click();
  renderRaceMode();
@@ -2446,10 +2454,10 @@ function renderSimpleConsole(){
    b.classList.toggle('selected',b.dataset.simpleMode===dmSimpleChoice);
    b.disabled=!active||busy||locked;
  });
- const supported=dmSimpleChoice!=='red';
+ const supported=true;
  const ready=faseCarrera==='posicionamiento'&&(
   dmSimpleChoice==='dual'&&dmSimpleModoElegido==='dual'&&azulPosicionado&&rojoPosicionado ||
-  dmSimpleChoice==='blue'&&dmSimpleModoElegido==='solo'&&azulPosicionado
+  (dmSimpleChoice==='blue'||dmSimpleChoice==='red')&&dmSimpleModoElegido==='solo'&&(dmSimpleChoice==='red'?rojoPosicionado:azulPosicionado)
  );
  const start=$('dmSimpleStart');
  // Al preparar una manga, el botón se vuelve indicador amarillo sin acción.
@@ -2459,7 +2467,7 @@ function renderSimpleConsole(){
  start.textContent=!supported?'🔴 ROJO · PENDIENTE DE FIRMWARE':
   busy?'🏎️ CARRERA EN CURSO':
   ready?'🚦 INICIAR CUENTA REGRESIVA':
-  locked?(dmSimpleChoice==='dual'?'🟡 POSICIONÁ LOS AUTOS':'🟡 POSICIONÁ EL AUTO AZUL'):
+  locked?(dmSimpleChoice==='dual'?'🟡 POSICIONÁ LOS AUTOS':dmSimpleChoice==='red'?'🟡 POSICIONÁ EL AUTO ROJO':'🟡 POSICIONÁ EL AUTO AZUL'):
   '🏁 PREPARAR CARRERA';
  $('dmSimpleReset').disabled=!connected||busy;
 }
