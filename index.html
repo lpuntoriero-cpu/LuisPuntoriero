@@ -1443,6 +1443,8 @@ function showWinner(color,time){
 // REINICIO
 function resetDisplay(){
   window.dmPhotoFinishState=null;
+  window.dmPhotoFinishBroadcast=null;
+  window.dmPhotoFinishSetAvailable?.(false);
   window.dmPhotoFinishReset?.();
   stopVisualClocks();
   winnerAnnounced=false;
@@ -1760,8 +1762,10 @@ function results(payload){
   if(b!==null&&r!==null&&Math.abs(b-r)<=1.00&&w!=="SIN GANADOR"){
     const photoData={id:Date.now(),winner:w,difference:Math.abs(b-r),blueName:pilotNames.azul,redName:pilotNames.rojo,blueTime:fmt(b),redTime:fmt(r),vehicle:document.getElementById('vehicleType')?.value||'drift'};
     window.dmPhotoFinishState=photoData;
-    setTimeout(()=>window.dmPhotoFinishPlay?.(photoData),300);
-    setTimeout(()=>{if(window.dmPhotoFinishState?.id===photoData.id)window.dmPhotoFinishState=null},14500);
+    window.dmPhotoFinishSetAvailable?.(true);
+  }else{
+    window.dmPhotoFinishState=null;
+    window.dmPhotoFinishSetAvailable?.(false);
   }
   if(!winnerAnnounced && (w==="AZUL"||w==="ROJO")){
     narrar("Ganó "+(w==="AZUL"?pilotNames.azul:pilotNames.rojo));
@@ -3238,7 +3242,7 @@ renderRaceMode();dmTourRender();
    blue:{pilot:pilotNames.azul,time:val('blueTime'),lap:shown('blueLap1')?val('blueLap1'):'',result:val('blueResult'),win:document.getElementById('blueLane')?.classList.contains('winner-blue'),lose:document.getElementById('blueLane')?.classList.contains('loser')},
    red:{pilot:pilotNames.rojo,time:val('redTime'),lap:shown('redLap1')?val('redLap1'):'',result:val('redResult'),win:document.getElementById('redLane')?.classList.contains('winner-red'),lose:document.getElementById('redLane')?.classList.contains('loser')},
    count:val('countdown'),message:val('signalMessage'),footer:title,
-   phase:faseCarrera,winnerColor:color,photoFinish:window.dmPhotoFinishState||null,
+   phase:faseCarrera,winnerColor:color,photoFinish:window.dmPhotoFinishBroadcast||null,
    winnerFirst:winnerFirst||'',
    raceStartEpoch:visualRaceStart?Date.now()-(performance.now()-visualRaceStart):0,
    signal:[...document.querySelectorAll('#signalStrip .led')].map(el=>el.classList.contains('green')?'green':el.classList.contains('red')?'red':'off'),
@@ -3262,7 +3266,7 @@ renderRaceMode();dmTourRender();
   // Fullscreen solicitado directamente desde el clic real del usuario.
   if(surface.classList.contains('dm-open')){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});closeTV();return}
   surface.classList.add('dm-open');btn.classList.add('is-on');
-  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=25',location.href).href);
+  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=26',location.href).href);
   tv=frame.contentWindow;
   const promise=surface.requestFullscreen?.();
   if(promise&&typeof promise.catch==='function')promise.catch(()=>{ /* Aun sin permiso, la vista cubre toda la ventana */ });
@@ -3527,9 +3531,13 @@ body.dm-theater:not(.dm-fit-tournament) .top{
 .dm-pf-winner small{display:block;font-size:clamp(13px,2.5vw,27px);color:#ffd564;margin-top:6px}
 @media(max-width:650px){.dm-pf-board{width:100vw;height:100dvh;border-radius:0}.dm-pf-name{font-size:12px;padding:5px}.dm-pf-car{width:clamp(90px,22vw,130px)}.dm-pf-bottom{gap:5px}.dm-pf-time{padding:6px;font-size:12px}.dm-pf-winner{font-size:22px}}
 /* La fotografia original del Tinybit se usa solo en foto finish, sin girar los sensores. */
-.dm-pf-car.dm-pf-tiny-photo{mix-blend-mode:multiply;filter:contrast(1.2) brightness(1.22) drop-shadow(0 0 13px #178fff88)}
-.dm-pf-red .dm-pf-car.dm-pf-tiny-photo{filter:contrast(1.2) brightness(1.22) drop-shadow(0 0 13px #ff375d88)}
+.dm-pf-car.dm-pf-clean-photo{mix-blend-mode:normal;filter:drop-shadow(0 6px 11px #0008) drop-shadow(0 0 8px #198bff44)}
+.dm-pf-red .dm-pf-car.dm-pf-clean-photo{filter:drop-shadow(0 6px 11px #0008) drop-shadow(0 0 8px #ff365e44)}
+.dm-pf-open-btn{position:fixed;right:22px;bottom:22px;z-index:10001;border:1px solid #67baff;border-radius:9px;background:linear-gradient(145deg,#158bfa,#0450aa);color:#fff;box-shadow:0 6px 28px #157dea88;padding:14px 22px;font:900 18px system-ui,sans-serif;cursor:pointer}
+.dm-pf-open-btn[hidden]{display:none!important}
+.dm-pf-open-btn:hover{filter:brightness(1.15)}
 </style>
+<button id="dmPfReplayButton" class="dm-pf-open-btn" type="button" hidden disabled>📸 VER FOTO FINISH</button>
 <div id="dmPhotoFinish" class="dm-pf" aria-hidden="true">
 <div class="dm-pf-board"><div class="dm-pf-heading"><div class="dm-pf-brand">DRIFT <span>MASTERS</span></div><div id="dmPfHeadline" class="dm-pf-headline">FOTO FINISH</div></div>
 <div id="dmPfTrack" class="dm-pf-track"><div class="dm-pf-finish" id="dmPfFinish"></div><div class="dm-pf-beam"></div>
@@ -3557,10 +3565,10 @@ if(!data||!Number.isFinite(Number(data.difference)))return;
 const id=++serial,winnerBlue=data.winner==='AZUL';
 root.dataset.winner=data.winner;
 const isTinybit=data.vehicle==='yahboom'||data.vehicle==='microbit';
-const assets=isTinybit?['./kufl5gj78bphep00q671myepq691.jpg','./kufl5gj78bphep00q671myepq691.jpg']:['./pp.jpg','./pp1.jpg'];
+const assets=isTinybit?['./tinybit.jpg','./tinybit.jpg']:['./supraazul.jpg','./suprarojo.jpg'];
 blue.src=assets[0];red.src=assets[1];
-blue.classList.toggle('dm-pf-tiny-photo',isTinybit);
-red.classList.toggle('dm-pf-tiny-photo',isTinybit);
+blue.classList.add('dm-pf-clean-photo');
+red.classList.add('dm-pf-clean-photo');
 $pf('dmPfBlueName').textContent=data.blueName||'AZUL';$pf('dmPfRedName').textContent=data.redName||'ROJO';
 $pf('dmPfBlueTime').textContent=(data.blueName||'AZUL')+' · '+data.blueTime;
 $pf('dmPfRedTime').textContent=(data.redName||'ROJO')+' · '+data.redTime;
@@ -3581,6 +3589,18 @@ const small=document.createElement('small');small.textContent='POR '+Number(data
 await delay(3700);if(serial===id)reset();
 }
 window.dmPhotoFinishPlay=play;window.dmPhotoFinishReset=reset;
+window.dmPhotoFinishSetAvailable=function(show){
+ const btn=document.getElementById('dmPfReplayButton');
+ if(btn){btn.hidden=!show;btn.disabled=!show;}
+};
+document.getElementById('dmPfReplayButton')?.addEventListener('click',()=>{
+ const data=window.dmPhotoFinishState;
+ if(!data)return;
+ const packet={...data,id:Date.now()+(window.dmPfRepeatSerial=(window.dmPfRepeatSerial||0)+1)};
+ window.dmPhotoFinishBroadcast=packet;
+ window.dmPhotoFinishPlay?.(packet);
+ setTimeout(()=>{if(window.dmPhotoFinishBroadcast?.id===packet.id)window.dmPhotoFinishBroadcast=null},2500);
+});
 window.addEventListener('resize',reposition);
 })();
 </script>
