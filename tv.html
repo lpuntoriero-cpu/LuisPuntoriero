@@ -51,26 +51,24 @@ footer{text-align:center;flex:0 0 auto;min-height:4vh;font-size:clamp(15px,2.2vw
 const $=id=>document.getElementById(id);let source=null;let last=0;let oldShow=false;
 let raceClock={running:false,startEpoch:0,blueRunning:false,redRunning:false};
 let tvClock={started:0,blueActive:false,redActive:false};
-let tvSignalState=Array(8).fill('off'),tvWinner='',tvWinnerAt=0,tvGoEpoch=0,tvPreviousRunning=false;
+let tvSignalState=Array(8).fill('off'),tvWinner='',tvWinnerAt=0,tvGoEpoch=0,tvPhase='reposo';
 function drawSignal(){
- const now=Date.now(),goElapsed=tvGoEpoch?now-tvGoEpoch:Infinity;
- const celebrating=tvWinner&&now-tvWinnerAt<4500;
- const lamps=document.querySelectorAll('#tvSignal .tv-led');
- lamps.forEach((el,i)=>{
+ const now=Date.now();
+ const goAge=tvGoEpoch?now-tvGoEpoch:Infinity;
+ const celebrating=!!tvWinner&&now-tvWinnerAt<4500;
+ document.querySelectorAll('#tvSignal .tv-led').forEach((el,i)=>{
   let color=tvSignalState[i]||'off';
   if(celebrating){
-   // Barrido alternado del color del ganador sobre las 8 luces.
-   color=(Math.floor((now-tvWinnerAt)/150)+i)%4<2?(tvWinner==='blue'?'blue':'celebrate-red'):'off';
-  }else if(goElapsed>=3000&&color==='green'){
+   color=(Math.floor((now-tvWinnerAt)/140)+i)%4<2?(tvWinner==='blue'?'blue':'celebrate-red'):'off';
+  }else if(tvGoEpoch&&goAge>=3000&&color==='green'){
    color='off';
   }
   el.className='tv-led'+(color==='off'?'':' '+color);
  });
- const inGo=tvGoEpoch&&goElapsed<3000;
- if(inGo){$('count').textContent='GO!';$('count').classList.add('go')}
- else if(tvGoEpoch&&!celebrating){
-  if($('count').textContent.trim().toUpperCase().includes('GO'))$('count').textContent='🏁';
-  $('count').classList.remove('go');
+ if(tvGoEpoch){
+  $('count').textContent=goAge<3000?'GO!':'';
+  $('count').classList.toggle('go',goAge<3000);
+  if(goAge>=3000&&tvPhase==='corriendo')$('message').textContent='CARRERA EN CURSO';
  }
 }
 function drawEffects(){drawSignal();requestAnimationFrame(drawEffects)}
@@ -103,19 +101,28 @@ requestAnimationFrame(drawLocalClocks);
 function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  last=Date.now();raceClock=s.raceClock||{running:false,startEpoch:0,blueRunning:false,redRunning:false};syncClock(s);
  if(Array.isArray(s.signal)&&s.signal.length===8)tvSignalState=s.signal;
- const running=!!(raceClock.running&&raceClock.startEpoch);
- if(running&&!tvPreviousRunning){tvGoEpoch=raceClock.startEpoch;tvWinner='';tvWinnerAt=0}
- if(running&&!tvGoEpoch)tvGoEpoch=raceClock.startEpoch;
- if(!running&&!(s.blue?.win||s.red?.win)){tvGoEpoch=0;tvWinner='';tvWinnerAt=0}
- tvPreviousRunning=running;
- const winner=s.blue?.win?'blue':s.red?.win?'red':'';
- if(winner&&winner!==tvWinner){tvWinner=winner;tvWinnerAt=Date.now()}
+ // El estado se basa en eventos: no depender del refresco de la ventana principal.
+ const phase=s.phase||'reposo';
+ const start=Number(s.raceStartEpoch||raceClock.startEpoch)||0;
+ const newRace=phase==='corriendo'&&tvPhase!=='corriendo'&&!(tvWinner);
+ if(newRace||phase==='corriendo'&&!tvGoEpoch){
+  tvGoEpoch=start||Date.now();tvWinner='';tvWinnerAt=0;
+ }
+ // Capturar ganador desde GANA incluso cuando el cronómetro principal se detiene.
+ const winner=s.winnerFirst==='AZUL'?'blue':s.winnerFirst==='ROJO'?'red':s.blue?.win?'blue':s.red?.win?'red':'';
+ if(winner&&!tvWinner){tvWinner=winner;tvWinnerAt=Date.now()}
+ if(phase==='reposo'||phase==='posicionamiento'||phase==='cuenta'){
+  tvGoEpoch=0;tvWinner='';tvWinnerAt=0;
+ }
+ tvPhase=phase;
  $('connection').textContent=s.connected?'● BLUETOOTH CONECTADO':'○ BLUETOOTH DESCONECTADO';
  for(const color of ['blue','red']){const d=s[color]||{};$(color+'Pilot').textContent=d.pilot||color.toUpperCase();if(!(tvClock.started&&tvClock[color+'Active']))$(color+'Time').textContent=d.time||'--.-- s';$(color+'Lap').textContent=d.lap||'';$(color+'Result').textContent=d.result||'';$(color+'Result').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('lose',!!d.lose)}
- const goAge=tvGoEpoch?Date.now()-tvGoEpoch:Infinity;
- $('count').textContent=goAge>=3000&&String(s.count||'').toUpperCase().includes('GO')?'🏁':(s.count||'—');
- $('count').classList.toggle('go',goAge<3000);
- $('message').textContent=s.message||'ESPERANDO LARGADA';$('footer').textContent=s.footer||'🏁 DRIFT MASTERS · RACE CONTROL';
+ if(!tvGoEpoch){
+  $('count').textContent=s.count||'—';
+  $('count').classList.toggle('go',false);
+ }
+ $('message').textContent=s.message||'ESPERANDO LARGADA';
+ $('footer').textContent=s.footer||'🏁 DRIFT MASTERS · RACE CONTROL';
  const show=!!s.winnerOverlay;const c=$('cover');c.classList.toggle('show',show);$('banner').classList.toggle('red',s.winnerColor==='red');if(show){$('winnerName').textContent=s.winnerName||'';$('winnerTime').textContent=s.winnerTime||''}oldShow=show;
 }
 window.addEventListener('message',e=>{if(e.origin!==location.origin)return;if(e.data?.type==='DM_TV_STATE'){source=e.source;render(e.data)}});
