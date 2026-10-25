@@ -532,6 +532,9 @@ td{background:#09192c}
 .dm-confirm-dialog p{line-height:1.55;color:#c0d7e8;margin-bottom:22px}
 .dm-confirm-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}
 .dm-confirm-actions .btn{flex:1;min-width:145px}
+.dm-lap1{margin:7px auto 5px;padding:8px 10px;max-width:240px;border:1px solid #448aa7;border-radius:9px;background:#082b43;color:#9ce6ff;font-size:15px;font-weight:900;letter-spacing:.3px;text-align:center}
+.redlane .dm-lap1{border-color:#bc476b;background:#411727;color:#ffbed0}
+.dm-lap1[hidden]{display:none!important}
 /* CELULAR */
 @media(max-width:850px){
   .top{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
@@ -835,6 +838,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
     >
     <div class="timing">
       <div id="blueTime" class="time">--.- s</div>
+      <div id="blueLap1" class="dm-lap1" hidden>VUELTA 1 · --.- s</div>
       <div id="blueResult" class="result">
         Sin registro
       </div>
@@ -862,6 +866,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
     >
     <div class="timing">
       <div id="redTime" class="time">--.- s</div>
+      <div id="redLap1" class="dm-lap1" hidden>VUELTA 1 · --.- s</div>
       <div id="redResult" class="result">
         Sin registro
       </div>
@@ -1373,6 +1378,10 @@ function resetDisplay(){
   $("blueState").textContent="LISTO PARA SALIR";
   $("redState").textContent="LISTO PARA SALIR";
 
+  $("blueLap1").hidden=true;
+  $("redLap1").hidden=true;
+  $("blueLap1").textContent="VUELTA 1 · --.- s";
+  $("redLap1").textContent="VUELTA 1 · --.- s";
   $("blueTime").textContent="--.- s";
   $("redTime").textContent="--.- s";
 
@@ -1705,6 +1714,19 @@ function processMessage(raw){
   const u=m.toUpperCase();
 
   if(!m)return;
+  // El firmware transmite el parcial de cada carril en milisegundos.
+  // No es una llegada: el cronómetro y la carrera siguen normalmente.
+  if(u.startsWith("VUELTA1:")){
+    const partes=m.substring(8).split(",");
+    const carril=partes[0].trim().toUpperCase();
+    const ms=Number(partes[1]);
+    if(partes.length===2&&(carril==="AZUL"||carril==="ROJO")&&Number.isFinite(ms)&&ms>0&&faseCarrera==="corriendo"){
+      const celda=$(carril==="AZUL"?"blueLap1":"redLap1");
+      celda.textContent="VUELTA 1 · "+(ms/1000).toFixed(1)+" s";
+      celda.hidden=false;
+    }
+    return;
+  }
   if(u.startsWith("VUELTAS:")){
     const v=m.substring(8).split(",").map(Number);
     if(v.length===4 && v.every(Number.isFinite) &&
