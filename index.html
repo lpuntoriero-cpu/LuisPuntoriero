@@ -183,8 +183,10 @@ button:disabled{opacity:.4;cursor:not-allowed}
   color:#ffb1c3;
   text-shadow:0 0 12px #ff264c;
 }
-.result{color:#d2e2f0;font-size:10px}
-.result.dm-result-winner{display:inline-block;padding:5px 15px;border:2px solid #65f6ad;border-radius:999px;background:linear-gradient(135deg,#0c593a,#123e34);color:#dcffe9;font-size:15px;font-weight:1000;letter-spacing:1.1px;text-shadow:0 0 9px #42ff9a;box-shadow:0 0 16px #36ec8944;animation:dmWinnerStatusGlow 1.5s ease-in-out infinite alternate}
+.timing{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px}
+.timing .time{flex:0 0 auto;font-variant-numeric:tabular-nums;white-space:nowrap}
+.result{display:flex;align-items:center;justify-content:center;min-height:23px;width:max-content;max-width:94%;margin:0 auto;color:#d2e2f0;font-size:10px}
+.result.dm-result-winner{padding:2px 10px;border:1px solid #65f6ad;border-radius:999px;background:linear-gradient(135deg,#0c593a,#123e34);color:#dcffe9;font-size:12px;font-weight:900;letter-spacing:.5px;text-shadow:0 0 6px #42ff9a;box-shadow:0 0 10px #36ec8944;animation:dmWinnerStatusGlow 1.5s ease-in-out infinite alternate}
 @keyframes dmWinnerStatusGlow{to{box-shadow:0 0 23px #36ec8980}}
 @media(prefers-reduced-motion:reduce){.result.dm-result-winner{animation:none}}
 
@@ -841,7 +843,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
     <div id="blueState" class="state">
       LISTO PARA SALIR
     </div>
-    <div id="blueLap1" class="dm-lap1" hidden>VUELTA 1 · --.- s</div>
+    <div id="blueLap1" class="dm-lap1" hidden>VUELTA 1 · --.-- s</div>
     <img
       id="blueCar"
       class="car"
@@ -849,7 +851,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
       alt="Supra azul"
     >
     <div class="timing">
-      <div id="blueTime" class="time">--.- s</div>
+      <div id="blueTime" class="time">--.-- s</div>
       <div id="blueResult" class="result">
         Sin registro
       </div>
@@ -869,7 +871,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
     <div id="redState" class="state">
       LISTO PARA SALIR
     </div>
-    <div id="redLap1" class="dm-lap1" hidden>VUELTA 1 · --.- s</div>
+    <div id="redLap1" class="dm-lap1" hidden>VUELTA 1 · --.-- s</div>
     <img
       id="redCar"
       class="car"
@@ -877,7 +879,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
       alt="Supra rojo"
     >
     <div class="timing">
-      <div id="redTime" class="time">--.- s</div>
+      <div id="redTime" class="time">--.-- s</div>
       <div id="redResult" class="result">
         Sin registro
       </div>
@@ -1391,10 +1393,10 @@ function resetDisplay(){
 
   $("blueLap1").hidden=true;
   $("redLap1").hidden=true;
-  $("blueLap1").textContent="VUELTA 1 · --.- s";
-  $("redLap1").textContent="VUELTA 1 · --.- s";
-  $("blueTime").textContent="--.- s";
-  $("redTime").textContent="--.- s";
+  $("blueLap1").textContent="VUELTA 1 · --.-- s";
+  $("redLap1").textContent="VUELTA 1 · --.-- s";
+  $("blueTime").textContent="--.-- s";
+  $("redTime").textContent="--.-- s";
 
   $("blueResult").classList.remove("dm-result-winner");
   $("redResult").classList.remove("dm-result-winner");
