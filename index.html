@@ -1393,6 +1393,29 @@ function saveHistory(){
   }
 }
 
+function dmHistoryPilot(name,color){
+ const n=String(name??'').trim();
+ return n && n.toUpperCase()!==color ? n : color;
+}
+function dmHistoryMode(x){
+ const blue=dmHistoryPilot(x.pilotoAzul,'AZUL');
+ const red=dmHistoryPilot(x.pilotoRojo,'ROJO');
+ const mode=String(x.modo||'').toUpperCase();
+ if(mode.includes('SOLO')||mode.includes('CONTRARRELOJ')){
+  const lane=mode.includes('ROJO')?'ROJO':'AZUL';
+  return 'CONTRARRELOJ · '+(lane==='ROJO'?red:blue);
+ }
+ const versus=blue+' vs '+red;
+ if(mode.includes('TORNEO'))return (x.modo||'TORNEO')+' · '+versus;
+ if(mode.includes('DUELO'))return 'DUELO · '+versus;
+ return versus;
+}
+function dmHistoryWinner(x){
+ if(x.ganador==='AZUL')return dmHistoryPilot(x.pilotoAzul,'AZUL');
+ if(x.ganador==='ROJO')return dmHistoryPilot(x.pilotoRojo,'ROJO');
+ return x.ganador||'SIN GANADOR';
+}
+
 function renderHistory(){
   const body=$("historyBody");
   body.replaceChildren();
@@ -1414,9 +1437,8 @@ function renderHistory(){
     [
       String(history.length-i).padStart(3,"0"),
       new Date(x.fecha).toLocaleString("es-AR"),
-      x.modo,
-      x.ganador==="AZUL"?"AZUL - "+(x.pilotoAzul||"AZUL"):
-        x.ganador==="ROJO"?"ROJO - "+(x.pilotoRojo||"ROJO"):x.ganador,
+      dmHistoryMode(x),
+      dmHistoryWinner(x),
       fmt(x.azul),
       fmt(x.rojo),
       fmt(x.diferencia)
