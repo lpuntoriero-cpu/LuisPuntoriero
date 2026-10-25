@@ -3291,7 +3291,19 @@ renderRaceMode();dmTourRender();
  if(!btn)return;
  const music=new Audio('./01.%20Main%20Menu.mp3');
  music.loop=true;music.volume=.32;music.preload='none';
- let userPaused=false,pausedByRace=false;
+ let userPaused=false,pausedByRace=false,fadeToken=0;
+ async function resumeWithFade(){
+  const token=++fadeToken;
+  music.volume=0;
+  try{await music.play()}catch(e){music.volume=.32;state();return}
+  const begin=performance.now();
+  function frame(now){
+   if(token!==fadeToken||music.paused)return;
+   music.volume=Math.min(.32,.32*(now-begin)/2500);
+   if(music.volume<.32)requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+ }
  function state(){
   const playing=!music.paused;
   btn.textContent='♫';
@@ -3302,22 +3314,22 @@ renderRaceMode();dmTourRender();
  }
  btn.addEventListener('click',async()=>{
   try{
-   if(!music.paused){music.pause();userPaused=true;pausedByRace=false}
-   else{userPaused=false;pausedByRace=false;music.currentTime=music.currentTime||0;await music.play()}
+   if(!music.paused){++fadeToken;music.pause();userPaused=true;pausedByRace=false}
+   else{++fadeToken;music.volume=.32;userPaused=false;pausedByRace=false;music.currentTime=music.currentTime||0;await music.play()}
    state();
   }catch(e){
    btn.textContent='♫';
    btn.title='Falta incorporar 01. Main Menu.mp3 al repositorio: '+e.message;
   }
  });
- document.addEventListener('dm-go',()=>{if(!music.paused){pausedByRace=true;music.pause();state()}});
+ document.addEventListener('dm-go',()=>{if(!music.paused){++fadeToken;pausedByRace=true;music.pause();state()}});
  // Solo reanudar al concluir realmente la manga (no al llegar el primero).
  let previousPhase=typeof faseCarrera==='string'?faseCarrera:'reposo';
  setInterval(()=>{
   const phase=typeof faseCarrera==='string'?faseCarrera:'reposo';
   if(phase==='finalizada'&&previousPhase!=='finalizada'&&pausedByRace&&!userPaused){
    pausedByRace=false;
-   music.play().catch(()=>{}).finally(state);
+   resumeWithFade().finally(state);
   }
   previousPhase=phase;
  },200);
