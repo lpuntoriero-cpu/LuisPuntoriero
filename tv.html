@@ -71,7 +71,20 @@ function drawSignal(){
   if(goAge>=3000&&tvPhase==='corriendo')$('message').textContent='CARRERA EN CURSO';
  }
 }
-function drawEffects(){drawSignal();requestAnimationFrame(drawEffects)}
+function drawEffects(){
+ drawSignal();
+ // La recepción de estados puede pausarse en pantalla completa: controlar
+ // la duración del cartel con el reloj de esta misma pantalla.
+ const age=tvWinner?Date.now()-tvWinnerAt:Infinity;
+ const show=!!tvWinner&&age>=4500&&age<9000;
+ $('cover').classList.toggle('show',show);
+ if(show){
+  $('banner').classList.toggle('red',tvWinner==='red');
+  $('winnerName').textContent=tvWinner==='blue'?$('bluePilot').textContent:$('redPilot').textContent;
+  $('winnerTime').textContent=tvWinner==='blue'?$('blueTime').textContent:$('redTime').textContent;
+ }
+ requestAnimationFrame(drawEffects);
+}
 requestAnimationFrame(drawEffects);
 
 function syncClock(s){
@@ -123,7 +136,17 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  }
  $('message').textContent=s.message||'ESPERANDO LARGADA';
  $('footer').textContent=s.footer||'🏁 DRIFT MASTERS · RACE CONTROL';
- const show=!!s.winnerOverlay;const c=$('cover');c.classList.toggle('show',show);$('banner').classList.toggle('red',s.winnerColor==='red');if(show){$('winnerName').textContent=s.winnerName||'';$('winnerTime').textContent=s.winnerTime||''}oldShow=show;
+ // Primero luce el festejo del semáforo; después aparece el cartel.
+// Independiente de los 5 s que dura el cartel en la ventana principal.
+const celebrationAge=tvWinner?Date.now()-tvWinnerAt:Infinity;
+const show=!!tvWinner&&celebrationAge>=4500&&celebrationAge<9000;
+const c=$('cover');c.classList.toggle('show',show);
+$('banner').classList.toggle('red',tvWinner==='red');
+if(show){
+ $('winnerName').textContent=tvWinner==='blue'?(s.blue?.pilot||'AZUL'):(s.red?.pilot||'ROJO');
+ $('winnerTime').textContent=tvWinner==='blue'?(s.blue?.time||''):(s.red?.time||'');
+}
+oldShow=show;
 }
 window.addEventListener('message',e=>{if(e.origin!==location.origin)return;if(e.data?.type==='DM_TV_STATE'){source=e.source;render(e.data)}});
 let bc=null;try{bc=new BroadcastChannel('drift-masters-tv');bc.onmessage=e=>render(e.data)}catch(e){}
