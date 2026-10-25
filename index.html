@@ -1402,13 +1402,12 @@ function dmHistoryMode(x){
  const red=dmHistoryPilot(x.pilotoRojo,'ROJO');
  const mode=String(x.modo||'').toUpperCase();
  if(mode.includes('SOLO')||mode.includes('CONTRARRELOJ')){
-  const lane=mode.includes('ROJO')?'ROJO':'AZUL';
-  return 'CONTRARRELOJ · '+(lane==='ROJO'?red:blue);
+  return mode.includes('ROJO')?'CONTRARRELOJ ROJO':'CONTRARRELOJ AZUL';
  }
  const versus=blue+' vs '+red;
  if(mode.includes('TORNEO'))return (x.modo||'TORNEO')+' · '+versus;
  if(mode.includes('DUELO'))return 'DUELO · '+versus;
- return versus;
+ return 'CARRERA SIMPLE · '+versus;
 }
 function dmHistoryWinner(x){
  if(x.ganador==='AZUL')return dmHistoryPilot(x.pilotoAzul,'AZUL');
