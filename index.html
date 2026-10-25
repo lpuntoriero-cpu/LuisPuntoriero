@@ -1725,8 +1725,13 @@ function results(payload){
   $("redResult").classList.toggle("dm-result-winner",w==="ROJO"&&r!==null);
   $("countdown").textContent=b===null&&r===null?"ANULADA":"FIN";
 
+  const descalificado=b===null&&r!==null?"AZUL":r===null&&b!==null?"ROJO":"";
+  const nombreDescalificado=descalificado
+    ?String(descalificado==="AZUL"?pilotNames.azul:pilotNames.rojo).trim()||descalificado
+    :"";
   $("signalMessage").textContent=
-    b===null&&r===null?"ANULADA POR TIEMPO · 90 s":(b===null||r===null?"SEGUNDO AUTO DESCALIFICADO":"CARRERA FINALIZADA");
+    b===null&&r===null?"ANULADA POR TIEMPO · 90 s":
+    descalificado?"DESCALIFICADO: "+nombreDescalificado:"CARRERA FINALIZADA";
 
   dmFinishSignal();
 
