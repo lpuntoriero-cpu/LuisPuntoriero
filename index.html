@@ -803,6 +803,12 @@ body.dm-theater .vehicle-pop{z-index:9999}
 #countdown.dm-go{color:#38ffa4;text-shadow:0 0 28px #00ff88}
 #countdown.dm-finish,#countdown.dm-idle{color:#f8f9ff;text-shadow:0 0 22px #85d7ff}
 </style>
+<style>
+.dm-master-powerbar{margin:10px 0 12px;padding:10px;border:1px solid #385775;border-radius:10px;background:linear-gradient(90deg,#0b2036,#111c30);gap:10px;flex-wrap:wrap}
+#dmAllLightsBtn{font-weight:900;letter-spacing:.4px;border:1px solid #ff6485;color:#ffe1e7;background:#581b2e;box-shadow:0 0 12px #ff315940}
+#dmAllLightsBtn.dm-all-off{border-color:#60ebae;color:#caffdf;background:#124330;box-shadow:0 0 10px #23dc8c33}
+#dmAllLightsBtn:disabled{opacity:.45;cursor:not-allowed}
+</style>
 </head>
 
 <body>
@@ -977,6 +983,11 @@ body.dm-theater .vehicle-pop{z-index:9999}
       <button class="pinbtn" data-pin="P1">PUENTE</button>
       <button class="pinbtn active" data-pin="P2">PISTA</button>
       <button class="pinbtn" data-pin="P16">uBIT</button>
+    </div>
+
+    <div class="powerbar dm-master-powerbar">
+      <span class="powerlabel">💡 TODAS LAS LUCES · P1 / P2 / P16</span>
+      <button id="dmAllLightsBtn" class="powerbtn" type="button" disabled aria-pressed="true">⏻ APAGAR TODAS</button>
     </div>
 
     <div class="powerbar">
@@ -1734,7 +1745,7 @@ $("openReplayBtn").onclick = () => {
 function setRaceSafety(){
   const locked=faseCarrera==="cuenta"||faseCarrera==="corriendo";
   document.body.classList.toggle("dm-racing",locked);
-  for(const id of ["powerBtn","rainbowBtn","colorLibre","brightness","effectsP1"]){
+  for(const id of ["powerBtn","dmAllLightsBtn","rainbowBtn","colorLibre","brightness","effectsP1"]){
     const el=document.getElementById(id);if(el&&locked)el.disabled=true;
   }
   // Los selectores de salida deben volver a habilitarse al salir del modo carrera.
@@ -2235,6 +2246,7 @@ function renderLight(){
   const css="rgb("+rgb.join(",")+")";
 
   $("powerBtn").disabled=!connected;
+  dmMasterLightUI();
   $("powerBtn").classList.toggle("off",!light.on);
   $("powerBtn").textContent=light.on?"● ENCENDIDO":"○ APAGADO";
   $("powerBtn").setAttribute("aria-pressed",String(light.on));
@@ -2319,6 +2331,46 @@ function sendLight(pin){
     send(pin+":"+values);
   }
 }
+
+
+// Apagado general: conserva las preferencias para restaurarlas al encender.
+let dmAllLightsSnapshot=null,dmAllLightsBusy=false;
+function dmMasterLightUI(){
+ const btn=document.getElementById('dmAllLightsBtn');if(!btn)return;
+ const off=!!dmAllLightsSnapshot;
+ const race=faseCarrera==='cuenta'||faseCarrera==='corriendo';
+ btn.disabled=!connected||race||dmAllLightsBusy;
+ btn.textContent=dmAllLightsBusy?'ACTUALIZANDO...':off?'⏻ ENCENDER TODAS':'⏻ APAGAR TODAS';
+ btn.classList.toggle('dm-all-off',off);
+ btn.setAttribute('aria-pressed',String(!off));
+}
+document.getElementById('dmAllLightsBtn').onclick=async()=>{
+ if(!connected||dmAllLightsBusy||faseCarrera==='cuenta'||faseCarrera==='corriendo')return;
+ dmAllLightsBusy=true;dmMasterLightUI();clearTimeout(lightTimer);
+ try{
+  if(!dmAllLightsSnapshot){
+   dmAllLightsSnapshot={
+    P1:{...lights.P1},P2:{...lights.P2},P16:{...lights.P16},
+    effect:typeof dmP1Effect!=='undefined'?String(dmP1Effect):'0'
+   };
+   lights.P1.on=false;lights.P2.on=false;lights.P16.on=false;
+   // Detener el efecto SPI antes de apagar físicamente P1.
+   await send('E1:0');await send('R1:0');
+   await send('P1:0,0,0');await send('C:0,0,0');await send('P16:0,0,0');
+  }else{
+   const previous=dmAllLightsSnapshot;
+   dmAllLightsSnapshot=null;
+   for(const pin of ['P1','P2','P16'])Object.assign(lights[pin],previous[pin]);
+   // Restituir primero colores físicos y después efecto P1 si lo había.
+   await sendLight('P2');await sendLight('P16');
+   if(lights.P1.on){
+    if(previous.effect==='1')await send('R1:1');
+    else if(previous.effect!=='0')await send('E1:'+previous.effect);
+    else await sendLight('P1');
+   }else{await send('E1:0');await send('R1:0');await send('P1:0,0,0')}
+  }
+ }finally{dmAllLightsBusy=false;renderLight();dmMasterLightUI()}
+};
 
 $("powerBtn").onclick=async()=>{
   if(!connected)return;
@@ -2764,7 +2816,7 @@ renderLight();
 document.addEventListener('click',event=>{
   if(!document.body.classList.contains('dm-racing'))return;
   const target=event.target.closest('button');
-  if(target&&(target.closest('#rainbowRow,#p1EffectsRow,.pinselector,.presets')||['powerBtn','rainbowBtn','effectsP1'].includes(target.id))){event.stopImmediatePropagation();event.preventDefault();}
+  if(target&&(target.closest('#rainbowRow,#p1EffectsRow,.pinselector,.presets')||['powerBtn','dmAllLightsBtn','rainbowBtn','effectsP1'].includes(target.id))){event.stopImmediatePropagation();event.preventDefault();}
 },true);
 </script><script>
 // Preferencia únicamente visual. No envía comandos Bluetooth ni cambia el modo de carrera.
