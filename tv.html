@@ -328,7 +328,7 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function setPositions(x,winningBlue){const delta=2;blue.style.left=(winningBlue?x:x-delta)+'%';red.style.left=(winningBlue?x-delta:x)+'%'}
 function contact(){
 const t=track.getBoundingClientRect(),f=finish.getBoundingClientRect();
-const ref=blue.getBoundingClientRect();return (f.left-t.left-ref.width/2)/t.width*100+1.2;
+const ref=blue.getBoundingClientRect();return (f.left-t.left-ref.width/2)/t.width*100+2.4;
 }
 function spark(){flash.classList.remove('on');void flash.offsetWidth;flash.classList.add('on')}
 function reset(){serial++;veil.classList.remove('show');root.classList.remove('show');root.setAttribute('aria-hidden','true')}
