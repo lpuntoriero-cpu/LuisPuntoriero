@@ -805,8 +805,21 @@ body.dm-theater .vehicle-pop{z-index:9999}
 </style>
 <style>
 .dm-master-powerbar{margin:10px 0 12px;padding:10px;border:1px solid #385775;border-radius:10px;background:linear-gradient(90deg,#0b2036,#111c30);gap:10px;flex-wrap:wrap}
-#dmAllLightsBtn{min-width:116px;font-size:18px;font-weight:1000;letter-spacing:1px;border:2px solid #74ffad;color:#e6ffee;background:linear-gradient(145deg,#14794b,#0b3b29);box-shadow:0 0 15px #21e97f80,inset 0 0 12px #3bff8540;transition:background .2s,box-shadow .2s}
-#dmAllLightsBtn.dm-all-off{border-color:#ff617a;color:#ffe8ec;background:linear-gradient(145deg,#8b1b32,#471323);box-shadow:0 0 16px #ff315980,inset 0 0 12px #ff466640}
+#dmAllLightsBtn{
+ width:65px;height:65px;min-width:65px;flex:0 0 65px;padding:0;display:grid;place-items:center;
+ border:5px solid #aeb5be;border-radius:50%;font-size:0;
+ background:radial-gradient(circle at 38% 26%,#8afcb8,#17ae64 38%,#095f37 75%,#042b18);
+ box-shadow:inset 0 0 0 3px #333b44,inset 0 0 13px #c2ffdb88,0 0 0 2px #343d47,0 0 15px #26e48799;
+ cursor:pointer;transition:background .2s,box-shadow .2s
+}
+#dmAllLightsBtn:before{content:"⏻";color:#ebfff3;font:bold 45px/1 Arial,sans-serif;text-shadow:0 2px 4px #15251b,0 0 12px #fff9;transform:translateY(-1px)}
+#dmAllLightsBtn.dm-all-off{
+ background:radial-gradient(circle at 38% 26%,#ff7c88,#e72c42 38%,#981b2d 75%,#520817);
+ box-shadow:inset 0 0 0 3px #333b44,inset 0 0 13px #ffd2d288,0 0 0 2px #343d47,0 0 15px #ff345799
+}
+.dm-neopixel-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+.dm-neopixel-heading h2{margin:0;flex:1}
+.dm-neopixel-heading #dmAllLightsBtn{margin-left:auto}
 .dm-master-muted{opacity:.28;filter:grayscale(.85) brightness(.6);pointer-events:none}
 .dm-master-powerbar{opacity:1!important;filter:none!important;pointer-events:auto!important}
 .dm-master-muted :is(button,input,select){pointer-events:none}
@@ -980,17 +993,14 @@ body.dm-theater .vehicle-pop{z-index:9999}
   </div>
 
   <div class="panel">
-    <h2>ILUMINACIÓN NEOPIXEL</h2><div id="raceSafetyNotice">🔒 Iluminación bloqueada durante la carrera</div>
+    <div class="dm-neopixel-heading"><h2>ILUMINACIÓN NEOPIXEL</h2>
+      <button id="dmAllLightsBtn" type="button" disabled aria-pressed="true" aria-label="Apagar todas las luces" title="Encender o apagar todas las luces"></button>
+    </div><div id="raceSafetyNotice">🔒 Iluminación bloqueada durante la carrera</div>
 
     <div class="pinselector">
       <button class="pinbtn" data-pin="P1">PUENTE</button>
       <button class="pinbtn active" data-pin="P2">PISTA</button>
       <button class="pinbtn" data-pin="P16">uBIT</button>
-    </div>
-
-    <div class="powerbar dm-master-powerbar">
-      <span class="powerlabel">💡 ILUMINACIÓN GENERAL · P1 / P2 / P16</span>
-      <button id="dmAllLightsBtn" class="powerbtn" type="button" disabled aria-pressed="true" title="Encender o apagar todas las luces">I · ON</button>
     </div>
 
     <div class="powerbar">
@@ -2347,7 +2357,7 @@ function dmMasterLightUI(){
  const root=btn.closest('.panel')||btn.parentElement.parentElement;
  if(root){
   root.querySelectorAll('.pinselector,.powerbar,.lightcontrols,.presets,#p1EffectsRow,#effectRow,#rainbowRow').forEach(el=>{
-   if(el!==btn.closest('.dm-master-powerbar'))el.classList.toggle('dm-master-muted',off);
+   el.classList.toggle('dm-master-muted',off);
   });
  }
  btn.classList.toggle('dm-all-off',off);
