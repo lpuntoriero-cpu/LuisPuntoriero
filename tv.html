@@ -57,7 +57,7 @@ function drawSignal(){
  const goAge=tvGoEpoch?now-tvGoEpoch:Infinity;
  const celebrating=!!tvWinner&&now-tvWinnerAt<1000;
  document.querySelectorAll('#tvSignal .tv-led').forEach((el,i)=>{
-  let color=tvSignalState[i]||'off';
+  let color=tvPhase==='finalizada'?'red':(tvSignalState[i]||'off');
   if(celebrating){
    color=(Math.floor((now-tvWinnerAt)/55)+i)%4<2?(tvWinner==='blue'?'blue':'celebrate-red'):'off';
   }else if(tvGoEpoch&&goAge>=3000&&color==='green'){
@@ -65,7 +65,7 @@ function drawSignal(){
   }
   el.className='tv-led'+(color==='off'?'':' '+color);
  });
- if(tvGoEpoch){
+ if(tvGoEpoch&&tvPhase==='corriendo'){
   $('count').textContent=goAge<3000?'GO!':'';
   $('count').classList.toggle('go',goAge<3000);
   if(goAge>=3000&&tvPhase==='corriendo')$('message').textContent='CARRERA EN CURSO';
@@ -130,10 +130,12 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  tvPhase=phase;
  $('connection').textContent=s.connected?'● BLUETOOTH CONECTADO':'○ BLUETOOTH DESCONECTADO';
  for(const color of ['blue','red']){const d=s[color]||{};$(color+'Pilot').textContent=d.pilot||color.toUpperCase();if(!(tvClock.started&&tvClock[color+'Active']))$(color+'Time').textContent=d.time||'--.-- s';$(color+'Lap').textContent=d.lap||'';$(color+'Result').textContent=d.result||'';$(color+'Result').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('lose',!!d.lose)}
- if(!tvGoEpoch){
+ if(!tvGoEpoch||phase!=='corriendo'){
   $('count').textContent=s.count||'—';
   $('count').classList.toggle('go',false);
  }
+ $('count').style.color=(phase==='finalizada'||String(s.count||'').trim()==='—')?'#f8f9ff':'';
+ $('count').style.textShadow=(phase==='finalizada'||String(s.count||'').trim()==='—')?'0 0 25px #85d7ff':'';
  $('message').textContent=s.message||'ESPERANDO LARGADA';
  $('footer').textContent=s.footer||'🏁 DRIFT MASTERS · RACE CONTROL';
  // Primero luce el festejo del semáforo; después aparece el cartel.
