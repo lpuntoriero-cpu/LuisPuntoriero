@@ -88,7 +88,8 @@ footer{position:relative;z-index:1;overflow:hidden;text-overflow:ellipsis;white-
 <section class="center"><div class="tv-signal" id="tvSignal" aria-label="Semáforo de ocho luces"><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span></div><div id="count" class="count">—</div><div class="message" id="message">ESPERANDO LARGADA</div><button id="tvStartCount" type="button" hidden style="margin:18px auto 0;padding:16px 24px;border:2px solid #55ffa0;border-radius:14px;background:#104b34;color:#e4ffed;font-weight:900;font-size:clamp(13px,1.6vw,24px);box-shadow:0 0 20px #2cff8455;cursor:pointer">🚦 INICIAR CUENTA REGRESIVA</button></section>
 <section class="lane red" id="redLane"><div class="lane-title">🔴 CARRIL ROJO</div><div class="pilot" id="redPilot">ROJO</div><img class="car" src="./drift_supra_rojo.png" alt="Auto rojo"><div class="clock" id="redTime">--.-- s</div><div class="lap" id="redLap">VUELTA 1 · --.-- s</div><div class="result" id="redResult">LISTO PARA SALIR</div></section></div>
 <footer id="footer">🏁 DRIFT MASTERS · RACE CONTROL</footer>
-<button type="button" id="tvPhotoFinishBtn" hidden disabled>📸 VER FOTO FINISH</button></main>
+</main>
+<button type="button" id="tvPhotoFinishBtn" hidden disabled>📸 VER FOTO FINISH</button>
 <div id="dmPilotIntro"><div class="intro-card"><div class="intro-title">🏁 PRESENTACIÓN DE PILOTOS</div><div class="intro-pilots"><div class="intro-player blue"><img id="introBlueCar" src="./drift_supra_azul.png" alt=""><div id="introBlueName">AZUL</div></div><div class="intro-versus">VS</div><div class="intro-player red"><img id="introRedCar" src="./drift_supra_rojo.png" alt=""><div id="introRedName">ROJO</div></div></div></div></div>
 <div id="cover"><div id="banner"><small>🏆 GANADOR DE LA CARRERA</small><strong id="winnerName">AZUL</strong><em id="winnerTime"></em></div></div>
 
@@ -197,9 +198,25 @@ function dmUpdateIntro(phase,s,images){
 function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  if(s.photoFinish&&s.photoFinish.id!==window.dmPhotoFinishLastId){window.dmPhotoFinishLastId=s.photoFinish.id;window.dmPhotoFinishPlay?.(s.photoFinish)}
  if((s.phase==='reposo'||s.phase==='posicionamiento'||s.phase==='cuenta')&&window.dmPhotoFinishLastId){window.dmPhotoFinishReset?.();window.dmPhotoFinishLastId=null}
- window.dmTvPhotoFinishData=s.photoFinishData||null;
- const photoAvailable=!!window.dmTvPhotoFinishData;
- const replay=$('tvPhotoFinishBtn');if(replay){replay.hidden=!photoAvailable;replay.disabled=!photoAvailable;}
+ // Fuente principal: datos guardados. Respaldo: relojes finales visibles en la TV.
+ const parseFinalTime=value=>{
+  const match=String(value??'').replace(',','.').match(/(?:^|\\s)(\\d+(?:\\.\\d+)?)\\s*s?\\s*$/i);
+  return match?Number(match[1]):null;
+ };
+ let finalData=s.photoFinishData||null;
+ if(!finalData){
+  const bt=parseFinalTime(s.blue?.time),rt=parseFinalTime(s.red?.time);
+  const completed=s.phase==='finalizada'||s.raceCompleted===true||
+   s.blue?.result==='GANADOR'||s.red?.result==='GANADOR'||s.count==='FIN';
+  if(completed&&Number.isFinite(bt)&&Number.isFinite(rt)&&Math.abs(bt-rt)<=1){
+   finalData={id:Date.now(),winner:bt<=rt?'AZUL':'ROJO',difference:Math.abs(bt-rt),
+    blueName:s.blue?.pilot||'AZUL',redName:s.red?.pilot||'ROJO',
+    blueTime:s.blue.time,redTime:s.red.time,vehicle:s.vehicleType||'drift'};
+  }
+ }
+ window.dmTvPhotoFinishData=finalData;
+ const replay=$('tvPhotoFinishBtn');
+ if(replay){replay.hidden=!finalData;replay.disabled=!finalData;}
  last=Date.now();raceClock=s.raceClock||{running:false,startEpoch:0,blueRunning:false,redRunning:false};syncClock(s);
  const vehicle=s.vehicleType||'drift';
  const images=vehicle==='yahboom'||vehicle==='microbit'
