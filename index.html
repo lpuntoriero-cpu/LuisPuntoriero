@@ -3253,7 +3253,7 @@ renderRaceMode();dmTourRender();
   // Fullscreen solicitado directamente desde el clic real del usuario.
   if(surface.classList.contains('dm-open')){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});closeTV();return}
   surface.classList.add('dm-open');btn.classList.add('is-on');
-  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=19',location.href).href);
+  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=20',location.href).href);
   tv=frame.contentWindow;
   const promise=surface.requestFullscreen?.();
   if(promise&&typeof promise.catch==='function')promise.catch(()=>{ /* Aun sin permiso, la vista cubre toda la ventana */ });
@@ -3264,6 +3264,11 @@ renderRaceMode();dmTourRender();
  window.addEventListener('message',e=>{
   if(e.origin!==location.origin||e.source!==frame.contentWindow)return;
   if(e.data?.type==='DM_TV_READY'&&tv)publish();
+  if(e.data?.type==='DM_TV_PILOT_INTRO'&&tv&&surface.classList.contains('dm-open')){
+   const azul=String(pilotNames.azul||'Azul').trim();
+   const rojo=String(pilotNames.rojo||'Rojo').trim();
+   narrar('Prepárense para el duelo. '+azul+' versus '+rojo);
+  }
   if(e.data?.type==='DM_TV_START_COUNT'&&tv&&surface.classList.contains('dm-open'))dmRequestCount();
  });
  setInterval(publish,100);
