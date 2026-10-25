@@ -57,7 +57,9 @@ function drawSignal(){
  const goAge=tvGoEpoch?now-tvGoEpoch:Infinity;
  const celebrating=!!tvWinner&&now-tvWinnerAt<1000;
  document.querySelectorAll('#tvSignal .tv-led').forEach((el,i)=>{
-  let color=tvPhase==='finalizada'?'red':(tvSignalState[i]||'off');
+  const winnerSequence=!!tvWinner;
+  const celebrationDone=winnerSequence&&now-tvWinnerAt>=5500;
+  let color=(tvPhase==='finalizada'&&(!winnerSequence||celebrationDone))?'red':(winnerSequence?'off':(tvSignalState[i]||'off'));
   if(celebrating){
    color=(Math.floor((now-tvWinnerAt)/55)+i)%4<2?(tvWinner==='blue'?'blue':'celebrate-red'):'off';
   }else if(tvGoEpoch&&goAge>=3000&&color==='green'){
@@ -65,6 +67,10 @@ function drawSignal(){
   }
   el.className='tv-led'+(color==='off'?'':' '+color);
  });
+ if(tvWinner&&now-tvWinnerAt>=5500&&tvPhase==='finalizada'){
+  $('count').textContent='FIN';
+  $('count').classList.remove('go');
+ }
  if(tvGoEpoch&&tvPhase==='corriendo'){
   $('count').textContent=goAge<3000?'GO!':'';
   $('count').classList.toggle('go',goAge<3000);
