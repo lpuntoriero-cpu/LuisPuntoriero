@@ -1003,6 +1003,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
         <select id="soloLaneSelect"><option value="AZUL">🔵 AZUL</option><option value="ROJO">🔴 ROJO</option></select>
       </label>
       <button id="resetBtn" class="btn" disabled>REINICIAR</button>
+      <button id="dmStartCount" class="btn green" type="button" hidden>🚦 INICIAR CUENTA REGRESIVA</button>
     </div>
     <div id="statusMessage" class="status">
       Esperando conexión
@@ -2258,6 +2259,34 @@ $("resetBtn").onclick=()=>{
   if(typeof renderRaceMode==='function')renderRaceMode();
 };
 
+// Largada manual solo cuando la placa ya confirmó todos los sensores.
+function dmReadyToCount(){
+ return connected&&faseCarrera==='posicionamiento'&&
+  (solo?(dmSoloRojo()?rojoPosicionado:azulPosicionado):(azulPosicionado&&rojoPosicionado));
+}
+function dmRenderCountButton(){
+ const b=document.getElementById('dmStartCount');
+ if(!b)return;
+ b.hidden=!dmReadyToCount();
+ b.disabled=!dmReadyToCount();
+}
+function dmRequestCount(){
+ if(!dmReadyToCount())return;
+ audioOn();
+ // Reutilizar el segundo clic existente: respeta el protocolo MakeCode.
+ // En duelo/campeonato utilizar su flujo propio cuando corresponde.
+ if(raceMode==='champ'){
+  const b=document.getElementById('champRaceBtn');
+  if(b&&!b.disabled){b.click();return}
+ }
+ if(raceMode==='tournament'){
+  const b=document.getElementById('tourGo');
+  if(b&&!b.disabled){b.click();return}
+ }
+ document.getElementById(solo?'soloBtn':'dualBtn')?.click();
+}
+document.getElementById('dmStartCount').addEventListener('click',dmRequestCount);
+setInterval(dmRenderCountButton,150);
 // ILUMINACIÓN P1 / P2 / P16
 function hexToRGB(hex){
   return [1,3,5].map(i=>
@@ -3184,6 +3213,7 @@ renderRaceMode();dmTourRender();
   const title=overlayOn?'GANADOR: '+val('winName'):(faseCarrera==='finalizada'&&winnerFirst?'🏆 GANADOR: '+(winnerFirst==='AZUL'?pilotNames.azul:pilotNames.rojo):'🏁 DRIFT MASTERS · RACE CONTROL');
   return {
    type:'DM_TV_STATE',connected:!!connected,
+   countReady:dmReadyToCount(),
    vehicleType:document.getElementById('vehicleType')?.value||'drift',
    blue:{pilot:pilotNames.azul,time:val('blueTime'),lap:shown('blueLap1')?val('blueLap1'):'',result:val('blueResult'),win:document.getElementById('blueLane')?.classList.contains('winner-blue'),lose:document.getElementById('blueLane')?.classList.contains('loser')},
    red:{pilot:pilotNames.rojo,time:val('redTime'),lap:shown('redLap1')?val('redLap1'):'',result:val('redResult'),win:document.getElementById('redLane')?.classList.contains('winner-red'),lose:document.getElementById('redLane')?.classList.contains('loser')},
@@ -3220,7 +3250,11 @@ renderRaceMode();dmTourRender();
  };
  document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&surface.classList.contains('dm-open'))closeTV()});
 
- window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='DM_TV_READY'&&tv)publish()});
+ window.addEventListener('message',e=>{
+  if(e.origin!==location.origin||e.source!==frame.contentWindow)return;
+  if(e.data?.type==='DM_TV_READY'&&tv)publish();
+  if(e.data?.type==='DM_TV_START_COUNT'&&tv&&surface.classList.contains('dm-open'))dmRequestCount();
+ });
  setInterval(publish,100);
 })();
 </script>
