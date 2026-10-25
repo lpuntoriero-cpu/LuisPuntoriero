@@ -197,7 +197,8 @@ function dmUpdateIntro(phase,s,images){
 function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  if(s.photoFinish&&s.photoFinish.id!==window.dmPhotoFinishLastId){window.dmPhotoFinishLastId=s.photoFinish.id;window.dmPhotoFinishPlay?.(s.photoFinish)}
  if((s.phase==='reposo'||s.phase==='posicionamiento'||s.phase==='cuenta')&&window.dmPhotoFinishLastId){window.dmPhotoFinishReset?.();window.dmPhotoFinishLastId=null}
- const photoAvailable=!!s.photoFinishAvailable && (s.phase==='finalizada'||s.raceCompleted===true);
+ window.dmTvPhotoFinishData=s.photoFinishData||null;
+ const photoAvailable=!!window.dmTvPhotoFinishData;
  const replay=$('tvPhotoFinishBtn');if(replay){replay.hidden=!photoAvailable;replay.disabled=!photoAvailable;}
  last=Date.now();raceClock=s.raceClock||{running:false,startEpoch:0,blueRunning:false,redRunning:false};syncClock(s);
  const vehicle=s.vehicleType||'drift';
@@ -259,7 +260,11 @@ if(show){
 }
 oldShow=show;
 }
-$('tvPhotoFinishBtn').addEventListener('click',()=>{if(!$('tvPhotoFinishBtn').disabled)window.parent.postMessage({type:'DM_TV_REPLAY_PHOTO_FINISH'},location.origin)});
+$('tvPhotoFinishBtn').addEventListener('click',()=>{
+ const btn=$('tvPhotoFinishBtn'),data=window.dmTvPhotoFinishData;
+ if(btn.disabled||!data)return;
+ window.dmPhotoFinishPlay?.({...data,id:Date.now()});
+});
 $('tvStartCount').addEventListener('click',()=>{
  if($('tvStartCount').hidden||$('tvStartCount').disabled)return;
  $('tvStartCount').disabled=true;
