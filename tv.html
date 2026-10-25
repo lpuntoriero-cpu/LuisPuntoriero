@@ -43,9 +43,19 @@ footer{text-align:center;flex:0 0 auto;min-height:4vh;font-size:clamp(15px,2.2vw
 <div id="hint"><button id="fullscreen">⛶ PANTALLA COMPLETA</button> · ESC para salir</div>
 <script>
 const $=id=>document.getElementById(id);let source=null;let last=0;let oldShow=false;
-function render(s){if(!s||s.type!=='DM_TV_STATE')return;last=Date.now();
+let raceClock={running:false,startEpoch:0,blueRunning:false,redRunning:false};
+function drawLocalClocks(){
+ if(raceClock.running&&raceClock.startEpoch){
+  const elapsed=(Math.max(0,Date.now()-raceClock.startEpoch)/1000).toFixed(2)+' s';
+  if(raceClock.blueRunning)$('blueTime').textContent=elapsed;
+  if(raceClock.redRunning)$('redTime').textContent=elapsed;
+ }
+ requestAnimationFrame(drawLocalClocks);
+}
+requestAnimationFrame(drawLocalClocks);
+function render(s){if(!s||s.type!=='DM_TV_STATE')return;last=Date.now();raceClock=s.raceClock||{running:false,startEpoch:0,blueRunning:false,redRunning:false};
  $('connection').textContent=s.connected?'● BLUETOOTH CONECTADO':'○ BLUETOOTH DESCONECTADO';
- for(const color of ['blue','red']){const d=s[color]||{};$(color+'Pilot').textContent=d.pilot||color.toUpperCase();$(color+'Time').textContent=d.time||'--.-- s';$(color+'Lap').textContent=d.lap||'';$(color+'Result').textContent=d.result||'';$(color+'Result').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('lose',!!d.lose)}
+ for(const color of ['blue','red']){const d=s[color]||{};$(color+'Pilot').textContent=d.pilot||color.toUpperCase();if(!(raceClock.running&&raceClock[color+'Running']))$(color+'Time').textContent=d.time||'--.-- s';$(color+'Lap').textContent=d.lap||'';$(color+'Result').textContent=d.result||'';$(color+'Result').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('lose',!!d.lose)}
  $('count').textContent=s.count||'—';$('count').classList.toggle('go',String(s.count).toUpperCase().includes('GO'));
  $('message').textContent=s.message||'ESPERANDO LARGADA';$('footer').textContent=s.footer||'🏁 DRIFT MASTERS · RACE CONTROL';
  const show=!!s.winnerOverlay;const c=$('cover');c.classList.toggle('show',show);$('banner').classList.toggle('red',s.winnerColor==='red');if(show){$('winnerName').textContent=s.winnerName||'';$('winnerTime').textContent=s.winnerTime||''}oldShow=show;
