@@ -1632,6 +1632,7 @@ function dmShowNewRecord(kind,pilot,seconds){
  $('dmRecordTitle').textContent='🏆 ¡NUEVO RÉCORD '+kind+'!';
  $('dmRecordName').textContent=pilot;
  $('dmRecordTime').textContent=fmt(seconds);
+ if(typeof window.dmPlayVisualSound==="function")window.dmPlayVisualSound("record");
  dmRecordToastTimer=setTimeout(()=>{toast.hidden=true},4600);
 }
 function dmCheckNewRecord(entry,older){
@@ -1911,6 +1912,7 @@ function processMessage(raw){
     placaListaCampeonato=false;
     confirmarCuentaCampeonato();
     narrar("Largada");
+    if(typeof window.dmPlayVisualSound==="function")window.dmPlayVisualSound("start");
     faseCarrera="corriendo";
     visualRaceStart=performance.now();
     visualRaceRunning=true;
@@ -3224,9 +3226,13 @@ renderRaceMode();dmTourRender();
  center.appendChild(live);
  let lastRunning=false,lastWinner='',lastMode='',lastCount='',launchAt=0,winAt=0,lastRecord=0;
  let soundUnlocked=false;
- document.addEventListener('pointerdown',()=>{soundUnlocked=true},{once:true});
+ document.addEventListener('pointerdown',()=>{
+  soundUnlocked=true;
+  // Un gesto real del usuario habilita audio incluso si la carrera luego usa fullscreen.
+  audioOn();
+ },{capture:true});
  function shortSound(kind){
-  if(!soundUnlocked||!audio)return;
+  if(!soundUnlocked||!audio||audio.state!=="running")return;
   try{
    if(kind==='start'){
     const t=audio.currentTime;let o=audio.createOscillator(),g=audio.createGain();
@@ -3238,6 +3244,7 @@ renderRaceMode();dmTourRender();
    }
   }catch(e){}
  }
+ window.dmPlayVisualSound=shortSound;
  function update(){
   const running=typeof faseCarrera!=='undefined'&&faseCarrera==='corriendo';
   live.classList.toggle('dm-visible',running);
@@ -3248,7 +3255,6 @@ renderRaceMode();dmTourRender();
     lane.classList.remove('dm-launch');void lane.offsetWidth;lane.classList.add('dm-launch');
     setTimeout(()=>lane.classList.remove('dm-launch'),850);
    });
-   shortSound('start');
   }
   lastRunning=running;
   const winner=typeof winnerFirst==='string'?winnerFirst:'';
@@ -3259,8 +3265,7 @@ renderRaceMode();dmTourRender();
   }
   lastWinner=winner;
   // El mensaje existente de nuevo récord puede aparecer en distintas modalidades.
-  const texts=[get('aviso'),get('statusMessage'),get('replayNotice')].map(e=>e?.textContent||'').join(' ');
-  if(/nuevo r[eé]cord/i.test(texts)&&Date.now()-lastRecord>5000){lastRecord=Date.now();shortSound('record')}
+  // El sonido del récord se activa en dmShowNewRecord, no por lectura de textos.
  }
  setInterval(update,120);
 })();
