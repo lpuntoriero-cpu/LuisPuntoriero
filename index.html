@@ -1406,7 +1406,11 @@ function dmHistoryMode(x){
  }
  const versus=blue+' vs '+red;
  if(mode.includes('TORNEO'))return (x.modo||'TORNEO')+' · '+versus;
- if(mode.includes('DUELO'))return 'DUELO · '+versus;
+ if(mode.includes('DUELO')){
+  const n=Number(x.dueloNumero);
+  const ordinal=n===1?'1ra':n===2?'2da':n===3?'3ra':n>3?n+'ta':'';
+  return 'DUELO'+(ordinal?' · '+ordinal+' CARRERA':'')+' · '+versus;
+ }
  return 'CARRERA SIMPLE · '+versus;
 }
 function dmHistoryWinner(x){
@@ -1479,7 +1483,8 @@ function record(mode,w,b,r){
 
   history.push({
     fecha:new Date().toISOString(),
-    modo:mode,
+    modo:raceMode==='champ'&&champ.active&&mode==='DOS AUTOS'?'DUELO':mode,
+    dueloNumero:raceMode==='champ'&&champ.active&&mode==='DOS AUTOS'?champ.blue+champ.red+1:null,
     ganador:w,
     pilotoAzul:pilotNames.azul,
     pilotoRojo:pilotNames.rojo,
