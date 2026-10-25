@@ -843,7 +843,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
 @keyframes dmLivePulse{50%{opacity:.3;box-shadow:0 0 3px #ff3159}}
 @media(prefers-reduced-motion:reduce){.lane.dm-finish-flash,.lane.dm-launch .car,#dmLiveRace:before{animation:none}}
 </style>
-<style id="dm-music-icon-style">#dmMenuMusic{font-size:26px;min-width:39px;min-height:39px;line-height:1;color:#3dff95!important;text-shadow:0 0 12px #15e97f;opacity:1}#dmMenuMusic.dm-music-off{color:#ff4b65!important;text-shadow:0 0 11px #ff3159;opacity:1}</style></head>
+<style id="dm-music-icon-style">#dmMenuMusic{font-size:26px;min-width:39px;min-height:39px;line-height:1;color:#3dff95!important;text-shadow:0 0 12px #15e97f;opacity:1}#dmMenuMusic.dm-music-off{color:#ff4b65!important;text-shadow:0 0 11px #ff3159;opacity:1}</style><style id="dm-false-x-red">#countdown.false-start{color:#ff254d!important;text-shadow:0 0 15px #ff174e,0 0 30px #b50028!important}</style></head>
 
 <body>
 <div class="app">
@@ -1965,6 +1965,7 @@ function processMessage(raw){
     const esAzul=infractor==="AZUL";
     const esRojo=infractor==="ROJO";
 
+    dmCountStyle(null);
     $("countdown").classList.add("false-start");
     $("countdown").textContent="✖";
 
@@ -3342,15 +3343,21 @@ renderRaceMode();dmTourRender();
   raceMusic.pause();raceMusic.currentTime=0;
  }
  async function resumeWithFade(){
-  const token=++fadeToken;music.volume=0;
-  try{await music.play()}catch(e){music.volume=.32;return}
-  const start=performance.now();
-  function frame(now){
-   if(token!==fadeToken||music.paused)return;
-   music.volume=Math.min(.32,.32*(now-start)/2500);
-   if(music.volume<.32)requestAnimationFrame(frame);
+  const token=++fadeToken;
+  if(!enabled)return;
+  music.volume=0;
+  try{
+   await music.play();
+   const start=Date.now();
+   const fade=setInterval(()=>{
+    if(token!==fadeToken||music.paused){clearInterval(fade);return}
+    music.volume=Math.min(.32,.32*(Date.now()-start)/2500);
+    if(music.volume>=.32)clearInterval(fade);
+   },60);
+  }catch(e){
+   music.volume=.32;
+   btn.title='Chrome bloqueó el regreso de la música: '+e.message;
   }
-  requestAnimationFrame(frame);
  }
  btn.addEventListener('click',async()=>{
   enabled=!enabled;
@@ -3384,14 +3391,13 @@ renderRaceMode();dmTourRender();
  });
  let wasRacing=false;
  async function endRaceAudio(){
-  if(!wasRacing&&!pausedByRace&&raceMusic.paused)return;
   wasRacing=false;
   stopRace();
+  pausedByRace=false;
   if(enabled){
-   pausedByRace=false;
    await resumeWithFade();
-   state();
-  }else{pausedByRace=false;state()}
+  }
+  state();
  }
  document.addEventListener('dm-go',()=>{wasRacing=true});
  document.addEventListener('dm-race-finished',()=>{endRaceAudio().catch(()=>{})});
