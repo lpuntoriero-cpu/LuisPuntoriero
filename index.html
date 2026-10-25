@@ -3285,57 +3285,80 @@ renderRaceMode();dmTourRender();
  setInterval(update,120);
 })();
 </script>
-<script id="dm-menu-music-v1">
+<script id="dm-menu-music-v2">
 (function(){
- const btn=document.getElementById('dmMenuMusic');
- if(!btn)return;
+ const btn=document.getElementById('dmMenuMusic');if(!btn)return;
  const music=new Audio('./01.%20Main%20Menu.mp3');
+ const raceMusic=new Audio('./Rom%20Di%20Prisco%20-%20Romulus%203.mp3');
  music.loop=true;music.volume=.32;music.preload='none';
- let userPaused=false,pausedByRace=false,fadeToken=0;
+ raceMusic.loop=true;raceMusic.volume=.30;raceMusic.preload='auto';
+ let enabled=false,pausedByRace=false,fadeToken=0,raceTimer=null;
+ function state(){
+  btn.textContent='♫';btn.classList.toggle('dm-music-off',!enabled);
+  btn.setAttribute('aria-label',enabled?'Apagar música':'Activar música');
+  btn.setAttribute('aria-pressed',String(enabled));
+  btn.title=enabled?'Desactivar música':'Activar música';
+ }
+ function stopRace(){
+  if(raceTimer!==null){clearTimeout(raceTimer);raceTimer=null}
+  raceMusic.pause();raceMusic.currentTime=0;
+ }
  async function resumeWithFade(){
-  const token=++fadeToken;
-  music.volume=0;
-  try{await music.play()}catch(e){music.volume=.32;state();return}
-  const begin=performance.now();
+  const token=++fadeToken;music.volume=0;
+  try{await music.play()}catch(e){music.volume=.32;return}
+  const start=performance.now();
   function frame(now){
    if(token!==fadeToken||music.paused)return;
-   music.volume=Math.min(.32,.32*(now-begin)/2500);
+   music.volume=Math.min(.32,.32*(now-start)/2500);
    if(music.volume<.32)requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
  }
- function state(){
-  const playing=!music.paused;
-  btn.textContent='♫';
-  btn.classList.toggle('dm-music-off',!playing);
-  btn.setAttribute('aria-label',playing?'Pausar música':'Reproducir música');
-  btn.setAttribute('aria-pressed',String(playing));
-  btn.title=playing?'Pausar música del menú':'Reproducir música del menú';
- }
  btn.addEventListener('click',async()=>{
-  try{
-   if(!music.paused){++fadeToken;music.pause();userPaused=true;pausedByRace=false}
-   else{++fadeToken;music.volume=.32;userPaused=false;pausedByRace=false;music.currentTime=music.currentTime||0;await music.play()}
-   state();
-  }catch(e){
-   btn.textContent='♫';
-   btn.title='Falta incorporar 01. Main Menu.mp3 al repositorio: '+e.message;
+  enabled=!enabled;
+  if(!enabled){
+   ++fadeToken;pausedByRace=false;stopRace();music.pause();
+  }else{
+   try{
+    if(typeof faseCarrera!=='undefined'&&faseCarrera==='corriendo'){
+     stopRace();await raceMusic.play();
+    }else{
+     music.volume=.32;await music.play();
+    }
+   }catch(e){btn.title='No se pudo reproducir la música: '+e.message}
+  }
+  state();
+ });
+ document.addEventListener('dm-go',()=>{
+  ++fadeToken;
+  pausedByRace=enabled;
+  music.pause();stopRace();
+  if(enabled){
+   // Dejar primero el motor V8 del GO y luego arrancar la música.
+   raceTimer=setTimeout(()=>{
+    raceTimer=null;
+    if(enabled&&typeof faseCarrera!=='undefined'&&faseCarrera==='corriendo'){
+     raceMusic.currentTime=0;
+     raceMusic.play().catch(()=>{});
+    }
+   },1700);
   }
  });
- document.addEventListener('dm-go',()=>{if(!music.paused){++fadeToken;pausedByRace=true;music.pause();state()}});
- // Solo reanudar al concluir realmente la manga (no al llegar el primero).
  let previousPhase=typeof faseCarrera==='string'?faseCarrera:'reposo';
  setInterval(()=>{
   const phase=typeof faseCarrera==='string'?faseCarrera:'reposo';
-  if(phase==='finalizada'&&previousPhase!=='finalizada'&&pausedByRace&&!userPaused){
-   pausedByRace=false;
-   resumeWithFade().finally(state);
+  if(phase==='finalizada'&&previousPhase!=='finalizada'){
+   stopRace();
+   if(pausedByRace&&enabled){pausedByRace=false;resumeWithFade().finally(state)}
+  }else if((phase==='reposo'||phase==='posicionamiento')&&previousPhase==='corriendo'){
+   stopRace();
+   if(enabled){pausedByRace=false;resumeWithFade().finally(state)}
   }
   previousPhase=phase;
- },200);
- music.addEventListener('ended',state);
- music.addEventListener('pause',state);
- music.addEventListener('play',state);
+ },150);
+ music.addEventListener('error',()=>{btn.title='No se pudo cargar música de menú'});
+ raceMusic.addEventListener('error',()=>{btn.title='Falta subir Rom Di Prisco - Romulus 3.mp3 a GitHub'});
+ state();
 })();
 </script>
 </body>
