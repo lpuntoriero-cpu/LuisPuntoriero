@@ -784,6 +784,14 @@ body.dm-theater .vehicle-pop{z-index:9999}
 .dm-tour-champion-title{font-size:clamp(15px,2.1vw,23px);letter-spacing:1.8px;color:#ffd67e;font-weight:900}
 .dm-tour-champion-name{font-size:clamp(42px,7vw,84px);line-height:1.12;font-weight:1000;color:#fff1b7;text-shadow:0 0 14px #e6b044aa,0 3px 1px #553b13;overflow-wrap:anywhere;margin-top:10px}
 @media(max-width:540px){.dm-tour-roster{grid-template-columns:1fr}.race-mode-switch .mode-choice{padding:10px 3px;font-size:10px}}
+/* Menú compacto: una sola selección de efectos P1, sin botón arcoíris duplicado. */
+#rainbowRow{display:none!important}
+.dm-p1-effects{margin-top:12px;padding:12px;border:1px solid #3b6583;border-radius:11px;background:linear-gradient(145deg,#102d43,#0a1d31)}
+.dm-p1-effects label{display:block;margin-bottom:9px;color:#9ee4ff;font-weight:900;letter-spacing:.7px}
+.dm-p1-effects select{display:block;width:100%;max-width:100%;background:#071b2d;color:#f5fbff;border:2px solid #3c91ba;border-radius:9px;padding:11px 12px;font-size:14px;font-weight:800;cursor:pointer}
+.dm-p1-effects select:focus-visible{outline:2px solid #9feaff;outline-offset:2px}
+.dm-p1-effects select:disabled{opacity:.52;cursor:not-allowed}
+.dm-p1-effects .detail{margin-top:9px;line-height:1.4}
 </style>
 </head>
 
@@ -1010,9 +1018,9 @@ body.dm-theater .vehicle-pop{z-index:9999}
 
     </div>
 
-    <div id="p1EffectsRow"><label for="effectsP1" class="powerlabel">EFECTOS P1 (SOLO REPOSO)</label>
+    <div id="p1EffectsRow" class="dm-p1-effects"><label for="effectsP1" class="powerlabel">✨ EFECTO DEL PUENTE P1</label>
       <select id="effectsP1" disabled><option value="0">Color fijo</option><option value="1">Arcoíris</option><option value="2">Respiración</option><option value="3">Pulso</option><option value="4">Policía rojo / azul</option><option value="5">Alternar colores</option></select>
-      <div class="detail">Con el nuevo firmware P1, elegí respiración, pulso, policía o alternancia. Se pausan durante la carrera; el arcoíris original sigue disponible.</div></div>
+      <div class="detail">Elegí un efecto. Para ajustar el color y el brillo, seleccioná «Color fijo». Durante la carrera, mandan las luces de largada.</div></div>
     <div id="pinInfo" class="pininfo">
       Controlando salida P2
     </div>
@@ -2670,24 +2678,33 @@ document.addEventListener('fullscreenerror',refreshFullScreenView);
 const originalRenderHistory=renderHistory;
 renderHistory=function(){originalRenderHistory();renderAdvancedStats()};
 renderAdvancedStats();champRender();
-// Experimental effects use E1 commands only when the compatible firmware is installed.
+// Selector unificado de efectos P1: el arcoíris original se conserva.
 const effectRow=document.getElementById('p1EffectsRow'),effectSelect=document.getElementById('effectsP1');
+let dmP1Effect='0';
 const originalRenderLight=renderLight;
-renderLight=function(){originalRenderLight();effectRow.style.display=selectedPin==='P1'?'block':'none';effectSelect.disabled=!connected||!lights.P1.on||faseCarrera==='cuenta'||faseCarrera==='corriendo';};
+renderLight=function(){
+ originalRenderLight();
+ effectRow.style.display=selectedPin==='P1'?'block':'none';
+ effectSelect.value=dmP1Effect;
+ const effectRunning=selectedPin==='P1'&&dmP1Effect!=='0';
+ if(effectRunning){
+  $('lightControls').classList.add('off');
+  $('colorLibre').disabled=true;
+  $('brightness').disabled=true;
+  document.querySelectorAll('.presets button').forEach(b=>b.disabled=true);
+ }
+ effectSelect.disabled=!connected||!lights.P1.on||faseCarrera==='cuenta'||faseCarrera==='corriendo';
+};
 effectSelect.onchange=()=>{
  if(!connected||selectedPin!=='P1'||faseCarrera==='cuenta'||faseCarrera==='corriendo')return;
  const mode=effectSelect.value;
- // R1 remains the existing stable command. Effects are managed by the optional experimental firmware.
- if(mode==='1'){
-   lights.P1.rainbow=true;send('R1:1');
- }else{
-   lights.P1.rainbow=false;send('E1:'+mode);
- }
+ dmP1Effect=mode;
+ lights.P1.rainbow=mode==='1';
+ if(mode==='1')send('R1:1');
+ else send('E1:'+mode);
  renderLight();
 };
-const oldRainbowHandler=document.getElementById('rainbowBtn').onclick;
-document.getElementById('rainbowBtn').onclick=()=>{if(faseCarrera==='cuenta'||faseCarrera==='corriendo')return;oldRainbowHandler();effectSelect.value=lights.P1.rainbow?'1':'0';if(!lights.P1.rainbow)send('E1:0')};
-// Synchronize the new panel after connection or selecting P1.
+// Synchronize the unified P1 menu after connection or selecting P1.
 renderLight();
 </script>
 <script>
