@@ -322,8 +322,11 @@ async function play(data){
 if(!data||!Number.isFinite(Number(data.difference)))return;
 const id=++serial,winnerBlue=data.winner==='AZUL';
 root.dataset.winner=data.winner;
-const assets=(data.vehicle==='yahboom'||data.vehicle==='microbit')?['./Yahboomazul.png','./Yahboomrojo.png']:['./drift_supra_azul.png','./drift_supra_rojo.png'];
+const isTinybit=data.vehicle==='yahboom'||data.vehicle==='microbit';
+const assets=isTinybit?['./kufl5gj78bphep00q671myepq691.jpg','./kufl5gj78bphep00q671myepq691.jpg']:['./drift_supra_azul.png','./drift_supra_rojo.png'];
 blue.src=assets[0];red.src=assets[1];
+blue.classList.toggle('dm-pf-tiny-photo',isTinybit);
+red.classList.toggle('dm-pf-tiny-photo',isTinybit);
 $pf('dmPfBlueName').textContent=data.blueName||'AZUL';$pf('dmPfRedName').textContent=data.redName||'ROJO';
 $pf('dmPfBlueTime').textContent=(data.blueName||'AZUL')+' · '+data.blueTime;
 $pf('dmPfRedTime').textContent=(data.redName||'ROJO')+' · '+data.redTime;
