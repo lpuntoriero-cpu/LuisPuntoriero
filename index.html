@@ -492,11 +492,15 @@ td{background:#09192c}
 }
 .winBanner.blue{
   border-color:var(--blue);
-  box-shadow:0 0 30px #00baff99,0 0 70px #00baff44;
+  background:radial-gradient(ellipse at 50% 0%,#075686,#071a2d 68%,#020713);
+  box-shadow:0 0 30px #00baff99,0 0 70px #00baff44, inset 0 0 34px #00baff28;
+  animation:dmWinnerBlueGlow 1.5s ease-in-out infinite alternate;
 }
 .winBanner.red{
   border-color:var(--red);
-  box-shadow:0 0 30px #ff315999,0 0 70px #ff315944;
+  background:radial-gradient(ellipse at 50% 0%,#68172d,#24101d 68%,#020713);
+  box-shadow:0 0 30px #ff315999,0 0 70px #ff315944, inset 0 0 34px #ff315928;
+  animation:dmWinnerRedGlow 1.5s ease-in-out infinite alternate;
 }
 .winBanner .small{
   font-size:13px;letter-spacing:3px;
@@ -518,6 +522,16 @@ td{background:#09192c}
   to{opacity:1;transform:scale(1)}
 }
 
+@keyframes dmWinnerBlueGlow{from{box-shadow:0 0 23px #00baff77,0 0 55px #00baff33,inset 0 0 25px #00baff22}to{box-shadow:0 0 38px #00baffc5,0 0 90px #00baff66,inset 0 0 48px #00baff44}}
+@keyframes dmWinnerRedGlow{from{box-shadow:0 0 23px #ff315977,0 0 55px #ff315933,inset 0 0 25px #ff315922}to{box-shadow:0 0 38px #ff3159c5,0 0 90px #ff315966,inset 0 0 48px #ff315944}}
+@media(prefers-reduced-motion:reduce){.winBanner.blue,.winBanner.red{animation:none}}
+.dm-confirm-dialog{width:min(440px,92vw);max-width:92vw;border:2px solid #ed6d70;border-radius:16px;padding:25px 20px;background:linear-gradient(155deg,#142b40,#08121e);color:#f1f8ff;text-align:center;box-shadow:0 0 36px #000c}
+.dm-confirm-dialog::backdrop{background:#000b;backdrop-filter:blur(5px)}
+.dm-confirm-icon{font-size:39px;margin-bottom:8px}
+.dm-confirm-dialog h2{font-size:20px;margin:0 0 12px}
+.dm-confirm-dialog p{line-height:1.55;color:#c0d7e8;margin-bottom:22px}
+.dm-confirm-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}
+.dm-confirm-actions .btn{flex:1;min-width:145px}
 /* CELULAR */
 @media(max-width:850px){
   .top{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
@@ -1072,6 +1086,15 @@ body.dm-theater .vehicle-pop{z-index:9999}
   <div id="dmRecordName" class="dm-record-name"></div>
   <div id="dmRecordTime" class="dm-record-time"></div>
 </div>
+<dialog id="dmClearConfirm" class="dm-confirm-dialog" aria-labelledby="dmClearTitle">
+  <div class="dm-confirm-icon">⚠️</div>
+  <h2 id="dmClearTitle">¿BORRAR TODO EL HISTORIAL?</h2>
+  <p>Se eliminarán las carreras guardadas y sus récords. Esta acción no se puede deshacer.</p>
+  <div class="dm-confirm-actions">
+    <button id="dmCancelClear" class="btn" type="button">CANCELAR</button>
+    <button id="dmConfirmClear" class="btn red" type="button">SÍ, BORRAR HISTORIAL</button>
+  </div>
+</dialog>
 <div id="winOverlay">
   <div id="winBanner" class="winBanner">
     <div class="small">GANADOR DE LA CARRERA</div>
@@ -2308,18 +2331,17 @@ $("exportCsv").onclick=()=>{
   },2000);
 };
 
-// BORRAR HISTORIAL
-$("clearHistory").onclick=()=>{
-  if(!confirm(
-    "¿Borrar todo el historial y los récords?"
-  )){
-    return;
-  }
-
+// BORRAR HISTORIAL: confirmación explícita, sin borrado accidental
+const dmClearDialog=$("dmClearConfirm");
+$("clearHistory").onclick=()=>{if(!history.length)return;dmClearDialog.showModal();};
+$("dmCancelClear").onclick=()=>dmClearDialog.close();
+$("dmConfirmClear").onclick=()=>{
   history=[];
   saveHistory();
   renderHistory();
+  dmClearDialog.close();
 };
+dmClearDialog.addEventListener('click',e=>{if(e.target===dmClearDialog)dmClearDialog.close()});
 
 // INICIO
 estadoRepeticion();
