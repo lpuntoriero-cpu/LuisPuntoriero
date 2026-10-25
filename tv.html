@@ -328,7 +328,10 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function setPositions(x,winningBlue){const delta=2;blue.style.left=(winningBlue?x:x-delta)+'%';red.style.left=(winningBlue?x-delta:x)+'%'}
 function contact(){
 const t=track.getBoundingClientRect(),f=finish.getBoundingClientRect();
-const ref=blue.getBoundingClientRect();return (f.left-t.left-ref.width/2)/t.width*100+10.4;
+const ref=blue.getBoundingClientRect();
+// Calibraciones independientes: Tinybit queda como se aprobo; Supra tiene su propio ajuste.
+const ajuste=root.dataset.vehicle==='supra'?12.4:10.4;
+return (f.left-t.left-ref.width/2)/t.width*100+ajuste;
 }
 function spark(){flash.classList.remove('on');void flash.offsetWidth;flash.classList.add('on')}
 function reset(){serial++;veil.classList.remove('show');root.classList.remove('show');root.setAttribute('aria-hidden','true')}
@@ -364,6 +367,7 @@ async function play(data){
 if(!data||!Number.isFinite(Number(data.difference)))return;
 const id=++serial,winnerBlue=data.winner==='AZUL';
 root.dataset.winner=data.winner;
+root.dataset.vehicle=(data.vehicle==='yahboom'||data.vehicle==='microbit')?'tinybit':'supra';
 const isTinybit=data.vehicle==='yahboom'||data.vehicle==='microbit';
 const assets=isTinybit?['./tinybit.jpg','./tinybit.jpg']:['./supraazul.jpg','./suprarojo.jpg'];
 blue.src=assets[0];red.src=assets[1];
