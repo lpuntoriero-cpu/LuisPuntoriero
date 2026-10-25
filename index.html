@@ -1740,6 +1740,7 @@ function results(payload){
   $("redLane").classList.remove("winner-red","loser");
 
   faseCarrera="finalizada";
+    document.dispatchEvent(new Event("dm-race-finished"));
 
   record("DOS AUTOS",w,b,r);
   status("Resultados registrados");
@@ -1956,6 +1957,7 @@ function processMessage(raw){
     stopVisualClocks();
     placaListaCampeonato=false;
     faseCarrera="finalizada";
+    document.dispatchEvent(new Event("dm-race-finished"));
     clearWinner();
 
     const infractor=u.substring("SALIDA FALSA:".length).trim();
@@ -2043,6 +2045,7 @@ function processMessage(raw){
     dmFinishSignal();
     if(seconds!==null)showWinner("ROJO",fmt(seconds));
     faseCarrera="finalizada";
+    document.dispatchEvent(new Event("dm-race-finished"));
     record("SOLO ROJO","ROJO",null,seconds);
     return;
   }
@@ -2068,6 +2071,7 @@ function processMessage(raw){
     }
 
     faseCarrera="finalizada";
+    document.dispatchEvent(new Event("dm-race-finished"));
 
     record("SOLO AZUL","AZUL",b,null);
     return;
@@ -3344,18 +3348,27 @@ renderRaceMode();dmTourRender();
    },1700);
   }
  });
+ let wasRacing=false;
+ async function endRaceAudio(){
+  if(!wasRacing&&!pausedByRace&&raceMusic.paused)return;
+  wasRacing=false;
+  stopRace();
+  if(enabled){
+   pausedByRace=false;
+   await resumeWithFade();
+   state();
+  }else{pausedByRace=false;state()}
+ }
+ document.addEventListener('dm-go',()=>{wasRacing=true});
+ document.addEventListener('dm-race-finished',()=>{endRaceAudio().catch(()=>{})});
+ // Respaldo: también detectar el cambio de estado, pero sin depender
+ // exclusivamente de intervalos que Chrome puede suspender en pantalla completa.
  let previousPhase=typeof faseCarrera==='string'?faseCarrera:'reposo';
  setInterval(()=>{
   const phase=typeof faseCarrera==='string'?faseCarrera:'reposo';
-  if(phase==='finalizada'&&previousPhase!=='finalizada'){
-   stopRace();
-   if(pausedByRace&&enabled){pausedByRace=false;resumeWithFade().finally(state)}
-  }else if((phase==='reposo'||phase==='posicionamiento')&&previousPhase==='corriendo'){
-   stopRace();
-   if(enabled){pausedByRace=false;resumeWithFade().finally(state)}
-  }
+  if((phase==='finalizada'||phase==='reposo')&&wasRacing)endRaceAudio().catch(()=>{});
   previousPhase=phase;
- },150);
+ },250);
  music.addEventListener('error',()=>{btn.title='No se pudo cargar música de menú'});
  raceMusic.addEventListener('error',()=>{btn.title='Falta subir Rom Di Prisco - Romulus 3.mp3 a GitHub'});
  state();
