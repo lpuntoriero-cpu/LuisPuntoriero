@@ -752,6 +752,10 @@ body.dm-theater .vehicle-pop{z-index:9999}
 .dm-tour-match.active{border-color:#fad278}
 .dm-tour-match.done{border-color:#368b6e}
 .dm-tour-winner{color:#60e9ad;font-weight:bold}
+.dm-tour-champion{margin:17px 0 12px;padding:23px 14px 26px;text-align:center;border:2px solid #d8ae48;border-radius:15px;background:radial-gradient(ellipse at 50% 0%,#76531e66,transparent 72%),linear-gradient(150deg,#1f1a18,#071a2b 70%);box-shadow:0 0 23px #e3ad3840,inset 0 0 25px #d9a63d20}
+.dm-tour-champion[hidden]{display:none!important}
+.dm-tour-champion-title{font-size:clamp(15px,2.1vw,23px);letter-spacing:1.8px;color:#ffd67e;font-weight:900}
+.dm-tour-champion-name{font-size:clamp(42px,7vw,84px);line-height:1.12;font-weight:1000;color:#fff1b7;text-shadow:0 0 14px #e6b044aa,0 3px 1px #553b13;overflow-wrap:anywhere;margin-top:10px}
 @media(max-width:540px){.dm-tour-roster{grid-template-columns:1fr}.race-mode-switch .mode-choice{padding:10px 3px;font-size:10px}}
 </style>
 </head>
@@ -878,6 +882,10 @@ body.dm-theater .vehicle-pop{z-index:9999}
       <button id="tourGo" class="btn green" type="button" disabled>🏁 PREPARAR ENFRENTAMIENTO</button>
       <div id="tourInfo" class="detail" aria-live="polite"></div>
       <div id="tourBracket" class="dm-tour-bracket"></div>
+      <div id="tourChampion" class="dm-tour-champion" hidden aria-live="polite">
+        <div class="dm-tour-champion-title">🏆 CAMPEÓN DEL TORNEO</div>
+        <div id="tourChampionName" class="dm-tour-champion-name"></div>
+      </div>
       <h3 class="mini-section-title">RESULTADOS</h3><div class="tablewrap"><table><thead><tr><th>INSTANCIA</th><th>AZUL</th><th>ROJO</th><th>GANADOR</th><th>TIEMPO AZUL</th><th>TIEMPO ROJO</th></tr></thead><tbody id="tourRows"></tbody></table></div>
       <div class="upgrade-buttons"><button id="tourExit" class="btn" type="button">↩ VOLVER A CARRERA SIMPLE</button>
       <button id="tourCsv" class="btn" type="button">⬇ EXPORTAR RESULTADOS CSV</button><button id="tourPoster" class="btn primary" type="button">🏆 GENERAR PÓSTER PNG</button></div>
@@ -2681,8 +2689,12 @@ function dmTourRecorded(w,b,r,entry){
 function dmTourRender(){
  const next=dmTourNext(),btn=$('tourGo');
  $('tourBracket').replaceChildren();$('tourCurrent').replaceChildren();$('tourRows').replaceChildren();
- if(!dmTour){$('tourInfo').textContent='Cargá 8 o 16 pilotos y creá el torneo.';btn.disabled=true;return}
+ if(!dmTour){$('tourChampion').hidden=true;$('tourInfo').textContent='Cargá 8 o 16 pilotos y creá el torneo.';btn.disabled=true;return}
  $('tourName').value=dmTour.name;$('tourSize').value=String(dmTour.size);
+ const championBox=$('tourChampion');
+ const championId=!next?dmTour.rounds.at(-1)[0].winner:null;
+ championBox.hidden=championId===null||championId===undefined;
+ $('tourChampionName').textContent=championBox.hidden?'':dmTour.players[championId];
  if(next){
   for(const side of ['blue','red']){
    const el=document.createElement('div');el.className='dm-tour-card'+(side==='red'?' red':'');
@@ -2711,7 +2723,7 @@ function dmTourRender(){
  const busy=['cuenta','corriendo'].includes(faseCarrera);
  $('tourExit').disabled=busy;
  btn.disabled=!next||!connected||busy||raceMode!=='tour';
- if(!next){$('tourExit').textContent='↩ TERMINAR Y VOLVER A CARRERA SIMPLE';$('tourInfo').textContent='🏆 CAMPEÓN: '+dmTour.players[dmTour.rounds.at(-1)[0].winner];btn.textContent='🏆 TORNEO FINALIZADO';return}
+ if(!next){$('tourExit').textContent='↩ TERMINAR Y VOLVER A CARRERA SIMPLE';$('tourInfo').textContent='🏆 TORNEO FINALIZADO';btn.textContent='🏆 TORNEO FINALIZADO';return}
  const positioned=faseCarrera==='posicionamiento'&&!solo&&azulPosicionado&&rojoPosicionado;
  btn.textContent=positioned?'🏁 INICIAR CUENTA REGRESIVA':'🏁 PREPARAR ENFRENTAMIENTO';
  $('tourInfo').textContent=dmTour.name+' · '+dmTourStage(next.r)+' · Cruce '+(next.m+1)+' · '+(busy?'Carrera en curso':!connected?'Conectá la micro:bit':faseCarrera==='finalizada'?'Esperando reposo de la micro:bit':'Listo para competir');
