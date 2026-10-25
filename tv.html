@@ -39,8 +39,23 @@ footer{text-align:center;flex:0 0 auto;min-height:4vh;font-size:clamp(15px,2.2vw
 #banner em{display:block;font-style:normal;font-size:clamp(24px,3.5vw,72px)}
 #hint{position:fixed;bottom:8px;right:12px;font-size:11px;color:#6d89a5;z-index:30}button{background:#112c46;border:1px solid #456b87;border-radius:8px;color:white;padding:8px;cursor:pointer}
 @media(max-width:740px){main{padding:7px}.arena{grid-template-columns:minmax(0,1fr) 21% minmax(0,1fr)}.lane{padding:8px 2px}.pilot{font-size:17px}.clock{font-size:clamp(20px,5vw,42px)}.count{font-size:45px}.message{font-size:10px}}
+</style><style id="dm-tv-visual-pack">
+.tv-led{position:relative;background:radial-gradient(circle at 35% 23%,#677587,#243248 56%,#111928 90%);border:2px solid #677b91;box-shadow:inset 0 3px 9px #000c,inset 0 -2px 4px #b3c5d433}
+.tv-led:after{content:"";position:absolute;left:17%;top:10%;width:48%;height:27%;border-radius:50%;background:linear-gradient(#ffffffa0,#ffffff00);transform:rotate(-20deg)}
+.tv-led.red{background:radial-gradient(circle at 32% 22%,#ffe1e6,#ff4362 40%,#aa102c 75%,#4b0b1a)}
+.tv-led.green{background:radial-gradient(circle at 32% 22%,#eaffee,#4cffab 39%,#068653 75%,#03452b)}
+#tvLive{display:none;align-items:center;gap:8px;font-size:clamp(12px,1.4vw,26px);font-weight:900;color:#ffb8c6;letter-spacing:.16em}
+#tvLive.active{display:flex}
+#tvLive:before{content:"";width:12px;height:12px;border-radius:50%;background:#ff3159;box-shadow:0 0 16px #ff3159;animation:tvLivePulse 1s ease-in-out infinite}
+@keyframes tvLivePulse{50%{opacity:.32}}
+.lane.tv-winner-flash{animation:tvWinFlash .14s steps(2,end) 5}
+.lane.blue.tv-winner-flash{--tv-flash:#00baff}.lane.red.tv-winner-flash{--tv-flash:#ff3159}
+@keyframes tvWinFlash{50%{box-shadow:0 0 60px 12px var(--tv-flash),inset 0 0 52px var(--tv-flash);border-color:white}}
+.lane.tv-launch .car{animation:tvCarLaunch .72s ease-out}
+@keyframes tvCarLaunch{25%{transform:translateY(-1.3vh) scale(1.04)}55%{transform:translateY(.8vh) scale(.98)}80%{transform:translateY(-.4vh)}}
+@media(prefers-reduced-motion:reduce){.lane.tv-winner-flash,.lane.tv-launch .car,#tvLive:before{animation:none}}
 </style></head>
-<body><main><header><div><div class="brand">DRIFT <span>MASTERS</span></div><div class="sub">DUAL LANE · RACE CONTROL</div></div><div class="status" id="connection">ESPERANDO CONTROL PRINCIPAL</div></header>
+<body><main><header><div><div class="brand">DRIFT <span>MASTERS</span></div><div class="sub">DUAL LANE · RACE CONTROL</div></div><div style="display:flex;gap:18px;align-items:center"><div id="tvLive">EN VIVO</div><div class="status" id="connection">ESPERANDO CONTROL PRINCIPAL</div></div></header>
 <div class="arena"><section class="lane blue" id="blueLane"><div class="lane-title">🔵 CARRIL AZUL</div><div class="pilot" id="bluePilot">AZUL</div><img class="car" src="./drift_supra_azul.png" alt="Auto azul"><div class="clock" id="blueTime">--.-- s</div><div class="lap" id="blueLap">VUELTA 1 · --.-- s</div><div class="result" id="blueResult">LISTO PARA SALIR</div></section>
 <section class="center"><div class="tv-signal" id="tvSignal" aria-label="Semáforo de ocho luces"><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span><span class="tv-led"></span></div><div id="count" class="count">—</div><div class="message" id="message">ESPERANDO LARGADA</div></section>
 <section class="lane red" id="redLane"><div class="lane-title">🔴 CARRIL ROJO</div><div class="pilot" id="redPilot">ROJO</div><img class="car" src="./drift_supra_rojo.png" alt="Auto rojo"><div class="clock" id="redTime">--.-- s</div><div class="lap" id="redLap">VUELTA 1 · --.-- s</div><div class="result" id="redResult">LISTO PARA SALIR</div></section></div>
@@ -52,6 +67,12 @@ const $=id=>document.getElementById(id);let source=null;let last=0;let oldShow=f
 let raceClock={running:false,startEpoch:0,blueRunning:false,redRunning:false};
 let tvClock={started:0,blueActive:false,redActive:false};
 let tvSignalState=Array(8).fill('off'),tvWinner='',tvWinnerAt=0,tvGoEpoch=0,tvPhase='reposo';
+function tvFlashLane(color,kind){
+ const lane=$(color+'Lane');if(!lane)return;
+ const cls=kind==='launch'?'tv-launch':'tv-winner-flash';
+ lane.classList.remove(cls);void lane.offsetWidth;lane.classList.add(cls);
+ setTimeout(()=>lane.classList.remove(cls),850);
+}
 function drawSignal(){
  const now=Date.now();
  const goAge=tvGoEpoch?now-tvGoEpoch:Infinity;
@@ -126,14 +147,16 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  const newRace=phase==='corriendo'&&tvPhase!=='corriendo'&&!(tvWinner);
  if(newRace||phase==='corriendo'&&!tvGoEpoch){
   tvGoEpoch=start||Date.now();tvWinner='';tvWinnerAt=0;
+  tvFlashLane('blue','launch');tvFlashLane('red','launch');
  }
  // Capturar ganador desde GANA incluso cuando el cronómetro principal se detiene.
  const winner=s.winnerFirst==='AZUL'?'blue':s.winnerFirst==='ROJO'?'red':s.blue?.win?'blue':s.red?.win?'red':'';
- if(winner&&!tvWinner){tvWinner=winner;tvWinnerAt=Date.now()}
+ if(winner&&!tvWinner){tvWinner=winner;tvWinnerAt=Date.now();tvFlashLane(winner,'winner')}
  if(phase==='reposo'||phase==='posicionamiento'||phase==='cuenta'){
   tvGoEpoch=0;tvWinner='';tvWinnerAt=0;
  }
  tvPhase=phase;
+ $('tvLive').classList.toggle('active',phase==='corriendo');
  $('connection').textContent=s.connected?'● BLUETOOTH CONECTADO':'○ BLUETOOTH DESCONECTADO';
  for(const color of ['blue','red']){const d=s[color]||{};$(color+'Pilot').textContent=d.pilot||color.toUpperCase();if(!(tvClock.started&&tvClock[color+'Active']))$(color+'Time').textContent=d.time||'--.-- s';$(color+'Lap').textContent=d.lap||'';$(color+'Result').textContent=d.result||'';$(color+'Result').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('lose',!!d.lose)}
  if(!tvGoEpoch||phase!=='corriendo'){
