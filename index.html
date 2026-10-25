@@ -875,7 +875,7 @@ body.dm-theater .vehicle-pop{z-index:9999}
       <span id="btText">DESCONECTADA</span>
     </div>
 <button type="button" id="dmMenuMusic" title="Reproducir o pausar música del menú" aria-pressed="false" style="border:1px solid #416f83;border-radius:8px;background:#122c3b;color:#b9ffeb;padding:9px 12px;cursor:pointer;font-weight:900">♫ MÚSICA</button>
-    <button type="button" id="dmTestSound" title="Escuchar sonido de largada y habilitar audio en Chrome" style="border:1px solid #4a7991;border-radius:8px;background:#142638;color:#c8f5ff;padding:9px 12px;cursor:pointer;font-weight:800" aria-label="Probar sonido de largada">🔊 PROBAR SONIDO</button>
+    <button type="button" id="dmTestSound" title="Escuchar sonido de largada y habilitar audio en Chrome" style="border:1px solid #4a7991;border-radius:8px;background:#142638;color:#c8f5ff;padding:9px 12px;cursor:pointer;font-weight:800" aria-label="Probar sonido de largada">🔊 PROBAR V8</button>
     <button id="connectBtn" class="btn primary">
       CONECTAR BLUETOOTH
     </button>
@@ -3248,15 +3248,31 @@ renderRaceMode();dmTourRender();
    }
    const when=audio.currentTime+.015;
    if(kind==='start'){
-    const o=audio.createOscillator(),g=audio.createGain();
-    o.type='sawtooth';
-    o.frequency.setValueAtTime(95,when);
-    o.frequency.exponentialRampToValueAtTime(520,when+.5);
-    g.gain.setValueAtTime(.0001,when);
-    g.gain.exponentialRampToValueAtTime(.14,when+.035);
-    g.gain.exponentialRampToValueAtTime(.0001,when+.62);
-    o.connect(g);g.connect(audio.destination);
-    o.start(when);o.stop(when+.64);
+    // Simulación V8: tren de pulsos de escape, motor grave, armónicos y aceleración.
+    const sr=audio.sampleRate, dur=1.55, len=Math.ceil(sr*dur);
+    const buffer=audio.createBuffer(1,len,sr), data=buffer.getChannelData(0);
+    let phase=0,rumble=0,noise=0;
+    for(let i=0;i<len;i++){
+      const s=i/sr, x=s/dur;
+      // Ralentí y aceleración con pequeña caída de vueltas al cambiar marcha.
+      const rev=x<.66?850+5400*Math.pow(x/.66,1.4):x<.78?6250-1950*(x-.66)/.12:4300+2050*(x-.78)/.22;
+      const fireHz=rev/15; // V8 cuatro explosiones por revolución.
+      const step=fireHz/sr;
+      phase=(phase+step)%1;
+      const firing=Math.exp(-phase*27);
+      noise=(Math.random()*2-1);
+      rumble=rumble*.975+noise*.025;
+      const block=.5+.5*Math.sin(2*Math.PI*(rev/60)*s);
+      const low=Math.sin(2*Math.PI*phase)*.30+Math.sin(4*Math.PI*phase)*.14;
+      const rasp=(noise*.32+rumble*.7)*firing;
+      const envelope=Math.min(1,s/.08)*Math.min(1,(dur-s)/.21);
+      data[i]=Math.tanh((firing*.78+low+rasp)*2.1-0.5)*envelope*(.65+.35*block);
+    }
+    const src=audio.createBufferSource();src.buffer=buffer;
+    const lp=audio.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1250;lp.Q.value=.75;
+    const gain=audio.createGain();gain.gain.value=.24;
+    src.connect(lp);lp.connect(gain);gain.connect(audio.destination);
+    src.start(when);
    }else{
     beep(880,.14,.02);beep(1175,.14,.20);beep(1568,.28,.38);
    }
@@ -3267,7 +3283,7 @@ renderRaceMode();dmTourRender();
  if(testSound)testSound.addEventListener('click',async()=>{
    testSound.textContent='🔊 REPRODUCIENDO';
    await shortSound('start');
-   setTimeout(()=>{testSound.textContent='🔊 PROBAR SONIDO'},800);
+   setTimeout(()=>{testSound.textContent='🔊 PROBAR V8'},1750);
  });
  function update(){
   const running=typeof faseCarrera!=='undefined'&&faseCarrera==='corriendo';
