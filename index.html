@@ -652,6 +652,10 @@ body.champ-selected #dmSimpleConsole{display:none!important}
 .historygrid{display:block;margin-top:10px;width:100%}
 .historygrid>.panel{width:100%;max-width:none}
 .historygrid table{width:100%;min-width:700px}
+.dm-top-icon{display:inline-flex;align-items:center;justify-content:center;width:41px;height:39px;flex:0 0 41px;border:1px solid #39607e;border-radius:9px;background:#102d47;color:#5bd5ff;font-size:22px;line-height:1;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s}
+.dm-top-icon:hover,.dm-top-icon.is-on{background:#164466;border-color:#5bd5ff;box-shadow:0 0 12px #18a9ff33}
+.dm-top-icon:focus-visible{outline:2px solid #83e3ff;outline-offset:2px}
+@media(max-width:530px){.dm-top-icon{width:35px;height:35px;flex-basis:35px;font-size:19px}}
 .compact-settings{position:relative;z-index:50}
 .compact-settings summary{cursor:pointer;list-style:none;padding:11px 13px;border:1px solid #4f6580;border-radius:8px;font-size:11px;font-weight:900;background:#172b40;color:#e5f5ff}
 .compact-settings summary::-webkit-details-marker{display:none}
@@ -756,9 +760,8 @@ body.dm-theater .vehicle-pop{z-index:9999}
         <div id="vehicleSelectionLabel" class="vehicle-note">Drift car racing</div>
       </div>
     </details>
-    <details class="compact-settings" id="settingsPicker"><summary title="Configuración" aria-label="Configuración">⚙</summary>
-      <div class="compact-pop"><button id="voiceBtn" class="btn" type="button">🔇 LOCUTOR APAGADO</button><button id="fullScreenBtn" class="btn primary" type="button">⛶ PANTALLA COMPLETA</button></div>
-    </details>
+    <button id="voiceBtn" class="dm-top-icon" type="button" title="Activar locutor" aria-label="Activar locutor" aria-pressed="false">🔇</button>
+    <button id="fullScreenBtn" class="dm-top-icon" type="button" title="Pantalla completa" aria-label="Pantalla completa" aria-pressed="false">⛶</button>
     <div class="btstatus">
       <span id="btDot" class="dot"></span>
       <span id="btText">DESCONECTADA</span>
@@ -2451,7 +2454,7 @@ document.getElementById('champRaceBtn').onclick=()=>{
 };
 setInterval(renderRaceMode,600);
 const vbtn=document.getElementById('voiceBtn');
-function voiceRender(){vbtn.textContent=voiceEnabled?'🔊 LOCUTOR ENCENDIDO':'🔇 LOCUTOR APAGADO'}
+function voiceRender(){vbtn.textContent=voiceEnabled?'🔊':'🔇';vbtn.title=voiceEnabled?'Desactivar locutor':'Activar locutor';vbtn.setAttribute('aria-label',vbtn.title);vbtn.setAttribute('aria-pressed',String(voiceEnabled));vbtn.classList.toggle('is-on',voiceEnabled)}
 vbtn.onclick=()=>{voiceEnabled=!voiceEnabled;dmSave();voiceRender();if(voiceEnabled)narrar('Locutor activado')};voiceRender();
 const fsbtn=document.getElementById('fullScreenBtn');
 let dmFullscreenFallback=false;
@@ -2459,7 +2462,11 @@ function refreshFullScreenView(){
  const nativeFull=!!document.fullscreenElement;
  const active=nativeFull||dmFullscreenFallback;
  document.body.classList.toggle('dm-theater',active);
- fsbtn.textContent=active?'⛶ SALIR DE PANTALLA COMPLETA':'⛶ PANTALLA COMPLETA';
+ fsbtn.textContent=active?'⤢':'⛶';
+ fsbtn.title=active?'Salir de pantalla completa':'Pantalla completa';
+ fsbtn.setAttribute('aria-label',fsbtn.title);
+ fsbtn.setAttribute('aria-pressed',String(active));
+ fsbtn.classList.toggle('is-on',active);
 }
 fsbtn.onclick=()=>{
  // requestFullscreen se invoca inmediatamente durante el clic del usuario.
@@ -2561,18 +2568,8 @@ document.addEventListener('click',event=>{
  blue.addEventListener('error',()=>{if(!blue.src.includes('drift_supra_azul.png'))label.textContent='No se encontró '+blue.getAttribute('src')+' en GitHub'});
  red.addEventListener('error',()=>{if(!red.src.includes('drift_supra_rojo.png'))label.textContent='No se encontró '+red.getAttribute('src')+' en GitHub'});
  const vehiclePicker=document.getElementById('vehiclePicker');
- const settingsPicker=document.getElementById('settingsPicker');
- // Ambos menús se cierran al tocar fuera; abrir uno cierra el otro.
  document.addEventListener('click',e=>{
-   for(const menu of [vehiclePicker,settingsPicker]){
-     if(menu.open&&!menu.contains(e.target))menu.open=false;
-   }
- });
- vehiclePicker.addEventListener('toggle',()=>{
-   if(vehiclePicker.open)settingsPicker.open=false;
- });
- settingsPicker.addEventListener('toggle',()=>{
-   if(settingsPicker.open)vehiclePicker.open=false;
+   if(vehiclePicker.open&&!vehiclePicker.contains(e.target))vehiclePicker.open=false;
  });
 })();
 </script>
