@@ -874,7 +874,8 @@ body.dm-theater .vehicle-pop{z-index:9999}
       <span id="btDot" class="dot"></span>
       <span id="btText">DESCONECTADA</span>
     </div>
-<button type="button" id="dmTestSound" title="Escuchar sonido de largada y habilitar audio en Chrome" style="border:1px solid #4a7991;border-radius:8px;background:#142638;color:#c8f5ff;padding:9px 12px;cursor:pointer;font-weight:800" aria-label="Probar sonido de largada">🔊 PROBAR SONIDO</button>
+<button type="button" id="dmMenuMusic" title="Reproducir o pausar música del menú" aria-pressed="false" style="border:1px solid #416f83;border-radius:8px;background:#122c3b;color:#b9ffeb;padding:9px 12px;cursor:pointer;font-weight:900">♫ MÚSICA</button>
+    <button type="button" id="dmTestSound" title="Escuchar sonido de largada y habilitar audio en Chrome" style="border:1px solid #4a7991;border-radius:8px;background:#142638;color:#c8f5ff;padding:9px 12px;cursor:pointer;font-weight:800" aria-label="Probar sonido de largada">🔊 PROBAR SONIDO</button>
     <button id="connectBtn" class="btn primary">
       CONECTAR BLUETOOTH
     </button>
@@ -1910,6 +1911,7 @@ function processMessage(raw){
   }
 
   if(u==="GO"){
+    document.dispatchEvent(new Event("dm-go"));
     placaListaCampeonato=false;
     confirmarCuentaCampeonato();
     narrar("Largada");
@@ -3290,6 +3292,35 @@ renderRaceMode();dmTourRender();
   // El sonido del récord se activa en dmShowNewRecord, no por lectura de textos.
  }
  setInterval(update,120);
+})();
+</script>
+<script id="dm-menu-music-v1">
+(function(){
+ const btn=document.getElementById('dmMenuMusic');
+ if(!btn)return;
+ const music=new Audio('./01.%20Main%20Menu.mp3');
+ music.loop=true;music.volume=.32;music.preload='none';
+ let userPaused=false;
+ function state(){
+  const playing=!music.paused;
+  btn.textContent=playing?'♫ PAUSAR':'♫ MÚSICA';
+  btn.setAttribute('aria-pressed',String(playing));
+  btn.title=playing?'Pausar música del menú':'Reproducir música del menú';
+ }
+ btn.addEventListener('click',async()=>{
+  try{
+   if(!music.paused){music.pause();userPaused=true}
+   else{userPaused=false;music.currentTime=music.currentTime||0;await music.play()}
+   state();
+  }catch(e){
+   btn.textContent='♫ ARCHIVO PENDIENTE';
+   btn.title='Falta incorporar 01. Main Menu.mp3 al repositorio: '+e.message;
+  }
+ });
+ document.addEventListener('dm-go',()=>{if(!music.paused){music.pause();state()}});
+ music.addEventListener('ended',state);
+ music.addEventListener('pause',state);
+ music.addEventListener('play',state);
 })();
 </script>
 </body>
