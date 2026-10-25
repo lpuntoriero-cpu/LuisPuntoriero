@@ -28,7 +28,6 @@ header{display:flex;align-items:center;justify-content:space-between;gap:1vw;fle
 .tv-led.celebrate-red{background:#ff3159;border-color:#ffbac8;box-shadow:0 0 19px #ff3159,0 0 33px #ff3159aa}
 .count{font-size:clamp(40px,8vw,170px);font-weight:1000;color:#f8f9ff;line-height:1;text-shadow:0 0 25px #85d7ff}
 .count.cancelled{font-size:clamp(15px,2vw,34px);max-width:100%;white-space:nowrap;letter-spacing:-.02em}
-.count.finished-red{color:#ff3159!important;text-shadow:0 0 24px #ff3159,0 0 38px #a8002d!important}
 .count.go{color:#38ffa4;text-shadow:0 0 35px #00ff88}
 .message{font-size:clamp(11px,1.6vw,30px);font-weight:850;color:#bed4ee;overflow-wrap:anywhere}
 footer{text-align:center;flex:0 0 auto;min-height:4vh;font-size:clamp(15px,2.2vw,42px);font-weight:900;color:#fbd982;text-shadow:0 0 15px #b9902b}
@@ -229,11 +228,9 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
   $('count').classList.toggle('go',false);
  }
  $('count').classList.toggle('cancelled',String(s.count||'').trim()==='ANULADA');
- const finished=String(s.count||'').trim()==='FIN'||(phase==='finalizada'&&tvWinner&&Date.now()-tvWinnerAt>=5500&&String(s.count||'').trim()!=='ANULADA');
- $('count').classList.toggle('finished-red',finished);
  const falseStart=String(s.count||'').trim()==='✖';
- $('count').style.color=finished?'#ff3159':falseStart?'#ff254d':(phase==='finalizada'||String(s.count||'').trim()==='—')?'#f8f9ff':'';
- $('count').style.textShadow=finished?'0 0 24px #ff3159,0 0 38px #a8002d':falseStart?'0 0 20px #ff174e,0 0 38px #a8002d':(phase==='finalizada'||String(s.count||'').trim()==='—')?'0 0 25px #85d7ff':'';
+ $('count').style.color=falseStart?'#ff254d':(phase==='finalizada'||String(s.count||'').trim()==='—')?'#f8f9ff':'';
+ $('count').style.textShadow=falseStart?'0 0 20px #ff174e,0 0 38px #a8002d':(phase==='finalizada'||String(s.count||'').trim()==='—')?'0 0 25px #85d7ff':'';
  $('message').textContent=s.message||'ESPERANDO LARGADA';
  $('footer').textContent=s.footer||'🏁 DRIFT MASTERS · RACE CONTROL';
  // Primero luce el festejo del semáforo; después aparece el cartel.
