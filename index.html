@@ -3011,11 +3011,18 @@ renderRaceMode();dmTourRender();
 </script>
 
 
+<style>
+#dmTvSurface{position:fixed;inset:0;z-index:99999;background:#030918;display:none}
+#dmTvSurface.dm-open{display:block}
+#dmTvFrame{width:100%;height:100%;border:0;display:block}
+</style>
+<div id="dmTvSurface" aria-label="Pantalla gigante Drift Masters"><iframe id="dmTvFrame" title="Drift Masters TV" allow="fullscreen" allowfullscreen></iframe></div>
 <script>
 // PANTALLA GIGANTE: pantalla de solo lectura, sin una segunda conexión Bluetooth.
 // Se capturan los valores REALES ya pintados por el tablero principal.
 (()=>{
  let tv=null, channel=null, lastShown='', lastShownAt=0;
+ const surface=document.getElementById('dmTvSurface'), frame=document.getElementById('dmTvFrame');
  try{channel=new BroadcastChannel('drift-masters-tv')}catch(e){}
  const val=id=>document.getElementById(id)?.textContent?.trim()||'';
  const shown=id=>{const el=document.getElementById(id);return !!el&&!el.hidden&&getComputedStyle(el).display!=='none'};
@@ -3043,17 +3050,24 @@ renderRaceMode();dmTourRender();
  }
  function publish(){
   // Solo publicar mientras la pantalla esté abierta; evita trabajo extra al correr.
-  if(tv&&!tv.closed){const data=snapshot();try{tv.postMessage(data,location.origin)}catch(e){}try{channel?.postMessage(data)}catch(e){}}
-  else if(tv?.closed){tv=null;btn.classList.remove('is-on')}
+  if(surface.classList.contains('dm-open')&&tv){const data=snapshot();try{tv.postMessage(data,location.origin)}catch(e){}try{channel?.postMessage(data)}catch(e){}}
+ }
+ function closeTV(){
+  surface.classList.remove('dm-open');btn.classList.remove('is-on');tv=null;
  }
  btn.onclick=()=>{
-  if(tv&&!tv.closed){tv.focus();return}
-  tv=window.open(new URL('./tv.html',location.href).href,'driftMastersTV','popup=yes,width=1600,height=900,resizable=yes,scrollbars=no');
-  if(!tv){alert('El navegador bloqueó la ventana de pantalla gigante. Permití ventanas emergentes para Drift Masters.');return}
-  btn.classList.add('is-on');
+  // Fullscreen solicitado directamente desde el clic real del usuario.
+  if(surface.classList.contains('dm-open')){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});closeTV();return}
+  surface.classList.add('dm-open');btn.classList.add('is-on');
+  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=4',location.href).href);
+  tv=frame.contentWindow;
+  const promise=surface.requestFullscreen?.();
+  if(promise&&typeof promise.catch==='function')promise.catch(()=>{ /* Aun sin permiso, la vista cubre toda la ventana */ });
   publish();
  };
- window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='DM_TV_READY'&&tv&&!tv.closed)publish()});
+ document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&surface.classList.contains('dm-open'))closeTV()});
+
+ window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='DM_TV_READY'&&tv)publish()});
  setInterval(publish,100);
 })();
 </script>
