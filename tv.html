@@ -191,6 +191,8 @@ function dmUpdateIntro(phase,s,images){
  dmIntroPhase=phase;
 }
 function render(s){if(!s||s.type!=='DM_TV_STATE')return;
+ if(s.photoFinish&&s.photoFinish.id!==window.dmPhotoFinishLastId){window.dmPhotoFinishLastId=s.photoFinish.id;window.dmPhotoFinishPlay?.(s.photoFinish)}
+ if((s.phase==='reposo'||s.phase==='posicionamiento'||s.phase==='cuenta')&&window.dmPhotoFinishLastId){window.dmPhotoFinishReset?.();window.dmPhotoFinishLastId=null}
  last=Date.now();raceClock=s.raceClock||{running:false,startEpoch:0,blueRunning:false,redRunning:false};syncClock(s);
  const vehicle=s.vehicleType||'drift';
  const images=vehicle==='yahboom'||vehicle==='microbit'
@@ -261,4 +263,87 @@ let bc=null;try{bc=new BroadcastChannel('drift-masters-tv');bc.onmessage=e=>rend
 setInterval(()=>{if(Date.now()-last>3500)$('connection').textContent='ESPERANDO CONTROL PRINCIPAL';if(window.opener&&Date.now()-last>1500)window.opener.postMessage({type:'DM_TV_READY'},location.origin)},1500);
 
 window.opener?.postMessage({type:'DM_TV_READY'},location.origin);
+</script><style id="dm-photo-finish-styles">
+.dm-pf{position:fixed;inset:0;z-index:10002;display:flex;align-items:center;justify-content:center;background:#030814f7;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .25s}
+.dm-pf.show{opacity:1;visibility:visible}
+.dm-pf-board{position:relative;width:min(97vw,1550px);height:min(94vh,920px);padding:clamp(8px,1.7vw,23px);display:flex;flex-direction:column;gap:clamp(8px,1.3vh,15px);background:radial-gradient(ellipse at 50% 0%,#152d50 0%,#061226 60%,#040814 100%);border:1px solid #35547b;border-radius:12px;box-shadow:0 30px 80px #000c;overflow:hidden}
+.dm-pf-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #41628a;padding-bottom:9px}
+.dm-pf-brand{font:italic 1000 clamp(20px,3.5vw,47px)/1 Impact,"Arial Narrow",system-ui,sans-serif;letter-spacing:-.03em;color:#eef6ff}
+.dm-pf-brand span{color:#ffcf51}
+.dm-pf-headline{font:italic 1000 clamp(17px,3.5vw,46px)/1 Impact,"Arial Narrow",system-ui,sans-serif;color:#ffcf69;text-shadow:0 0 17px #ff832b8c;text-align:right}
+.dm-pf-track{position:relative;flex:1;min-height:0;overflow:hidden;border:1px solid #415572;border-radius:7px;background:repeating-linear-gradient(90deg,#141b26 0px,#1b2531 33px,#121924 63px)}
+.dm-pf-track:before,.dm-pf-track:after{position:absolute;content:"";left:0;right:0;height:10px;z-index:2;background:repeating-linear-gradient(90deg,#e1e3e9 0 30px,#ad293c 30px 60px);filter:brightness(.7)}
+.dm-pf-track:before{top:0}.dm-pf-track:after{bottom:0}
+.dm-pf-lane{position:relative;height:50%;overflow:hidden}
+.dm-pf-lane+.dm-pf-lane{border-top:2px dashed #acbdda2b}
+.dm-pf-lane:before{content:"";position:absolute;top:50%;left:0;right:0;height:3px;transform:translateY(-50%);opacity:.6}
+.dm-pf-blue:before{background:#0fa8ff;box-shadow:0 0 25px 9px #1278ff86}.dm-pf-red:before{background:#ff365e;box-shadow:0 0 25px 9px #ff365e86}
+.dm-pf-name{position:absolute;z-index:5;left:2.2%;top:10%;font:1000 clamp(14px,2.1vw,28px)/1.2 system-ui,sans-serif;max-width:35%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#071b36e8;padding:9px 15px;border-left:5px solid #0fa8ff;color:#d7efff}
+.dm-pf-red .dm-pf-name{background:#330e20ea;border-left-color:#ff365e;color:#ffe1e8}
+.dm-pf-car{position:absolute;left:2%;top:50%;transform:translate(-50%,-50%);width:clamp(105px,16vw,240px);max-height:91%;aspect-ratio:1;z-index:4;object-fit:contain;filter:drop-shadow(0 0 13px #147fff88)}
+.dm-pf-red .dm-pf-car{filter:drop-shadow(0 0 13px #ff365e88)}
+.dm-pf-finish{position:absolute;left:79%;top:10px;bottom:10px;width:clamp(18px,2vw,35px);z-index:3;background:repeating-conic-gradient(#f2f2f2 0 25%,#172034 0 50%) 0/32px 32px}
+.dm-pf-beam{position:absolute;left:calc(79% + clamp(8px,1vw,17px));top:10px;bottom:10px;width:3px;background:#fff;z-index:6;box-shadow:0 0 12px #fff,0 0 27px #ff365e}
+.dm-pf-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9;background:#061128e9;opacity:0;visibility:hidden;transition:opacity .2s;text-align:center}
+.dm-pf-overlay.show{opacity:1;visibility:visible}
+.dm-pf-overlay strong{font:italic 1000 clamp(38px,7vw,95px)/1 Impact,system-ui,sans-serif;color:#fff;text-shadow:0 0 36px #fb376b}
+.dm-pf-overlay span{margin-top:16px;font-weight:850;color:#ffe08b;letter-spacing:.14em}
+.dm-pf-flash{position:absolute;inset:0;z-index:10;background:white;opacity:0;pointer-events:none}
+.dm-pf-flash.on{animation:dmPfFlash .36s ease-out}
+@keyframes dmPfFlash{0%{opacity:0}25%{opacity:.95}100%{opacity:0}}
+.dm-pf-bottom{display:flex;align-items:center;justify-content:space-around;gap:14px}
+.dm-pf-time{font:1000 clamp(13px,2.4vw,33px)/1.3 system-ui,sans-serif;min-width:0;text-align:center;color:#e7f7ff;background:#071f3b;border:2px solid #238fff;border-radius:6px;padding:10px;flex:1}
+.dm-pf-time.red{border-color:#ff365e;background:#301021}
+.dm-pf-winner{text-align:center;flex:1.2;font:1000 clamp(18px,3.9vw,53px)/1.1 system-ui,sans-serif;color:#64dcff;text-shadow:0 0 18px #0d8cff}
+.dm-pf-winner small{display:block;font-size:clamp(13px,2.5vw,27px);color:#ffd564;margin-top:6px}
+@media(max-width:650px){.dm-pf-board{width:100vw;height:100dvh;border-radius:0}.dm-pf-name{font-size:12px;padding:5px}.dm-pf-car{width:clamp(90px,22vw,130px)}.dm-pf-bottom{gap:5px}.dm-pf-time{padding:6px;font-size:12px}.dm-pf-winner{font-size:22px}}
+</style><div id="dmPhotoFinish" class="dm-pf" aria-hidden="true">
+<div class="dm-pf-board"><div class="dm-pf-heading"><div class="dm-pf-brand">DRIFT <span>MASTERS</span></div><div id="dmPfHeadline" class="dm-pf-headline">FOTO FINISH</div></div>
+<div id="dmPfTrack" class="dm-pf-track"><div class="dm-pf-finish" id="dmPfFinish"></div><div class="dm-pf-beam"></div>
+<div class="dm-pf-lane dm-pf-blue"><div id="dmPfBlueName" class="dm-pf-name">AZUL</div><img id="dmPfBlueCar" class="dm-pf-car" src="./Yahboomazul.png" alt="Auto azul"></div>
+<div class="dm-pf-lane dm-pf-red"><div id="dmPfRedName" class="dm-pf-name">ROJO</div><img id="dmPfRedCar" class="dm-pf-car" src="./Yahboomrojo.png" alt="Auto rojo"></div>
+<div id="dmPfOverlay" class="dm-pf-overlay"><strong>FOTO FINISH</strong><span>VERIFICANDO RESULTADOS...</span></div><div id="dmPfFlash" class="dm-pf-flash"></div></div>
+<div class="dm-pf-bottom"><div id="dmPfBlueTime" class="dm-pf-time">--.-- s</div><div id="dmPfWinner" class="dm-pf-winner">FOTO FINISH<small>FINAL AJUSTADO</small></div><div id="dmPfRedTime" class="dm-pf-time red">--.-- s</div></div>
+</div></div><script id="dm-photo-finish-script">
+(()=>{
+const $pf=id=>document.getElementById(id),root=$pf('dmPhotoFinish'),track=$pf('dmPfTrack'),finish=$pf('dmPfFinish'),blue=$pf('dmPfBlueCar'),red=$pf('dmPfRedCar'),veil=$pf('dmPfOverlay'),flash=$pf('dmPfFlash');
+if(!root)return;
+let serial=0;
+const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+function setPositions(x,winningBlue){const delta=2;blue.style.left=(winningBlue?x:x-delta)+'%';red.style.left=(winningBlue?x-delta:x)+'%'}
+function contact(){
+const t=track.getBoundingClientRect(),f=finish.getBoundingClientRect();
+const ref=blue.getBoundingClientRect();return (f.left-t.left-ref.width/2)/t.width*100+1.2;
+}
+function spark(){flash.classList.remove('on');void flash.offsetWidth;flash.classList.add('on')}
+function reset(){serial++;veil.classList.remove('show');root.classList.remove('show');root.setAttribute('aria-hidden','true')}
+function reposition(){if(!root.classList.contains('show'))return;setPositions(contact(),root.dataset.winner==='AZUL')}
+async function play(data){
+if(!data||!Number.isFinite(Number(data.difference)))return;
+const id=++serial,winnerBlue=data.winner==='AZUL';
+root.dataset.winner=data.winner;
+const assets=(data.vehicle==='yahboom'||data.vehicle==='microbit')?['./Yahboomazul.png','./Yahboomrojo.png']:['./drift_supra_azul.png','./drift_supra_rojo.png'];
+blue.src=assets[0];red.src=assets[1];
+$pf('dmPfBlueName').textContent=data.blueName||'AZUL';$pf('dmPfRedName').textContent=data.redName||'ROJO';
+$pf('dmPfBlueTime').textContent=(data.blueName||'AZUL')+' · '+data.blueTime;
+$pf('dmPfRedTime').textContent=(data.redName||'ROJO')+' · '+data.redTime;
+$pf('dmPfWinner').innerHTML='DRIFT MASTERS<small>FINAL AJUSTADO</small>';
+$pf('dmPfHeadline').textContent='LLEGADA MUY AJUSTADA';
+root.classList.add('show');root.setAttribute('aria-hidden','false');veil.classList.remove('show');setPositions(3,winnerBlue);
+await delay(170);let start=performance.now();let target=contact();
+await new Promise(resolve=>{function frame(t){if(serial!==id)return resolve();const p=Math.min(1,(t-start)/1650);setPositions(3+(target-3)*p,winnerBlue);p<1?requestAnimationFrame(frame):resolve()}requestAnimationFrame(frame)});
+if(serial!==id)return;
+spark();veil.classList.add('show');$pf('dmPfHeadline').textContent='FOTO FINISH';await delay(1400);if(serial!==id)return;
+veil.classList.remove('show');$pf('dmPfHeadline').textContent='CÁMARA LENTA';target=contact();setPositions(target-20,winnerBlue);await delay(200);start=performance.now();
+await new Promise(resolve=>{function frame(t){if(serial!==id)return resolve();const p=Math.min(1,(t-start)/1250);setPositions(target-20+20*p,winnerBlue);p<1?requestAnimationFrame(frame):resolve()}requestAnimationFrame(frame)});
+if(serial!==id)return;
+spark();$pf('dmPfHeadline').textContent='RESULTADO OFICIAL';
+const name=winnerBlue?data.blueName:data.redName;
+$pf('dmPfWinner').textContent='GANA '+name;
+const small=document.createElement('small');small.textContent='POR '+Number(data.difference).toFixed(2)+' s';$pf('dmPfWinner').appendChild(small);
+await delay(3700);if(serial===id)reset();
+}
+window.dmPhotoFinishPlay=play;window.dmPhotoFinishReset=reset;
+window.addEventListener('resize',reposition);
+})();
 </script></body></html>
