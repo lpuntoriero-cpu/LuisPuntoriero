@@ -48,7 +48,7 @@ footer{text-align:center;flex:0 0 auto;min-height:4vh;font-size:clamp(15px,2.2vw
 #tvLive.active{display:flex}
 #tvLive:before{content:"";width:12px;height:12px;border-radius:50%;background:#ff3159;box-shadow:0 0 16px #ff3159;animation:tvLivePulse 1s ease-in-out infinite}
 @keyframes tvLivePulse{50%{opacity:.32}}
-.lane.tv-winner-flash{animation:tvWinFlash .14s steps(2,end) 5}
+.lane.tv-winner-flash{animation:none}
 .lane.blue.tv-winner-flash{--tv-flash:#00baff}.lane.red.tv-winner-flash{--tv-flash:#ff3159}
 @keyframes tvWinFlash{50%{box-shadow:0 0 60px 12px var(--tv-flash),inset 0 0 52px var(--tv-flash);border-color:white}}
 .lane.tv-launch .car{animation:tvCarLaunch .72s ease-out}
@@ -140,6 +140,14 @@ function drawLocalClocks(){
 requestAnimationFrame(drawLocalClocks);
 function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  last=Date.now();raceClock=s.raceClock||{running:false,startEpoch:0,blueRunning:false,redRunning:false};syncClock(s);
+ const vehicle=s.vehicleType||'drift';
+ const images=vehicle==='yahboom'||vehicle==='microbit'
+  ?['./Yahboomazul.png','./Yahboomrojo.png']
+  :['./drift_supra_azul.png','./drift_supra_rojo.png'];
+ ['blue','red'].forEach((lane,i)=>{
+  const img=document.querySelector('#'+lane+'Lane img.car');
+  if(img&&img.getAttribute('src')!==images[i])img.setAttribute('src',images[i]);
+ });
  if(Array.isArray(s.signal)&&s.signal.length===8)tvSignalState=s.signal;
  // El estado se basa en eventos: no depender del refresco de la ventana principal.
  const phase=s.phase||'reposo';
@@ -151,7 +159,7 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  }
  // Capturar ganador desde GANA incluso cuando el cronómetro principal se detiene.
  const winner=s.winnerFirst==='AZUL'?'blue':s.winnerFirst==='ROJO'?'red':s.blue?.win?'blue':s.red?.win?'red':'';
- if(winner&&!tvWinner){tvWinner=winner;tvWinnerAt=Date.now();tvFlashLane(winner,'winner')}
+ if(winner&&!tvWinner){tvWinner=winner;tvWinnerAt=Date.now()}
  if(phase==='reposo'||phase==='posicionamiento'||phase==='cuenta'){
   tvGoEpoch=0;tvWinner='';tvWinnerAt=0;
  }
