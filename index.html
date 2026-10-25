@@ -886,6 +886,21 @@ header #connectBtn.dm-bt-action.dm-connected:hover:not(:disabled){background:lin
 @media(prefers-reduced-motion:reduce){.dm-brand *{animation:none!important}.dm-brand-speed{display:none}}
 @media(max-width:600px){.dm-brand{padding:7px 3px 3px}.dm-brand .logo{column-gap:.15em}.dm-brand .subtitle{letter-spacing:.09em}}
 </style>
+<style id="dm-bluetooth-v2">
+header .dm-bt-label{font-size:10px;color:#9db8d4}
+header .dm-bt-symbol{position:relative}
+header .btstatus:not(.dm-connected) .dm-bt-symbol::after{content:"";position:absolute;inset:-3px;border-radius:12px;border:1px solid #67baff;opacity:0;animation:dmBtRing 3.1s ease-out infinite}
+@keyframes dmBtRing{0%{transform:scale(.9);opacity:.5}100%{transform:scale(1.34);opacity:0}}
+header .btstatus .dot:not(.on){background:#ff4a68;box-shadow:0 0 0 3px #ff4a6820,0 0 9px #ff4a6870}
+header .btstatus.dm-connected .dm-bt-symbol{box-shadow:0 0 0 1px #2ff3a655,0 0 14px #2ff3a633}
+header #connectBtn.dm-bt-action:not(.dm-connected){animation:dmBtGlow 3.8s ease-in-out infinite}
+@keyframes dmBtGlow{50%{box-shadow:inset 0 1px 0 #ffffff28,0 6px 22px #0a8bff70}}
+header #connectBtn.dm-bt-action:not(.dm-connected)::before{content:"ᛒ";margin-right:.55em;font-size:1.25em;vertical-align:-1px}
+header #connectBtn.dm-bt-action.dm-connected{min-width:0;background:transparent;box-shadow:none;color:#b9cde3}
+header #connectBtn.dm-bt-action.dm-connected:hover:not(:disabled){background:#3a1220;border-color:#ff5b78;color:#ffd9e0}
+@media(max-width:600px){header .btstatus{flex:1}header #connectBtn.dm-bt-action{flex:0 0 auto}}
+@media(prefers-reduced-motion:reduce){header .btstatus .dm-bt-symbol::after,header #connectBtn.dm-bt-action{animation:none!important}}
+</style>
 </head>
 
 <body>
@@ -3307,7 +3322,7 @@ renderRaceMode();dmTourRender();
   // Fullscreen solicitado directamente desde el clic real del usuario.
   if(surface.classList.contains('dm-open')){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});closeTV();return}
   surface.classList.add('dm-open');btn.classList.add('is-on');
-  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=43',location.href).href);
+  frame.setAttribute('src',new URL('./tv.html?v=44',location.href).href);
   tv=frame.contentWindow;
   const promise=surface.requestFullscreen?.();
   if(promise&&typeof promise.catch==='function')promise.catch(()=>{ /* Aun sin permiso, la vista cubre toda la ventana */ });
