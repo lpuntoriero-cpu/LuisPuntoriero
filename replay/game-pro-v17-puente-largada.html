@@ -570,29 +570,42 @@ for(let z=gz0;z<gz1-2;z+=13){
 }
 for(const z of [gz0,gz1])gantryBeam(new THREE.Vector3(gx,gy-8,z),new THREE.Vector3(gx,gy,z),1.2);
 function gantryOLEDTexture(){
- const c=document.createElement('canvas');c.width=512;c.height=160;
- const q=c.getContext('2d');q.fillStyle='#020915';q.fillRect(0,0,c.width,c.height);
- q.shadowBlur=14;q.shadowColor='#00ceff';q.textAlign='center';
- q.fillStyle='#80eeff';q.font='bold 67px Arial';q.fillText('DRIFT',256,73);
- q.fillText('MASTERS',256,137);
- const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+ const c=document.createElement('canvas');c.width=512;c.height=256;
+ const q=c.getContext('2d');q.fillStyle='#01050e';q.fillRect(0,0,512,256);
+ q.textAlign='center';q.textBaseline='middle';q.shadowColor='#00bfff';q.shadowBlur=5;
+ q.fillStyle='#8befff';q.font='bold 84px Arial';q.fillText('DRIFT',256,88);
+ q.fillText('MASTERS',256,176);
+ const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;return texture;
 }
-// El OLED es doble faz: visible desde las trompas independientemente del sentido inicial.
-const oled=new THREE.Mesh(new THREE.PlaneGeometry(37,15),new THREE.MeshBasicMaterial({map:gantryOLEDTexture(),side:THREE.DoubleSide,toneMapped:false}));
-oled.position.set(gx,gy-5,(gz0+gz1)/2);oled.rotation.y=Math.PI/2;startGantry.add(oled);
+// Pantalla más amplia, adelantada hacia las trompas y delante de los refuerzos.
+const oledTexture=gantryOLEDTexture();
+const oledMaterial=new THREE.MeshBasicMaterial({map:oledTexture,side:THREE.FrontSide,toneMapped:false,depthTest:false});
+for(const side of [-1,1]){
+ const oled=new THREE.Mesh(new THREE.PlaneGeometry(48,22),oledMaterial);
+ oled.position.set(gx+side*16,gy-6,(gz0+gz1)/2);
+ oled.rotation.y=side*Math.PI/2;
+ oled.renderOrder=80;startGantry.add(oled);
+}
 // Cada carril tiene EXACTAMENTE ocho LEDs. Las caras miran hacia el avance de los autos.
-const gantryLEDColors=[0x16ff55,0x00eaff,0x17a8ff,0x3976ff,0xc638ff,0xff42bc,0xff4646,0xffdd33];
 const gantryLEDs=[];
 for(let lane=0;lane<2;lane++){
  const from=lane===0?gz0+8:(gz0+gz1)/2+20;
  const to=lane===0?(gz0+gz1)/2-20:gz1-8;
  for(let i=0;i<8;i++){
-  const led=new THREE.Mesh(new THREE.SphereGeometry(2.7,12,8),new THREE.MeshBasicMaterial({color:gantryLEDColors[i],toneMapped:false}));
+  const material=new THREE.MeshBasicMaterial({color:0xff1224,toneMapped:false});
+  const led=new THREE.Mesh(new THREE.SphereGeometry(2.7,12,8),material);
   led.position.set(gx+9,gy-5,from+(to-from)*(i+.5)/8);
   startGantry.add(led);gantryLEDs.push(led);
  }
 }
-
+let gantryCountdownStart=null,gantryGreen=false,gantryRemaining=8;
+function setGantryLeds(remaining,green=false){
+ gantryRemaining=remaining;gantryGreen=green;
+ for(let lane=0;lane<2;lane++)for(let i=0;i<8;i++){
+  gantryLEDs[lane*8+i].material.color.setHex(green?0x19ff3b:(i<remaining?0xff1224:0x27060a));
+ }
+}
+setGantryLeds(8,false);
 // Línea de largada/meta horizontal a ambos carriles.
 for(let col=0;col<12;col++)for(let row=0;row<2;row++){const m=new THREE.Mesh(new THREE.PlaneGeometry(4.4,4.4),((row+col)%2===0?white:concrete));m.rotation.x=-Math.PI/2;m.position.set(560+row*4.4,2.24,-452-col*8.2);m.renderOrder=9;m.material.side=THREE.DoubleSide;scene.add(m)}
 // Modelos deportivos proporcionados al tamaño original; sin cambiar velocidades.
@@ -1234,8 +1247,16 @@ function cameras(dt){
 function frame(now){
  requestAnimationFrame(frame);
  const dt=Math.min(.05,(now-previous)/1000);previous=now;
- if(playing)elapsed+=dt*speed;
- update();cameras(dt);
+ if(gantryCountdownStart!==null){
+  const seconds=(now-gantryCountdownStart)/1000;
+  if(seconds>=8){
+   gantryCountdownStart=null;setGantryLeds(0,true);
+   playing=true;elapsed=0;
+  }else setGantryLeds(8-Math.floor(Math.max(0,seconds)),false);
+ }else if(playing)elapsed+=dt*speed;
+ update();
+ if(gantryCountdownStart!==null)$('play').textContent='■ Cancelar cuenta · '+gantryRemaining;
+ cameras(dt);
  if(postFXReady&&composer&&qualityMode!=='normal'){
   try{composer.render(dt);}catch(err){
    console.warn('Render fallback',err);postFXReady=false;
@@ -1252,10 +1273,15 @@ $('quality').onchange=e=>{
  qualityMode=e.target.value;
  applyQuality();
 };
-$('play').onclick=()=>{if(elapsed>=maxTime)elapsed=0;playing=!playing};
-$('restart').onclick=()=>{elapsed=0;playing=false;update()};
+$('play').onclick=()=>{
+ if(gantryCountdownStart!==null){gantryCountdownStart=null;playing=false;setGantryLeds(8,false);update();return;}
+ if(elapsed>=maxTime)elapsed=0;
+ if(!playing&&elapsed===0){gantryCountdownStart=performance.now();setGantryLeds(8,false);playing=false;return;}
+ playing=!playing;
+};
+$('restart').onclick=()=>{elapsed=0;playing=false;gantryCountdownStart=null;setGantryLeds(8,false);update()};
 $('speed').onchange=e=>speed=Number(e.target.value);
-$('scrub').oninput=e=>{elapsed=Number(e.target.value)/1000*maxTime;playing=false;update()};
+$('scrub').oninput=e=>{gantryCountdownStart=null;elapsed=Number(e.target.value)/1000*maxTime;playing=false;setGantryLeds(8,false);update()};
 for(const id of ['b1','bt','r1','rt'])$(id).onchange=()=>{elapsed=0;playing=false;update()};
 function changeCamera(mode){
  cameraMode=mode;
