@@ -64,52 +64,53 @@ function ribbon(path,width,raise=0){const verts=[],uv=[],idx=[];const N=path.poi
 // Detectar pianos coincidentes en los dos recorridos, conservando solo el primero.
 // Un solo piano por borde visible: eliminar trazos de la pista que quedan
 // dentro del asfalto del otro recorrido, siempre a la misma altura.
-// PIANOS v2: cada recorrido tiene dos bordes conceptuales independientes.
-// Las únicas omisiones son tramos compartidos declarados explícitamente.
-// No se realizan borrados por proximidad de otros carriles.
-const CURB_WIDTH=5.25, ROAD_HALF=55.5/2;
-// Compartición explícita por índices de los TRAMOS rectos inicial y final.
-// Evita que una tolerancia de coordenadas deje dibujados dos pianos en el centro.
-function isSharedCurb(name,side,i,path){
- const lastSegment=path.points.length-2;
- const firstStraight=i<24;                 // x=560 a x=280
- const returnStraight=i>=lastSegment-23;   // x=850 a x=560
- // Mantener ambos bordes del túnel: su piano interior es el compartido.
- // Quitar exclusivamente el piano interior duplicado del puente.
- if(firstStraight) return name==='bridge'&&side===1;
- if(returnStraight) return name==='bridge'&&side===-1;
- return false;
+function distanceToOtherRoad(x,y,z,other){
+ let nearest=Infinity;
+ const pts=other.points;
+ for(let k=0;k<pts.length-1;k+=2){
+  const a=pts[k],b=pts[Math.min(k+2,pts.length-1)];
+  const dx=b[0]-a[0],dy=b[1]-a[1],len=dx*dx+dy*dy;
+  const u=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/(len||1)));
+  const ix=a[0]+u*dx,iy=a[1]+u*dy,iz=(a[2]+u*(b[2]-a[2]))*.38;
+  if(Math.abs(iz-z)>3.2)continue;
+  nearest=Math.min(nearest,Math.hypot(x-ix,y-iy));
+ }
+ return nearest;
 }
-function paintCurbQuad(a,b,c,d,mat){
- const g=new THREE.BufferGeometry();
- g.setAttribute('position',new THREE.Float32BufferAttribute([...a.toArray(),...b.toArray(),...c.toArray(),...d.toArray()],3));
- g.setIndex([0,2,1,1,2,3]);g.computeVertexNormals();
- const mesh=new THREE.Mesh(g,mat);mesh.receiveShadow=true;
- mesh.castShadow=false;mesh.renderOrder=4;scene.add(mesh);
-}
-function strip(path,name){
- const road=new THREE.Mesh(ribbon(path,55.5,name==='bridge'?1.19:1.15),roadmat);
+function strip(path){
+ const road=new THREE.Mesh(ribbon(path,55.5,path===paths.bridge?1.19:1.15),roadmat);
  road.receiveShadow=true;road.castShadow=false;road.renderOrder=2;scene.add(road);
- for(const side of [-1,1]){
-  for(let i=0;i<path.points.length-1;i++){
-   const j=i+1,a=path.points[i],b=path.points[j];
-   if(isSharedCurb(name,side,i,path))continue;
-   // Piano exterior superior: renderizarlo por encima de ambos asfaltos
-   // en la recta inicial (puente) y en la recta final (túnel).
-   const topOuter=(side===-1&&((name==='bridge'&&i<24)||(name==='tunnel'&&i>=path.points.length-25)));
-   const curbElevation=topOuter?2.45:1.50;
-   const mat=Math.floor(path.distances[i]/24)%2===0?red:white;
-   // Piezas adyacentes comparten exactamente sus vértices: sin huecos de 5 puntos.
-   paintCurbQuad(
-     edge(path,i,side*ROAD_HALF,curbElevation),edge(path,i,side*(ROAD_HALF+CURB_WIDTH),curbElevation),
-     edge(path,j,side*ROAD_HALF,curbElevation),edge(path,j,side*(ROAD_HALF+CURB_WIDTH),curbElevation),mat
-   );
+ const other=path===paths.bridge?paths.tunnel:paths.bridge;
+ for(let i=0;i<path.points.length-5;i+=5){
+  const j=Math.min(i+5,path.points.length-1);
+  const mat=(Math.floor(path.distances[i]/24)%2===0?red:white);
+  for(const side of[-1,1]){
+   const v=[edge(path,i,side*27.75,1.4),edge(path,i,side*33,1.4),edge(path,j,side*27.75,1.4),edge(path,j,side*33,1.4)];
+   const pa=path.points[i],pb=path.points[j],mx=(pa[0]+pb[0])/2,my=(pa[1]+pb[1])/2;
+   // Los dos carriles de la recta comparten un único piano dibujado aparte.
+   const parallel=(mx>=280&&mx<=850&&((Math.abs(my-475)<4&&side===1)||(Math.abs(my-525)<4&&side===-1))&&pa[2]<1&&pb[2]<1);
+   if(parallel)continue;
+   // Si el piano cae sobre la superficie del otro carril, no es un borde exterior.
+   // Comprobar varios puntos evita falsos cortes por un solo tramo de la curva.
+   const sample=v[0].clone().add(v[1]).add(v[2]).add(v[3]).multiplyScalar(.25);
+   const d=distanceToOtherRoad(sample.x,-sample.z,sample.y-1.4,other);
+   if(d<23)continue;
+   const g=new THREE.BufferGeometry();
+   g.setAttribute('position',new THREE.Float32BufferAttribute([...v[0].toArray(),...v[1].toArray(),...v[2].toArray(),...v[3].toArray()],3));
+   g.setIndex([0,2,1,1,2,3]);g.computeVertexNormals();
+   const m=new THREE.Mesh(g,mat);m.material.side=THREE.DoubleSide;
+   m.receiveShadow=true;m.castShadow=false;m.renderOrder=3;scene.add(m);
   }
  }
 }
-strip(paths.tunnel,'tunnel');strip(paths.bridge,'bridge');
-// El borde interior del túnel hace de piano central compartido.
-// No se dibuja una segunda pieza rectangular encima.
+strip(paths.tunnel);strip(paths.bridge);
+// Línea divisoria única, continua, sin tramos de los pianos anteriores.
+for(let x=280,k=0;x<850;x+=24,k++){
+ const length=Math.min(24,850-x);
+ const segment=new THREE.Mesh(new THREE.BoxGeometry(length,.22,5.25),k%2===0?red:white);
+ segment.position.set(x+length/2,1.53,-500);
+ segment.receiveShadow=true;segment.castShadow=false;segment.renderOrder=4;scene.add(segment);
+}
 // Pilar y barandas: solamente en el tramo elevado, dejando el túnel libre.
 const elevated=paths.bridge.points.map((p,i)=>({p,i})).filter(x=>x.p[2]>25);
 // Tablero continuo debajo del asfalto: superficie superior a +1.15, soporte a -3.2.
