@@ -875,47 +875,13 @@ function addContactShadow(car){
  car.add(shadow);
 }
 const cars=[carModel(0),carModel(1)];cars.forEach(c=>scene.add(c));
-// Luces 3D verdaderas: geometría visible desde todos los ángulos, fuera de la carrocería.
-let brakeTest=false;
-const brakeFX=cars.map(car=>{
- const lens=new THREE.MeshBasicMaterial({color:0x9d0012,toneMapped:false,depthTest:false});
- const lit=new THREE.MeshBasicMaterial({color:0xff081c,toneMapped:false,depthTest:false});
- const offHalo=new THREE.MeshBasicMaterial({color:0xff0a20,transparent:true,opacity:0,depthWrite:false,depthTest:false,blending:THREE.AdditiveBlending,toneMapped:false});
- const nodes=[],lamps=[],halos=[];
- for(const side of [-1,1]){
-  // La trompa del coche apunta al +Z: la parte trasera está en -Z.
-  const lamp=new THREE.Mesh(new THREE.SphereGeometry(1.65,16,10),lens);
-  lamp.scale.set(.95,.34,.22);lamp.position.set(side*3.55,7.15,-16.55);
-  lamp.renderOrder=100;car.add(lamp);nodes.push(lamp);lamps.push(lamp);
-  const glow=new THREE.Mesh(new THREE.SphereGeometry(2.35,16,10),offHalo);
-  glow.scale.set(1.15,.42,.16);glow.position.set(side*3.55,7.12,-16.95);
-  glow.renderOrder=101;car.add(glow);nodes.push(glow);halos.push(glow);
- }
- return {lens,lit,offHalo,nodes,lamps,halos};
-});
-const brakeTestButton=document.createElement('button');
-brakeTestButton.id='brakeTest';brakeTestButton.textContent='🔴 Probar frenos';
-brakeTestButton.title='Encender y apagar las luces de freno para comprobar su posición';
-document.querySelector('.controls').appendChild(brakeTestButton);
-brakeTestButton.onclick=()=>{brakeTest=!brakeTest;brakeTestButton.classList.toggle('active',brakeTest);brakeTestButton.textContent=brakeTest?'🔴 Frenos encendidos':'🔴 Probar frenos';update();};
-// Marcadores de giro visibles para llantas del GLB; no se modifican
-// mallas originales porque vienen sin pivotes ni nombres de rueda fiables.
-function updateDrivingFX(id,d,T){
- const start=d.lap?T[id][0]:0,end=T[id][d.lap],t=Math.min(end,elapsed);
- const before=Math.max(start,t-.32),after=Math.min(end,t+.12);
- const current=(d.dist-sample(id,before,T).dist)/Math.max(.02,t-before);
- const next=(sample(id,after,T).dist-d.dist)/Math.max(.02,after-t);
- const braking=brakeTest||(t>start+.06&&t<end-.04&&next<current*.99);
- const fx=brakeFX[id];
- fx.lens.color.setHex(braking?0xff0010:0x880011);
- fx.offHalo.opacity=braking?.95:0;
- for(const lamp of fx.lamps)lamp.scale.set(.95,braking?.41:.34,.22);
-}
+// Se eliminaron los efectos y controles de freno añadidos.
+const proceduralParts=cars.map(car=>car.children.slice());
 // Importador local no destructivo. Los modelos originales permanecen en memoria y se
 // restauran automáticamente si falla el GLB o su dependencia de carga.
-const proceduralParts=cars.map((car,id)=>car.children.filter(node=>!brakeFX[id].nodes.includes(node)));
+
 const importedParts=[null,null];
-let importedOrientation=0; // Este GLB ya entra invertido: 0 corrige el 180 anterior
+let importedOrientation=Math.PI; // Supra GLB girado 180° por defecto
 const setModelStatus=msg=>{$('modelStatus').textContent=msg;};
 function showAutoStatus(message,retry=false){$('autoModelStatus').hidden=false;$('autoModelLabel').textContent=message;$('retrySupra').hidden=!retry;}
 $('toggleModel').onclick=()=>{
@@ -927,7 +893,7 @@ function resetImportedModels(){
   if(importedParts[id]){cars[id].remove(importedParts[id]);importedParts[id]=null;}
   for(const node of proceduralParts[id])node.visible=true;
  }
- importedOrientation=0;
+ importedOrientation=Math.PI;
  $('modelFile').value='';
  setModelStatus('Restaurados los dos Supra procedurales de la v8.');
 }
@@ -1150,7 +1116,7 @@ function times(){const a=['b1','bt','r1','rt'].map(id=>Number($(id).value));if(a
  }
 function displayTime(t){const min=Math.floor(t/60),sec=t%60;return String(min).padStart(2,'0')+':'+sec.toFixed(3).padStart(6,'0')}
 function update(){const T=times();if(!T){$('notice').hidden=false;$('notice').textContent='Ingresá tiempos válidos: el total debe superar a la vuelta 1 de cada auto.';playing=false;return}$('notice').hidden=true;maxTime=Math.max(T[0][1],T[1][1]);elapsed=Math.min(elapsed,maxTime);
-const data=[sample(0,elapsed,T),sample(1,elapsed,T)];data.forEach((d,i)=>{setCar(i,d);updateDrivingFX(i,d,T);});
+const data=[sample(0,elapsed,T),sample(1,elapsed,T)];data.forEach((d,i)=>setCar(i,d));
 $('timer').textContent=displayTime(elapsed);$('lap').textContent=(Math.min(2,1+Math.floor(Math.min(data[0].lap,data[1].lap))))+' / 2';
 $('gap').textContent=Math.abs(T[0][1]-T[1][1]).toFixed(3)+' s';
 for(let i=0;i<2;i++){$(i?'redLap':'blueLap').textContent='Vuelta '+(data[i].lap+1);$(i?'redTime':'blueTime').textContent=elapsed>=T[i][1]?T[i][1].toFixed(3)+' s · META':(elapsed>=T[i][0]? 'V1 '+T[i][0].toFixed(3)+' s':'EN PISTA')}
