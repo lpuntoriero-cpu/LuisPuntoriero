@@ -607,6 +607,38 @@ function setGantryLeds(remaining,green=false){
  }
 }
 setGantryLeds(8,false);
+// OLED dinámico y celebración disparada por el PRIMER auto que termina.
+let gantryWinner=null,gantryCelebrationAt=null;
+function gantryWriteOLED(message){
+ const canvas=oledTexture.image,ctx=canvas.getContext('2d');
+ ctx.clearRect(0,0,512,256);ctx.fillStyle='#01050e';ctx.fillRect(0,0,512,256);
+ ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#8befff';
+ ctx.shadowColor='#00bfff';ctx.shadowBlur=5;
+ if(!message){ctx.font='bold 84px Arial';ctx.fillText('DRIFT',256,88);ctx.fillText('MASTERS',256,176);}
+ else {ctx.fillStyle=message==='GANÓ AZUL'?'#42c4ff':message==='GANÓ ROJO'?'#ff5570':'#ffdb75';ctx.font='bold 69px Arial';ctx.fillText(message,256,130,480);}
+ oledTexture.needsUpdate=true;
+}
+function gantryResetCelebration(){
+ gantryWinner=null;gantryCelebrationAt=null;gantryWriteOLED(null);
+}
+function gantryCheckWinner(T){
+ if(gantryWinner!==null||gantryCountdownStart!==null)return;
+ const first=Math.min(T[0][1],T[1][1]);
+ if(elapsed+1e-5<first)return;
+ gantryWinner=T[0][1]===T[1][1]?'EMPATE':T[0][1]<T[1][1]?'GANÓ AZUL':'GANÓ ROJO';
+ gantryCelebrationAt=performance.now();gantryWriteOLED(gantryWinner);
+}
+function gantryFireworks(now){
+ if(gantryCelebrationAt===null)return;
+ const seconds=(now-gantryCelebrationAt)/1000;
+ // Destellos y ondas multicolor sobre los 16 LED durante la celebración.
+ for(let i=0;i<16;i++){
+  const wave=Math.sin(seconds*15-i*.91),burst=Math.sin(seconds*7+i*2.4);
+  const hue=((seconds*.23+i*.085+Math.floor(seconds*2)*.11)%1+1)%1;
+  gantryLEDs[i].visible=wave>-.58||burst>.55;
+  gantryLEDs[i].material.color.setHSL(hue,1,.5+.18*Math.max(0,burst));
+ }
+}
 // Línea de largada/meta horizontal a ambos carriles.
 for(let col=0;col<12;col++)for(let row=0;row<2;row++){const m=new THREE.Mesh(new THREE.PlaneGeometry(4.4,4.4),((row+col)%2===0?white:concrete));m.rotation.x=-Math.PI/2;m.position.set(560+row*4.4,2.24,-452-col*8.2);m.renderOrder=9;m.material.side=THREE.DoubleSide;scene.add(m)}
 // Modelos deportivos proporcionados al tamaño original; sin cambiar velocidades.
@@ -1194,6 +1226,7 @@ function times(){const a=['b1','bt','r1','rt'].map(id=>Number($(id).value));if(a
 function displayTime(t){const min=Math.floor(t/60),sec=t%60;return String(min).padStart(2,'0')+':'+sec.toFixed(3).padStart(6,'0')}
 function update(){const T=times();if(!T){$('notice').hidden=false;$('notice').textContent='Ingresá tiempos válidos: el total debe superar a la vuelta 1 de cada auto.';playing=false;return}$('notice').hidden=true;maxTime=Math.max(T[0][1],T[1][1]);elapsed=Math.min(elapsed,maxTime);
 const data=[sample(0,elapsed,T),sample(1,elapsed,T)];data.forEach((d,i)=>setCar(i,d));
+gantryCheckWinner(T);
 $('timer').textContent=displayTime(elapsed);$('lap').textContent=(Math.min(2,1+Math.floor(Math.min(data[0].lap,data[1].lap))))+' / 2';
 $('gap').textContent=Math.abs(T[0][1]-T[1][1]).toFixed(3)+' s';
 for(let i=0;i<2;i++){$(i?'redLap':'blueLap').textContent='Vuelta '+(data[i].lap+1);$(i?'redTime':'blueTime').textContent=elapsed>=T[i][1]?T[i][1].toFixed(3)+' s · META':(elapsed>=T[i][0]? 'V1 '+T[i][0].toFixed(3)+' s':'EN PISTA')}
@@ -1256,6 +1289,7 @@ function frame(now){
   }else setGantryLeds(8-Math.floor(Math.max(0,seconds)),false);
  }else if(playing)elapsed+=dt*speed;
  update();
+ gantryFireworks(now);
  if(gantryCountdownStart!==null){$('play').textContent='■ Cancelar cuenta · '+gantryRemaining;$('gantryStart').textContent='🚦 '+gantryRemaining+' LED rojos';}
   else $('gantryStart').textContent=gantryGreen?'🟢 ¡LARGADA!':'🚦 Iniciar cuenta regresiva';
  cameras(dt);
@@ -1276,7 +1310,7 @@ $('quality').onchange=e=>{
  applyQuality();
 };
 function beginGantryCountdown(){
- elapsed=0;playing=false;gantryGreen=false;
+ elapsed=0;playing=false;gantryGreen=false;gantryResetCelebration();
  gantryCountdownStart=performance.now();setGantryLeds(8,false);
  update();
 }
@@ -1287,10 +1321,10 @@ $('play').onclick=()=>{
  if(!playing&&elapsed===0){beginGantryCountdown();return;}
  playing=!playing;
 };
-$('restart').onclick=()=>{elapsed=0;playing=false;gantryCountdownStart=null;setGantryLeds(8,false);update()};
+$('restart').onclick=()=>{elapsed=0;playing=false;gantryCountdownStart=null;gantryResetCelebration();setGantryLeds(8,false);update()};
 $('speed').onchange=e=>speed=Number(e.target.value);
-$('scrub').oninput=e=>{gantryCountdownStart=null;elapsed=Number(e.target.value)/1000*maxTime;playing=false;setGantryLeds(8,false);update()};
-for(const id of ['b1','bt','r1','rt'])$(id).onchange=()=>{gantryCountdownStart=null;elapsed=0;playing=false;setGantryLeds(8,false);update()};
+$('scrub').oninput=e=>{gantryCountdownStart=null;gantryResetCelebration();elapsed=Number(e.target.value)/1000*maxTime;playing=false;setGantryLeds(8,false);update()};
+for(const id of ['b1','bt','r1','rt'])$(id).onchange=()=>{gantryCountdownStart=null;gantryResetCelebration();elapsed=0;playing=false;setGantryLeds(8,false);update()};
 function changeCamera(mode){
  cameraMode=mode;
  document.querySelectorAll('[data-camera]').forEach(x=>x.classList.toggle('active',x.dataset.camera===mode));
