@@ -97,8 +97,13 @@ function strip(path){
    // En la salida izquierda de la recta, la curva del piano interior
    // queda parcialmente dentro del ancho del otro carril. No recortar
    // esa curva por proximidad: hacerlo provoca huecos visibles.
-   const leftExitInner=path===paths.bridge&&side===1&&mx>=125&&mx<=325&&my>=410&&my<=535;
-   if(d<23&&!leftExitInner)continue;
+   // Empalme izquierdo: conservar el borde interior del túnel completo en la curva.
+// Antes se protegía el lado equivocado (puente); quedaba un hueco antes de la recta.
+   const leftInnerTunnel=path===paths.tunnel&&side===-1&&mx>=90&&mx<=345&&my>=425&&my<=545;
+   // Suprimir únicamente el borde interno contrario si coincide en esa misma zona.
+   const leftInnerBridge=path===paths.bridge&&side===1&&mx>=90&&mx<=345&&my>=425&&my<=545;
+   if(leftInnerBridge&&d<35)continue;
+   if(d<23&&!leftInnerTunnel)continue;
    const g=new THREE.BufferGeometry();
    g.setAttribute('position',new THREE.Float32BufferAttribute([...v[0].toArray(),...v[1].toArray(),...v[2].toArray(),...v[3].toArray()],3));
    g.setIndex([0,2,1,1,2,3]);g.computeVertexNormals();
