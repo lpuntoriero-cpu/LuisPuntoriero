@@ -470,12 +470,14 @@ for(const [x,z,rot] of [[350,-16,0],[835,-585,Math.PI]]){
  }
 }
 let nightMode=false;
+// SetNight corre antes de construir los autos; la sombra se añade más adelante.
+let contactShadowMaterial=null;
 function setNight(on){
  nightMode=on;
  scene.background.set(on?0x030913:0x0b1621);
  scene.fog.color.set(on?0x030913:0x0b1621);
  hemi.intensity=on?.58:1.8;sun.intensity=on?.28:2.9;fill.intensity=on?.42:.85;
- contactShadowMaterial.opacity=on?.20:.37;
+ if(contactShadowMaterial)contactShadowMaterial.opacity=on?.20:.37;
  renderer.toneMappingExposure=on?1.72:1.49;
  for(const light of lamps)light.intensity=on?3200:0;
  $('mode').textContent=on?'☀ Día':'☾ Noche';
@@ -580,7 +582,7 @@ function contactShadowMap(){
  t.minFilter=THREE.LinearFilter;t.magFilter=THREE.LinearFilter;
  return t;
 }
-const contactShadowMaterial=new THREE.MeshBasicMaterial({
+contactShadowMaterial=new THREE.MeshBasicMaterial({
  map:contactShadowMap(),transparent:true,opacity:.37,depthWrite:false,
  depthTest:true,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-6,
  side:THREE.DoubleSide,toneMapped:false
