@@ -341,14 +341,69 @@ $('mode').onclick=()=>setNight(!nightMode);
 setNight(false);
 // Línea de largada/meta horizontal a ambos carriles.
 for(let col=0;col<12;col++)for(let row=0;row<2;row++){const m=new THREE.Mesh(new THREE.PlaneGeometry(4.4,4.4),((row+col)%2===0?white:concrete));m.rotation.x=-Math.PI/2;m.position.set(560+row*4.4,1.05,-452-col*8.2);scene.add(m)}
-function carModel(id){const root=new THREE.Group();const paint=new THREE.MeshPhysicalMaterial({color:id===0?0x0789f9:0xed2146,metalness:.42,roughness:.23,clearcoat:1,clearcoatRoughness:.13});const dark=new THREE.MeshStandardMaterial({color:0x111c2d,metalness:.3,roughness:.23});const lights=new THREE.MeshBasicMaterial({color:0xfff9df});const tail=new THREE.MeshBasicMaterial({color:0xff344e});
-const add=(g,m,x,y,z)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;root.add(o);return o};
-add(new THREE.BoxGeometry(17,5,30),paint,0,5,0);
-add(new THREE.BoxGeometry(14,5,13),dark,0,10,-1.5);
-add(new THREE.BoxGeometry(15,1,5),paint,0,8,12);
-add(new THREE.BoxGeometry(17,1,3),dark,0,10,-13);
-for(const sx of[-1,1]){for(const sz of[-9,10]){const tire=add(new THREE.CylinderGeometry(4,4,3.3,16),dark,sx*9,4,sz);tire.rotation.z=Math.PI/2;const hub=add(new THREE.CylinderGeometry(2.1,2.1,3.6,12),silver,sx*9,4,sz);hub.rotation.z=Math.PI/2}add(new THREE.BoxGeometry(3,.9,1),lights,sx*5,6,15.2);add(new THREE.BoxGeometry(3,.9,1),tail,sx*5,6,-15.2)}
-return root}
+// Modelos deportivos proporcionados al tamaño original; sin cambiar velocidades.
+function carNumberTexture(id){
+ const c=document.createElement('canvas');c.width=256;c.height=128;
+ const q=c.getContext('2d');
+ q.fillStyle='#091626';q.fillRect(0,0,256,128);
+ q.fillStyle=id?'#ff5e78':'#49c7ff';q.fillRect(4,4,248,120);
+ q.fillStyle='#071320';q.font='bold 86px Arial';q.textAlign='center';
+ q.fillText(id?'02':'01',128,94);
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+function carModel(id){
+ const root=new THREE.Group();
+ const paint=new THREE.MeshPhysicalMaterial({color:id===0?0x058efc:0xf4214c,metalness:.37,roughness:.22,clearcoat:1,clearcoatRoughness:.12});
+ const accent=new THREE.MeshStandardMaterial({color:id===0?0x043259:0x42051a,metalness:.45,roughness:.28});
+ const windowMat=new THREE.MeshPhysicalMaterial({color:0x142b3e,metalness:.16,roughness:.09,clearcoat:1});
+ const rubber=new THREE.MeshStandardMaterial({color:0x10141a,roughness:.89});
+ const rim=new THREE.MeshStandardMaterial({color:0xbbc7d3,metalness:.92,roughness:.22});
+ const lampFront=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xe3f0ff,emissiveIntensity:1.3});
+ const lampRear=new THREE.MeshStandardMaterial({color:0xff294a,emissive:0xfe1233,emissiveIntensity:1.8});
+ const add=(geom,mat,x,y,z,parent=root)=>{
+  const o=new THREE.Mesh(geom,mat);
+  o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;
+ };
+ // Faldones, carrocería y capó ligeramente escalonado
+ add(new THREE.BoxGeometry(17,2,30),accent,0,3.6,0);
+ add(new THREE.BoxGeometry(17.2,4.5,30),paint,0,6,0);
+ add(new THREE.BoxGeometry(15.6,1.1,10),paint,0,8.6,9.3);
+ add(new THREE.BoxGeometry(14.2,6.6,13.6),windowMat,0,11.4,-2);
+ add(new THREE.BoxGeometry(14.7,1.1,13.8),paint,0,15.1,-2);
+ // Parabrisas y luneta diferenciados
+ add(new THREE.BoxGeometry(12.5,3.5,.32),windowMat,0,11.2,5.1).rotation.x=.22;
+ add(new THREE.BoxGeometry(12.5,3.0,.32),windowMat,0,11.1,-9).rotation.x=-.25;
+ for(const side of[-1,1]){
+  const panel=add(new THREE.BoxGeometry(.28,2.7,8.5),windowMat,side*7.28,11.9,-2.1);
+  panel.rotation.z=side*.08;
+  add(new THREE.BoxGeometry(1.3,2.5,3),paint,side*8.4,9.3,4.4); // espejo
+  add(new THREE.BoxGeometry(2.6,1.4,2.4),lampFront,side*5.8,7.5,15.4);
+  add(new THREE.BoxGeometry(2.6,1.4,1.2),lampRear,side*5.8,7.6,-15.4);
+  add(new THREE.BoxGeometry(.75,1.1,23),accent,side*8.65,4.4,0);
+  for(const z of[-10.3,10.3]){
+   const wheel=add(new THREE.CylinderGeometry(4.3,4.3,3.3,24),rubber,side*9.2,4.4,z);
+   wheel.rotation.z=Math.PI/2;
+   const hub=add(new THREE.CylinderGeometry(2.8,2.8,3.6,20),rim,side*9.3,4.4,z);
+   hub.rotation.z=Math.PI/2;
+   const axle=add(new THREE.CylinderGeometry(.9,.9,3.8,12),rubber,side*9.3,4.4,z);
+   axle.rotation.z=Math.PI/2;
+   // Disco oscuro radial, no plano translúcido.
+   for(let k=0;k<5;k++){
+    const theta=k*Math.PI*2/5;
+    add(new THREE.BoxGeometry(.5,2,.75),accent,side*11.16,4.4+Math.sin(theta)*1.65,z+Math.cos(theta)*1.65);
+   }
+  }
+ }
+ // Alerón trasero con dos soportes, splitter delantero y difusor
+ for(const side of[-1,1])add(new THREE.BoxGeometry(.9,3.5,1),accent,side*5.2,11,-13.8);
+ add(new THREE.BoxGeometry(18.5,1.3,4.1),accent,0,13,-14.8);
+ add(new THREE.BoxGeometry(18.2,.7,3),accent,0,4.3,16);
+ add(new THREE.BoxGeometry(16,1,2.5),accent,0,4.3,-16);
+ // Número visible desde vista cenital
+ const number=new THREE.Mesh(new THREE.PlaneGeometry(8.5,5.2),new THREE.MeshBasicMaterial({map:carNumberTexture(id),side:THREE.DoubleSide}));
+ number.rotation.x=-Math.PI/2;number.position.set(0,15.75,-2);root.add(number);
+ return root;
+}
 const cars=[carModel(0),carModel(1)];cars.forEach(c=>scene.add(c));
 function setCar(id,d){const {lap,path,dist}=d;const p=path.at(dist),pos=new THREE.Vector3(p.x,p.z*.38+2.2,-p.y);cars[id].position.copy(pos);const pAhead=path.at(Math.min(path.length,dist+3));cars[id].rotation.y=Math.atan2(pAhead.x-p.x,-(pAhead.y-p.y))}
 let cameraMode='overview',playing=false,elapsed=0,speed=1,maxTime=15,previous=performance.now();
@@ -376,8 +431,17 @@ canvas.addEventListener('pointerup',endOrbit);canvas.addEventListener('pointerca
 canvas.addEventListener('wheel',e=>{if(cameraMode!=='overview')return;e.preventDefault();orbitRadius=clamp(orbitRadius*Math.exp(e.deltaY*.0011),150,1900)},{passive:false});
 function cameras(dt){
  camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();camera.up.set(0,1,0);
- if(cameraMode==='top'){camera.position.lerp(new THREE.Vector3(535,1250,-300),Math.min(1,dt*3));camera.lookAt(535,0,-300)}
- else if(cameraMode==='overview'){
+ if(cameraMode==='top'){camera.position.lerp(new THREE.Vector3(535,980,-300),Math.min(1,dt*3));camera.lookAt(535,0,-300)}
+ else if(cameraMode==='bridge'){
+  const target=new THREE.Vector3(555,30,-285);
+  camera.position.lerp(new THREE.Vector3(690,255,90),Math.min(1,dt*2.1));
+  camera.lookAt(target);
+ }else if(cameraMode==='cinema'){
+  const n=Math.floor(Math.max(0,elapsed)/4)%2,p=cars[n].position;
+  const theta=elapsed*.23+.5,radius=140;
+  const desired=new THREE.Vector3(p.x+Math.sin(theta)*radius,p.y+88,p.z+Math.cos(theta)*radius);
+  camera.position.lerp(desired,Math.min(1,dt*2.2));camera.lookAt(p.x,p.y+6,p.z);
+ }else if(cameraMode==='overview'){
  const sn=Math.sin(orbitPolar),desired=new THREE.Vector3(orbitTarget.x+orbitRadius*sn*Math.sin(orbitAzimuth),orbitTarget.y+orbitRadius*Math.cos(orbitPolar),orbitTarget.z+orbitRadius*sn*Math.cos(orbitAzimuth));
  camera.position.lerp(desired,Math.min(1,dt*5));camera.lookAt(orbitTarget);
  }else{
@@ -393,6 +457,22 @@ $('restart').onclick=()=>{elapsed=0;playing=false;update()};
 $('speed').onchange=e=>speed=Number(e.target.value);
 $('scrub').oninput=e=>{elapsed=Number(e.target.value)/1000*maxTime;playing=false;update()};
 for(const id of ['b1','bt','r1','rt'])$(id).onchange=()=>{elapsed=0;playing=false;update()};
-document.querySelectorAll('[data-camera]').forEach(b=>b.onclick=()=>{cameraMode=b.dataset.camera;document.querySelectorAll('[data-camera]').forEach(x=>x.classList.toggle('active',x===b))});
+function changeCamera(mode){
+ cameraMode=mode;
+ document.querySelectorAll('[data-camera]').forEach(x=>x.classList.toggle('active',x.dataset.camera===mode));
+}
+document.querySelectorAll('[data-camera]').forEach(b=>b.onclick=()=>changeCamera(b.dataset.camera));
+$('resetCam').onclick=()=>{
+ orbitRadius=690;orbitAzimuth=.58;orbitPolar=.76;orbitDragging=false;
+ orbitTarget.set(535,10,-300);changeCamera('overview');
+};
+document.addEventListener('keydown',e=>{
+ if(e.target instanceof HTMLInputElement||e.target instanceof HTMLSelectElement||e.repeat)return;
+ if(e.code==='Space'){e.preventDefault();$('play').click();}
+ const keys={'Digit1':'overview','Digit2':'top','Digit3':'blue','Digit4':'red','Digit5':'bridge','Digit6':'cinema'};
+ if(keys[e.code])changeCamera(keys[e.code]);
+ if(e.code==='KeyN')$('mode').click();
+ if(e.code==='KeyR')$('restart').click();
+});
 update();requestAnimationFrame(frame);
 </script></body></html>
