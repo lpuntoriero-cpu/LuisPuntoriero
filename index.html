@@ -1814,7 +1814,7 @@ function results(payload){
   record("DOS AUTOS",w,b,r);
   status("Resultados registrados");
   // Foto finish solo con dos llegadas validas y diferencia estrictamente menor a 20 centesimas.
-  if(b!==null&&r!==null&&Math.abs(b-r)<=1.00&&w!=="SIN GANADOR"){
+  if(b!==null&&r!==null&&Math.abs(b-r)<1.00&&w!=="SIN GANADOR"){
     const photoData={id:Date.now(),winner:w,difference:Math.abs(b-r),blueName:pilotNames.azul,redName:pilotNames.rojo,blueTime:fmt(b),redTime:fmt(r),vehicle:document.getElementById('vehicleType')?.value||'drift'};
     window.dmPhotoFinishState=photoData;
     window.dmPhotoFinishSetAvailable?.(true);
@@ -3321,7 +3321,7 @@ renderRaceMode();dmTourRender();
   // Fullscreen solicitado directamente desde el clic real del usuario.
   if(surface.classList.contains('dm-open')){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});closeTV();return}
   surface.classList.add('dm-open');btn.classList.add('is-on');
-  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=49',location.href).href);
+  if(!frame.getAttribute('src'))frame.setAttribute('src',new URL('./tv.html?v=50',location.href).href);
   tv=frame.contentWindow;
   const promise=surface.requestFullscreen?.();
   if(promise&&typeof promise.catch==='function')promise.catch(()=>{ /* Aun sin permiso, la vista cubre toda la ventana */ });
