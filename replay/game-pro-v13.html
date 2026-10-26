@@ -55,7 +55,7 @@ body{margin:0;background:#030814;color:#f0f7ff;overflow:hidden}button,input{font
 @media(max-width:850px){#modelPanel{top:68px;right:8px}}
 </style></head>
 <body><canvas id="view"></canvas>
-<div class="ui" id="top"><div class="brand glass">DRIFT <b>MASTERS</b><small>CIRCUITO DRIFT MASTERS · REPLAY 3D PRO v13.1 · SUPRA A90</small></div><div class="stats glass"><div class="stat"><small>TIEMPO</small><strong id="timer">00:00.000</strong></div><div class="stat"><small>VUELTA</small><strong id="lap">1 / 2</strong></div><div class="stat gap"><small>DIFERENCIA FINAL</small><strong id="gap">—</strong></div></div></div>
+<div class="ui" id="top"><div class="brand glass">DRIFT <b>MASTERS</b><small>CIRCUITO DRIFT MASTERS · REPLAY 3D PRO v13.2 · SUPRA A90</small></div><div class="stats glass"><div class="stat"><small>TIEMPO</small><strong id="timer">00:00.000</strong></div><div class="stat"><small>VUELTA</small><strong id="lap">1 / 2</strong></div><div class="stat gap"><small>DIFERENCIA FINAL</small><strong id="gap">—</strong></div></div></div>
 <div class="ui glass" id="shortcutHint"><strong>VISTA LIBRE</strong> · Botón derecho: girar · Ruedita: zoom · Espacio: pausar · 1–7: cámaras</div>
 <div id="autoModelStatus" class="glass" role="status" aria-live="polite"><span id="autoModelLabel">Preparando Supra 3D...</span><button id="retrySupra" hidden>Reintentar</button></div>
 <div class="ui" id="left"><div class="driver glass"><b style="color:#64caff">● AZUL · SUPRA 01</b><span id="blueLap">Vuelta 1</span><span id="blueTime">—</span></div><div class="driver red glass"><b style="color:#ff8598">● ROJO · SUPRA 02</b><span id="redLap">Vuelta 1</span><span id="redTime">—</span></div></div>
@@ -878,7 +878,7 @@ const cars=[carModel(0),carModel(1)];cars.forEach(c=>scene.add(c));
 // restauran automáticamente si falla el GLB o su dependencia de carga.
 const proceduralParts=cars.map(car=>car.children.slice());
 const importedParts=[null,null];
-let importedOrientation=Math.PI;
+let importedOrientation=Math.PI; // Giro predeterminado respecto del eje longitudinal del GLB
 const setModelStatus=msg=>{$('modelStatus').textContent=msg;};
 function showAutoStatus(message,retry=false){$('autoModelStatus').hidden=false;$('autoModelLabel').textContent=message;$('retrySupra').hidden=!retry;}
 $('toggleModel').onclick=()=>{
@@ -939,7 +939,11 @@ function prepareGLB(source,id){
  const center=bounds.getCenter(new THREE.Vector3());
  model.position.set(-center.x,-bounds.min.y,-center.z);
  mount.scale.setScalar(33.5/length);
- mount.rotation.y=importedOrientation;
+ // Aplicar el giro al nodo del GLB, DESPUÉS de detectar su eje largo.
+ // No depender de la orientación del contenedor utilizado para las rutas.
+ model.rotation.y+=Math.PI;
+ model.updateMatrixWorld(true);
+ mount.rotation.y=importedOrientation-Math.PI;
  retintGLB(model,id);
  return mount;
 }
