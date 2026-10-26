@@ -61,8 +61,21 @@ function vec(p,dy=0){return new THREE.Vector3(p[0],p[2]*.38+dy,-p[1])}
 function tangent(path,i){const a=path.points[Math.max(0,i-1)],b=path.points[Math.min(path.points.length-1,i+1)];return new THREE.Vector3(b[0]-a[0],0,-(b[1]-a[1])).normalize()}
 function edge(path,i,amount,up=0){const t=tangent(path,i),p=vec(path.points[i],up);return p.add(new THREE.Vector3(-t.z*amount,0,t.x*amount))}
 function ribbon(path,width,raise=0){const verts=[],uv=[],idx=[];const N=path.points.length;for(let i=0;i<N;i++){const a=edge(path,i,-width/2,raise),b=edge(path,i,width/2,raise);verts.push(...a.toArray(),...b.toArray());const u=path.distances[i]/100;uv.push(u,0,u,1);if(i<N-1){const j=i*2;idx.push(j,j+2,j+1,j+1,j+2,j+3)}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g}
+// Detectar pianos coincidentes en los dos recorridos, conservando solo el primero.
+const curbCells=new Map(),curbCellSize=12;
+function curbCellKey(x,z){return Math.floor(x/curbCellSize)+','+Math.floor(z/curbCellSize)}
+function curbDuplicate(q){
+ const cx=Math.floor(q.x/curbCellSize),cz=Math.floor(q.z/curbCellSize);
+ for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++){
+  for(const p of curbCells.get((cx+dx)+','+(cz+dz))||[]){
+   if(Math.abs(p.y-q.y)<3.5 && Math.hypot(p.x-q.x,p.z-q.z)<7)return true;
+  }
+ }
+ return false;
+}
+function registerCurb(q){const key=curbCellKey(q.x,q.z);if(!curbCells.has(key))curbCells.set(key,[]);curbCells.get(key).push(q)}
 function strip(path){const road=new THREE.Mesh(ribbon(path,55.5,1.15),roadmat);road.receiveShadow=true;road.castShadow=false;road.renderOrder=2;scene.add(road);
-for(let i=0;i<path.points.length-5;i+=5){const j=Math.min(i+5,path.points.length-1),mat=(Math.floor(path.distances[i]/24)%2===0?red:white);for(const side of[-1,1]){const v=[edge(path,i,side*27.75,1.4),edge(path,i,side*33,1.4),edge(path,j,side*27.75,1.4),edge(path,j,side*33,1.4)];const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([...v[0].toArray(),...v[1].toArray(),...v[2].toArray(),...v[3].toArray()],3));g.setIndex([0,2,1,1,2,3]);g.computeVertexNormals();const m=new THREE.Mesh(g,mat);m.material.side=THREE.DoubleSide;m.receiveShadow=true;m.castShadow=false;m.renderOrder=3;scene.add(m)}}
+for(let i=0;i<path.points.length-5;i+=5){const j=Math.min(i+5,path.points.length-1),mat=(Math.floor(path.distances[i]/24)%2===0?red:white);for(const side of[-1,1]){const v=[edge(path,i,side*27.75,1.4),edge(path,i,side*33,1.4),edge(path,j,side*27.75,1.4),edge(path,j,side*33,1.4)];const midpoint=v[0].clone().add(v[1]).add(v[2]).add(v[3]).multiplyScalar(.25);if(path===paths.bridge && curbDuplicate(midpoint))continue;registerCurb(midpoint);const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([...v[0].toArray(),...v[1].toArray(),...v[2].toArray(),...v[3].toArray()],3));g.setIndex([0,2,1,1,2,3]);g.computeVertexNormals();const m=new THREE.Mesh(g,mat);m.material.side=THREE.DoubleSide;m.receiveShadow=true;m.castShadow=false;m.renderOrder=3;scene.add(m)}}
 }
 strip(paths.tunnel);strip(paths.bridge);
 // Pilar y barandas: solamente en el tramo elevado, dejando el túnel libre.
