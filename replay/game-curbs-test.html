@@ -44,7 +44,8 @@ const scene=new THREE.Scene();scene.background=new THREE.Color(0x0b1621);scene.f
 const canvas=$('view');const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.55;
-const camera=new THREE.PerspectiveCamera(42,1,1,3500);
+// Near plane 12 gives ~12x finer depth precision at track distance than near=1.
+const camera=new THREE.PerspectiveCamera(42,1,12,3500);
 scene.add(new THREE.HemisphereLight(0xbadfff,0x263922,2.0));
 const sun=new THREE.DirectionalLight(0xffeed7,3.1);sun.position.set(-240,470,310);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-800;sun.shadow.camera.right=800;sun.shadow.camera.top=700;sun.shadow.camera.bottom=-700;sun.shadow.camera.near=20;sun.shadow.camera.far=1200;sun.shadow.bias=-.0004;sun.shadow.normalBias=.025;scene.add(sun);
 const fill=new THREE.DirectionalLight(0x6ca7ff,1.1);fill.position.set(400,240,-100);scene.add(fill);
@@ -55,6 +56,16 @@ const grassmat=new THREE.MeshStandardMaterial({map:grass,roughness:1});
 const table=new THREE.Mesh(new THREE.BoxGeometry(1290,16,770),new THREE.MeshStandardMaterial({color:0x4a483a,roughness:1}));table.position.set(535,-15,-300);table.receiveShadow=true;scene.add(table);
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(1250,730),grassmat);ground.rotation.x=-Math.PI/2;ground.position.set(535,-6,-300);ground.receiveShadow=true;scene.add(ground);
 const red=new THREE.MeshStandardMaterial({color:0xf02545,roughness:.75}),white=new THREE.MeshStandardMaterial({color:0xe9e9e5,roughness:.8});
+// Pianos: layer rendered above asphalt but still depth-tested against elevated bridge/objects.
+const redCurb=red.clone(),whiteCurb=white.clone();
+for(const mat of [redCurb,whiteCurb]){
+ mat.side=THREE.DoubleSide;mat.depthTest=true;mat.depthWrite=false;
+ mat.polygonOffset=true;mat.polygonOffsetFactor=-4;mat.polygonOffsetUnits=-8;
+}
+const bridgeRoadMat=roadmat.clone();
+bridgeRoadMat.polygonOffset=true;
+bridgeRoadMat.polygonOffsetFactor=-2;
+bridgeRoadMat.polygonOffsetUnits=-5;
 const silver=new THREE.MeshStandardMaterial({color:0x858b95,metalness:.55,roughness:.45});
 const concrete=new THREE.MeshStandardMaterial({color:0x555d66,roughness:.95});
 function vec(p,dy=0){return new THREE.Vector3(p[0],p[2]*.38+dy,-p[1])}
@@ -67,7 +78,7 @@ function ribbon(path,width,raise=0){const verts=[],uv=[],idx=[];const N=path.poi
 // Bordes compartidos: topología explícita, NO filtros ni borrados por proximidad.
 // Un solo piano rojo/blanco une ambos carriles a través de la recta central.
 // En la curva izquierda conservamos el borde interior del túnel; en la derecha también.
-const CURB_HALF_ROAD=27.75,CURB_EXTRA=5.25,CURB_Y=1.62;
+const CURB_HALF_ROAD=27.75,CURB_EXTRA=5.25,CURB_Y=1.92;
 const INLEFT_END=24,INRIGHT_START=(paths.tunnel.points.length-1)-24; // Puntos exactos de la recta
 const BRIDGE_LEFT_SPLIT=5*24,BRIDGE_RIGHT_JOIN=25*24;
 // Empalme del piano interior en la salida derecha: termina antes de su duplicado.
@@ -176,9 +187,8 @@ function finalizeCurbs(){
   const g=new THREE.BufferGeometry();
   g.setAttribute('position',new THREE.Float32BufferAttribute(batch.coords,3));
   g.setIndex(batch.indices);g.computeVertexNormals();
-  const mesh=new THREE.Mesh(g,mat);
-  mesh.material.side=THREE.DoubleSide;
-  mesh.receiveShadow=false;mesh.castShadow=false;mesh.renderOrder=5;
+  const mesh=new THREE.Mesh(g,mat===red?redCurb:whiteCurb);
+  mesh.receiveShadow=false;mesh.castShadow=false;mesh.renderOrder=8;
   scene.add(mesh);
  }
 }
@@ -193,8 +203,10 @@ function buildCurb(path){
  }
 }
 function strip(path){
- const road=new THREE.Mesh(ribbon(path,55.5,path===paths.bridge?1.19:1.15),roadmat);
- road.receiveShadow=true;road.castShadow=false;road.renderOrder=2;scene.add(road);
+ // Two colliding road ribbons previously differed by only 0.04; force stable depth priority.
+ const upper=path===paths.bridge;
+ const road=new THREE.Mesh(ribbon(path,55.5,upper?1.45:1.15),upper?bridgeRoadMat:roadmat);
+ road.receiveShadow=false;road.castShadow=false;road.renderOrder=upper?3:2;scene.add(road);
  buildCurb(path);
 }
 strip(paths.tunnel);strip(paths.bridge);
