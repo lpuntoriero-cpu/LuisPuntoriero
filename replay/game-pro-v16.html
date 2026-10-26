@@ -944,9 +944,9 @@ function prepareGLB(source,id){
  mount.scale.setScalar(33.5/length);
  // Aplicar el giro al nodo del GLB, DESPUÉS de detectar su eje largo.
  // No depender de la orientación del contenedor utilizado para las rutas.
- model.rotation.y+=importedOrientation;
  model.updateMatrixWorld(true);
- mount.rotation.y=0;
+ // El mismo giro que hace el botón manual, aplicado desde la primera carga.
+ mount.rotation.y=importedOrientation;
  retintGLB(model,id);
  return mount;
 }
