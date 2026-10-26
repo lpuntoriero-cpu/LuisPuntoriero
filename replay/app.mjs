@@ -18,7 +18,24 @@ function line(c,pts,color,width=1,dash=[]){c.beginPath();pts.forEach((p,i)=>{con
 function offset(path,i,amount,zdelta=0){const p=path.points[i],a=path.points[Math.max(0,i-1)],b=path.points[Math.min(path.points.length-1,i+1)],angle=Math.atan2(b[1]-a[1],b[0]-a[0]);return[p[0]-Math.sin(angle)*amount,p[1]+Math.cos(angle)*amount,p[2]+zdelta];}
 function road(c,path,start=0,end=path.points.length-1,raised=false){const indices=[];for(let i=start;i<=end;i+=2)indices.push(i);if(indices.at(-1)!==end)indices.push(end);const strip=half=>indices.map(i=>offset(path,i,half)).concat(indices.slice().reverse().map(i=>offset(path,i,-half)));
  if(raised){poly(c,indices.map(i=>offset(path,i,21,-8)).concat(indices.slice().reverse().map(i=>offset(path,i,-21,-8))),'#101b22');}
- poly(c,strip(22),'#59615d');poly(c,strip(20),'#c5c7ba');poly(c,strip(17.5),'#303c43');
+ poly(c,strip(22),'#343c42');poly(c,strip(20),'#bcc3c5');
+// Asfalto con gradiente mineral y textura granular estable, precalculada en cache().
+const mid=project(...path.points[Math.floor((start+end)/2)]);
+const asphalt=c.createLinearGradient(mid.x-34*s,mid.y-22*s,mid.x+38*s,mid.y+30*s);
+asphalt.addColorStop(0,'#354047');asphalt.addColorStop(.28,'#222e38');asphalt.addColorStop(.58,'#19242e');asphalt.addColorStop(1,'#384249');
+poly(c,strip(17.5),asphalt);
+line(c,indices.map(i=>offset(path,i,16.8,.22)),'#d4d8d38c',.55);
+line(c,indices.map(i=>offset(path,i,-16.8,.22)),'#d4d8d38c',.55);
+let grit=37+start*13;
+for(let n=0;n<Math.min(1000,Math.ceil((end-start)*2.2));n++){
+ grit=(Math.imul(grit,1664525)+1013904223)>>>0;
+ const index=start+(grit%(end-start+1));
+ grit=(Math.imul(grit,1664525)+1013904223)>>>0;
+ const lateral=(grit/4294967296-.5)*31;
+ const xyz=offset(path,index,lateral,.25),pixel=project(...xyz);
+ c.fillStyle=n%3===0?'#c7ced515':'#020a1329';
+ c.fillRect(pixel.x,pixel.y,Math.max(.6,s*.95),Math.max(.6,s*.75));
+}
  for(let k=1;k<indices.length;k+=1){const i=indices[k-1],j=indices[k];const distance=path.distances[i];if(Math.floor(distance/12)%2===0){for(const side of[-1,1])poly(c,[offset(path,i,side*18),offset(path,j,side*18),offset(path,j,side*21),offset(path,i,side*21)],'#ae5146');}}
  line(c,indices.map(i=>offset(path,i,0,.2)),'#adb7b04d',.7,[7,14]);
  if(showRoutes){const col=path===paths.tunnel?'#54b9ff':'#ff656c';line(c,indices.map(i=>offset(path,i,0,.5)),col+'a0',1.5,[5,8]);for(let dist=200;dist<path.length-70;dist+=370){const p=path.at(dist);if(p.z<.5&&raised)continue;if(raised===false&&p.z>2)continue;arrow(c,p,col);}}
@@ -45,15 +62,24 @@ function cache(){for(const c of[ground,bridge]){c.width=w*dpr;c.height=h*dpr;c.g
  for(let j=0;j<6;j++){const p=project(568,460+j*15,37);g.fillStyle=['#5cd7e4','#5c90ff','#9171ff','#ec64c6','#fd9566','#b4e08c'][j];g.shadowColor=g.fillStyle;g.shadowBlur=5*s;g.beginPath();g.arc(p.x,p.y,2.5*s,0,Math.PI*2);g.fill();g.shadowBlur=0;}
  textAt(g,'DRIFT',568,503,40,'#e6e8d7',7);textAt(g,'LARGADA / META',625,549,1,'#9caa96',9);
  if(showRoutes){textAt(g,'TÚNEL',420,300,0,'#7dc7ec',10);line(g,[[420,289,0],[441,258,0]],'#72a8c083',1);textAt(b,'PUENTE',519,259,115,'#f2b1a2',10);}
- textAt(g,'1 / 24',272,385,0,'#7b947c55',29);textAt(g,'DRIFT MASTERS',300,408,0,'#7b947c66',10);
+ textAt(g,'CIRCUITO',272,385,0,'#7b947c55',22);textAt(g,'DRIFT MASTERS',300,408,0,'#7b947c66',10);
 }
 function resize(){const r=canvas.getBoundingClientRect();w=r.width;h=r.height;dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=w*dpr;canvas.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);const height=view==='overhead'?535:408;s=Math.min((w-38)/1070,(h-95)/height);ox=w/2;oy=h/2+7;cache();}
 function drawCarOn(c,car,p,driftEnabled=true){const id=car.id;const drift=driftEnabled&&phase==='running'&&p.z<1?Math.sin(car.distance/36)*.055:0,a=p.angle+drift;const loc=(x,y,z=0)=>[p.x+Math.cos(a)*x-Math.sin(a)*y,p.y+Math.sin(a)*x+Math.cos(a)*y,p.z+z];const rect=(x1,y1,x2,y2,z,color)=>poly(c,[loc(x1,y1,z),loc(x2,y1,z),loc(x2,y2,z),loc(x1,y2,z)],color);
  poly(c,[loc(-17,-9,0),loc(17,-9,0),loc(17,9,0),loc(-17,9,0)],'#050c11aa');
- for(const x of[-10,9])for(const y of[-8,8])rect(x-4,y-2,x+4,y+2,3,'#0c1116');
+ for(const x of[-10,9])for(const y of[-8,8]){rect(x-4,y-2,x+4,y+2,3,'#0a0e16');rect(x-1,y-2,x+1,y+2,3.4,'#77818b');}
  poly(c,[loc(16,-5,4),loc(12,-8,4),loc(-12,-8,4),loc(-16,-5,4),loc(-16,5,4),loc(-12,8,4),loc(12,8,4),loc(16,5,4)],id===0?'#178ed3':'#d83d4b','#0b151e',.6);
  poly(c,[loc(15,-5,6),loc(11,-7,6),loc(-12,-7,6),loc(-15,-4,6),loc(-15,4,6),loc(-12,7,6),loc(11,7,6),loc(15,5,6)],colors[id]);
- rect(-14,-2,14,2,6.2,'#e4edf0');rect(-6,-6,7,6,8,'#0b293b');rect(-4,-5,3,5,10,id===0?'#2385bd':'#d9515a');rect(-2,-1.4,3,1.4,10.2,'#d5e3e6');
+ // Capas de carrocería: pintura, parabrisas, ventanillas y reflejos longitudinales.
+rect(-14,-2,14,2,6.2,id===0?'#e2f7ff':'#ffe7e9');
+poly(c,[loc(-7,-6,8.4),loc(6,-6,8.4),loc(7,-4,10),loc(-6,-4,10)],'#081725');
+poly(c,[loc(-7,6,8.4),loc(6,6,8.4),loc(7,4,10),loc(-6,4,10)],'#091b29');
+rect(-6,-4.3,7,4.3,9,'#0b2539');
+rect(-4,-3.8,3,3.8,10,id===0?'#258fcb':'#db5263');
+rect(-2,-1.4,3,1.4,10.2,'#d9ecf5');
+poly(c,[loc(7,-5.8,6.2),loc(13,-4.7,6.2),loc(13,-3.8,6.3),loc(7,-4.6,6.3)],'#ffffff88');
+poly(c,[loc(-13,6.4,6.3),loc(5,6.4,6.3),loc(5,6.8,6.4),loc(-13,6.8,6.4)],'#ffffff59');
+rect(14,-3.8,16,3.8,6.5,id===0?'#0d436d':'#752036');
  rect(-15,-10,-12,10,9,'#111d29');rect(12,-6,15,-3,7,'#fff9c3');rect(12,3,15,6,7,'#fff9c3');rect(-15,-6,-14,-3,6,'#ff3e51');rect(-15,3,-14,6,6,'#ff3e51');
  const q=project(p.x,p.y,p.z+23);c.fillStyle=colors[id];c.font=`bold ${Math.max(8,10*s)}px Arial`;c.textAlign='center';c.fillText(id===0?'01':'02',q.x,q.y);
 }
