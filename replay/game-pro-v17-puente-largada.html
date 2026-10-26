@@ -75,7 +75,7 @@ body{margin:0;background:#030814;color:#f0f7ff;overflow:hidden}button,input{font
 <p>Fuente de ejemplo: <a href="https://sketchfab.com/3d-models/toyota-gr-supra-2020-38704eb74b8a419da91e4bfb50a50e04" target="_blank" rel="noopener noreferrer">Toyota GR Supra 2020 — ItsDiyor (CC BY)</a>. Descargá y convertí a GLB si hace falta. Conservá la atribución del autor.</p>
 </div>
 <div class="ui" id="bottom"><div class="controls glass">
-<button class="go" id="play">▶ Reproducir</button><button id="restart">↺ Reiniciar</button>
+<button class="go" id="gantryStart">🚦 Iniciar cuenta regresiva</button><button class="go" id="play">▶ Reproducir</button><button id="restart">↺ Reiniciar</button>
 <button class="active" data-camera="overview">Perspectiva</button><button data-camera="top">Cenital</button><button data-camera="blue">Seguir azul</button><button data-camera="red">Seguir rojo</button>
 <button data-camera="bridge">Puente</button><button data-camera="cinema">Cine</button><button data-camera="low">A ras</button>
 <button id="resetCam" title="Restablecer cámara libre">⌖ Cámara</button>
@@ -602,7 +602,8 @@ let gantryCountdownStart=null,gantryGreen=false,gantryRemaining=8;
 function setGantryLeds(remaining,green=false){
  gantryRemaining=remaining;gantryGreen=green;
  for(let lane=0;lane<2;lane++)for(let i=0;i<8;i++){
-  gantryLEDs[lane*8+i].material.color.setHex(green?0x19ff3b:(i<remaining?0xff1224:0x27060a));
+  gantryLEDs[lane*8+i].material.color.setHex(green?0x00ff24:(i<remaining?0xff0010:0x100104));
+  gantryLEDs[lane*8+i].visible=green||i<remaining;
  }
 }
 setGantryLeds(8,false);
@@ -1255,7 +1256,8 @@ function frame(now){
   }else setGantryLeds(8-Math.floor(Math.max(0,seconds)),false);
  }else if(playing)elapsed+=dt*speed;
  update();
- if(gantryCountdownStart!==null)$('play').textContent='■ Cancelar cuenta · '+gantryRemaining;
+ if(gantryCountdownStart!==null){$('play').textContent='■ Cancelar cuenta · '+gantryRemaining;$('gantryStart').textContent='🚦 '+gantryRemaining+' LED rojos';}
+  else $('gantryStart').textContent=gantryGreen?'🟢 ¡LARGADA!':'🚦 Iniciar cuenta regresiva';
  cameras(dt);
  if(postFXReady&&composer&&qualityMode!=='normal'){
   try{composer.render(dt);}catch(err){
@@ -1273,16 +1275,22 @@ $('quality').onchange=e=>{
  qualityMode=e.target.value;
  applyQuality();
 };
+function beginGantryCountdown(){
+ elapsed=0;playing=false;gantryGreen=false;
+ gantryCountdownStart=performance.now();setGantryLeds(8,false);
+ update();
+}
+$('gantryStart').onclick=()=>beginGantryCountdown();
 $('play').onclick=()=>{
  if(gantryCountdownStart!==null){gantryCountdownStart=null;playing=false;setGantryLeds(8,false);update();return;}
  if(elapsed>=maxTime)elapsed=0;
- if(!playing&&elapsed===0){gantryCountdownStart=performance.now();setGantryLeds(8,false);playing=false;return;}
+ if(!playing&&elapsed===0){beginGantryCountdown();return;}
  playing=!playing;
 };
 $('restart').onclick=()=>{elapsed=0;playing=false;gantryCountdownStart=null;setGantryLeds(8,false);update()};
 $('speed').onchange=e=>speed=Number(e.target.value);
 $('scrub').oninput=e=>{gantryCountdownStart=null;elapsed=Number(e.target.value)/1000*maxTime;playing=false;setGantryLeds(8,false);update()};
-for(const id of ['b1','bt','r1','rt'])$(id).onchange=()=>{elapsed=0;playing=false;update()};
+for(const id of ['b1','bt','r1','rt'])$(id).onchange=()=>{gantryCountdownStart=null;elapsed=0;playing=false;setGantryLeds(8,false);update()};
 function changeCamera(mode){
  cameraMode=mode;
  document.querySelectorAll('[data-camera]').forEach(x=>x.classList.toggle('active',x.dataset.camera===mode));
