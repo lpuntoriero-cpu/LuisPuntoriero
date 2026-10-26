@@ -73,6 +73,10 @@ const BRIDGE_LEFT_SPLIT=5*24,BRIDGE_RIGHT_JOIN=25*24;
 // Empalme del piano interior en la salida derecha: termina antes de su duplicado.
 const BRIDGE_EXIT_MERGE_START=BRIDGE_RIGHT_JOIN-18;
 const BRIDGE_EXIT_BLEND_START=BRIDGE_EXIT_MERGE_START-24;
+// Salida física del puente: intervalo geométrico b[340..425], junto al túnel.
+// Mantener siempre el piano del túnel (side +1); compartir sólo el del puente (side -1).
+const RAMP_CURB_JOIN_BEGIN=324,RAMP_CURB_HIDDEN_BEGIN=342;
+const RAMP_CURB_HIDDEN_END=400,RAMP_CURB_SEPARATE_END=430;
 const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};
 function nearestTunneledEdge(pos,side){
  const path=paths.tunnel;let best=Infinity,closest=null;
@@ -80,6 +84,20 @@ function nearestTunneledEdge(pos,side){
   if(path.points[k][2]>1)continue;
   const c=edge(path,k,side*30.375,CURB_Y),d=(c.x-pos.x)**2+(c.z-pos.z)**2;
   if(d<best){best=d;closest=c;}
+ }
+ return closest;
+}
+// Proyectar exactamente el piano del puente sobre el borde existente del túnel.
+// Interpolamos sobre segmentos, en vez de usar el vértice más cercano y provocar quiebres.
+function nearestContinuousTunnelCurb(pos,side){
+ const path=paths.tunnel;let best=Infinity,closest=null;
+ for(let j=445;j<Math.min(565,path.points.length-1);j++){
+  const v=edge(path,j,side*30.375,CURB_Y),w=edge(path,j+1,side*30.375,CURB_Y);
+  const dx=w.x-v.x,dz=w.z-v.z;
+  const t=Math.max(0,Math.min(1,((pos.x-v.x)*dx+(pos.z-v.z)*dz)/(dx*dx+dz*dz||1)));
+  const x=v.x+t*dx,z=v.z+t*dz;
+  const dist=(pos.x-x)**2+(pos.z-z)**2;
+  if(dist<best){best=dist;closest=new THREE.Vector3(x,CURB_Y,z);}
  }
  return closest;
 }
@@ -99,6 +117,22 @@ function curbStation(path,side,i){
   const center=a.clone().add(b).multiplyScalar(.5);
   const shift=new THREE.Vector3(850-center.x,0,-500-center.z).multiplyScalar(f);
   a.add(shift);b.add(shift);
+ }
+ // Unificación REAL de la salida del puente con el piano del túnel.
+ // Empalme antes de ocultar el duplicado y bifurcación al salir del tramo común.
+ if(path===paths.bridge&&side===-1&&i>=RAMP_CURB_JOIN_BEGIN&&i<=RAMP_CURB_SEPARATE_END){
+  let blend=0;
+  if(i<RAMP_CURB_HIDDEN_BEGIN)blend=smooth((i-RAMP_CURB_JOIN_BEGIN)/(RAMP_CURB_HIDDEN_BEGIN-RAMP_CURB_JOIN_BEGIN));
+  else if(i<=RAMP_CURB_HIDDEN_END)blend=1;
+  else blend=1-smooth((i-RAMP_CURB_HIDDEN_END)/(RAMP_CURB_SEPARATE_END-RAMP_CURB_HIDDEN_END));
+  if(blend>0){
+   const mid=a.clone().add(b).multiplyScalar(.5);
+   const target=nearestContinuousTunnelCurb(mid,1);
+   if(target){
+    const shift=target.sub(mid).multiplyScalar(blend);
+    a.add(shift);b.add(shift);
+   }
+  }
  }
  // El borde independiente nace del compartido en la curva izquierda.
  if(path===paths.bridge&&side===1&&i>=BRIDGE_LEFT_SPLIT&&i<=BRIDGE_LEFT_SPLIT+48){
@@ -124,6 +158,7 @@ function visibleCurbSegment(path,side,i){
   if(side===1&&i>=INRIGHT_START)return false;
  }else{
   if(side===1&&i<BRIDGE_LEFT_SPLIT)return false;
+  if(side===-1&&i>=RAMP_CURB_HIDDEN_BEGIN&&i<RAMP_CURB_HIDDEN_END)return false;
   if(side===-1&&i>=BRIDGE_EXIT_MERGE_START)return false;
  }
  return true;
