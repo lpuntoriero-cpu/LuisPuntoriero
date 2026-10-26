@@ -54,7 +54,7 @@ const roadmat=new THREE.MeshStandardMaterial({map:asphalt,color:0xcbd1d5,roughne
 const grassmat=new THREE.MeshStandardMaterial({map:grass,roughness:1});
 const table=new THREE.Mesh(new THREE.BoxGeometry(1290,16,770),new THREE.MeshStandardMaterial({color:0x4a483a,roughness:1}));table.position.set(535,-15,-300);table.receiveShadow=true;scene.add(table);
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(1250,730),grassmat);ground.rotation.x=-Math.PI/2;ground.position.set(535,-6,-300);ground.receiveShadow=true;scene.add(ground);
-const red=new THREE.MeshStandardMaterial({color:0xf02545,roughness:.75,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-4}),white=new THREE.MeshStandardMaterial({color:0xe9e9e5,roughness:.8,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-4});
+const red=new THREE.MeshStandardMaterial({color:0xf02545,roughness:.75}),white=new THREE.MeshStandardMaterial({color:0xe9e9e5,roughness:.8});
 const silver=new THREE.MeshStandardMaterial({color:0x858b95,metalness:.55,roughness:.45});
 const concrete=new THREE.MeshStandardMaterial({color:0x555d66,roughness:.95});
 function vec(p,dy=0){return new THREE.Vector3(p[0],p[2]*.38+dy,-p[1])}
@@ -78,15 +78,14 @@ function distanceToOtherRoad(x,y,z,other){
  return nearest;
 }
 function strip(path){
- const road=new THREE.Mesh(ribbon(path,55.5,path===paths.bridge?1.85:1.15),roadmat);
+ const road=new THREE.Mesh(ribbon(path,55.5,path===paths.bridge?1.19:1.15),roadmat);
  road.receiveShadow=true;road.castShadow=false;road.renderOrder=2;scene.add(road);
  const other=path===paths.bridge?paths.tunnel:paths.bridge;
  for(let i=0;i<path.points.length-5;i+=5){
   const j=Math.min(i+5,path.points.length-1);
   const mat=(Math.floor(path.distances[i]/24)%2===0?red:white);
   for(const side of[-1,1]){
-   const curbY=path===paths.bridge?2.12:1.43;
-   const v=[edge(path,i,side*27.75,curbY),edge(path,i,side*33,curbY),edge(path,j,side*27.75,curbY),edge(path,j,side*33,curbY)];
+   const v=[edge(path,i,side*27.75,1.4),edge(path,i,side*33,1.4),edge(path,j,side*27.75,1.4),edge(path,j,side*33,1.4)];
    const pa=path.points[i],pb=path.points[j],mx=(pa[0]+pb[0])/2,my=(pa[1]+pb[1])/2;
    // Los dos carriles de la recta comparten un único piano dibujado aparte.
    const parallel=(mx>=280&&mx<=850&&((Math.abs(my-475)<4&&side===1)||(Math.abs(my-525)<4&&side===-1))&&pa[2]<1&&pb[2]<1);
@@ -94,8 +93,12 @@ function strip(path){
    // Si el piano cae sobre la superficie del otro carril, no es un borde exterior.
    // Comprobar varios puntos evita falsos cortes por un solo tramo de la curva.
    const sample=v[0].clone().add(v[1]).add(v[2]).add(v[3]).multiplyScalar(.25);
-   const d=distanceToOtherRoad(sample.x,-sample.z,sample.y-curbY,other);
-   if(d<23)continue;
+   const d=distanceToOtherRoad(sample.x,-sample.z,sample.y-1.4,other);
+   // En la salida izquierda de la recta, la curva del piano interior
+   // queda parcialmente dentro del ancho del otro carril. No recortar
+   // esa curva por proximidad: hacerlo provoca huecos visibles.
+   const leftExitInner=path===paths.bridge&&side===1&&mx>=125&&mx<=325&&my>=410&&my<=535;
+   if(d<23&&!leftExitInner)continue;
    const g=new THREE.BufferGeometry();
    g.setAttribute('position',new THREE.Float32BufferAttribute([...v[0].toArray(),...v[1].toArray(),...v[2].toArray(),...v[3].toArray()],3));
    g.setIndex([0,2,1,1,2,3]);g.computeVertexNormals();
