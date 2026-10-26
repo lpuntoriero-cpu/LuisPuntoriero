@@ -1035,11 +1035,13 @@ function setCar(id,d){
  const approach=Math.atan2(upcoming.x-p.x,-(upcoming.y-p.y));
  const leadCurve=Math.atan2(Math.sin(approach-heading),Math.cos(approach-heading));
  const bend=Math.abs(curve);
- const driftStrength=Math.min(1,Math.max(0,(bend-.095)/.43));
+ // Derrape PRO: se inicia antes y se mantiene durante la curva, con un
+ // ángulo de carrocería mucho más visible (máximo ~36 grados).
+ const driftStrength=Math.min(1,Math.max(0,(bend-.025)/.24));
  // El puente y sus rampas exigen conservar el centro exacto de cada carril.
  const onBridge=p.z>.12||Math.abs(front.z-back.z)>.35;
  const drift=onBridge?0:driftStrength;
- const slipAngle=Math.max(-.29,Math.min(.29,-curve*.48*drift));
+ const slipAngle=Math.max(-.63,Math.min(.63,-curve*1.65*drift));
  car.rotation.y=heading+slipAngle;
  // Contravolante visual: en curva fuerte las ruedas apuntan contra el sobreviraje.
  const steer=Math.max(-.32,Math.min(.32,leadCurve*.72+curve*(1-drift)*.35-slipAngle*1.65));
