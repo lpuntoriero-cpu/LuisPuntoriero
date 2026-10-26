@@ -52,8 +52,8 @@ function tx(base,grains){const c=document.createElement('canvas');c.width=c.heig
 const asphalt=tx('#343a3d',12500),grass=tx('#24472b',16000);grass.repeat.set(8,5);
 const roadmat=new THREE.MeshStandardMaterial({map:asphalt,color:0xcbd1d5,roughness:.92,metalness:0,side:THREE.DoubleSide,transparent:false,depthTest:true,depthWrite:true,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2});
 const grassmat=new THREE.MeshStandardMaterial({map:grass,roughness:1});
-const table=new THREE.Mesh(new THREE.BoxGeometry(1090,16,570),new THREE.MeshStandardMaterial({color:0x4a483a,roughness:1}));table.position.set(535,-15,-300);table.receiveShadow=true;scene.add(table);
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(1050,530),grassmat);ground.rotation.x=-Math.PI/2;ground.position.set(535,-6,-300);ground.receiveShadow=true;scene.add(ground);
+const table=new THREE.Mesh(new THREE.BoxGeometry(1290,16,770),new THREE.MeshStandardMaterial({color:0x4a483a,roughness:1}));table.position.set(535,-15,-300);table.receiveShadow=true;scene.add(table);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(1250,730),grassmat);ground.rotation.x=-Math.PI/2;ground.position.set(535,-6,-300);ground.receiveShadow=true;scene.add(ground);
 const red=new THREE.MeshStandardMaterial({color:0xf02545,roughness:.75}),white=new THREE.MeshStandardMaterial({color:0xe9e9e5,roughness:.8});
 const silver=new THREE.MeshStandardMaterial({color:0x858b95,metalness:.55,roughness:.45});
 const concrete=new THREE.MeshStandardMaterial({color:0x555d66,roughness:.95});
