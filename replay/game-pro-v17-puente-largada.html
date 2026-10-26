@@ -581,7 +581,7 @@ function gantryOLEDTexture(){
 const oledTexture=gantryOLEDTexture();
 const oledMaterial=new THREE.MeshBasicMaterial({map:oledTexture,side:THREE.FrontSide,toneMapped:false,depthTest:false});
 for(const side of [-1,1]){
- const oled=new THREE.Mesh(new THREE.PlaneGeometry(48,22),oledMaterial);
+ const oled=new THREE.Mesh(new THREE.PlaneGeometry(34,22),oledMaterial);
  oled.position.set(gx+side*16,gy-6,(gz0+gz1)/2);
  oled.rotation.y=side*Math.PI/2;
  oled.renderOrder=80;startGantry.add(oled);
@@ -602,8 +602,8 @@ let gantryCountdownStart=null,gantryGreen=false,gantryRemaining=8;
 function setGantryLeds(remaining,green=false){
  gantryRemaining=remaining;gantryGreen=green;
  for(let lane=0;lane<2;lane++)for(let i=0;i<8;i++){
-  gantryLEDs[lane*8+i].material.color.setHex(green?0x00ff24:(i<remaining?0xff0010:0x100104));
-  gantryLEDs[lane*8+i].visible=green||i<remaining;
+  gantryLEDs[lane*8+i].material.color.setHex(green?0x00ff24:(i>=8-remaining?0xff0010:0x100104));
+  gantryLEDs[lane*8+i].visible=green||i>=8-remaining;
  }
 }
 setGantryLeds(8,false);
