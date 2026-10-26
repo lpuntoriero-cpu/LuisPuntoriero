@@ -885,10 +885,10 @@ const brakeFX=cars.map(car=>{
  for(const side of [-1,1]){
   // La trompa del coche apunta al +Z: la parte trasera está en -Z.
   const lamp=new THREE.Mesh(new THREE.SphereGeometry(1.65,16,10),lens);
-  lamp.scale.set(1.65,.49,.46);lamp.position.set(side*5.5,6.8,-18.3);
+  lamp.scale.set(.95,.34,.22);lamp.position.set(side*3.55,7.15,-16.55);
   lamp.renderOrder=100;car.add(lamp);nodes.push(lamp);lamps.push(lamp);
   const glow=new THREE.Mesh(new THREE.SphereGeometry(2.35,16,10),offHalo);
-  glow.scale.set(1.75,.75,.32);glow.position.set(side*5.5,6.8,-19);
+  glow.scale.set(1.15,.42,.16);glow.position.set(side*3.55,7.12,-16.95);
   glow.renderOrder=101;car.add(glow);nodes.push(glow);halos.push(glow);
  }
  return {lens,lit,offHalo,nodes,lamps,halos};
@@ -909,7 +909,7 @@ function updateDrivingFX(id,d,T){
  const fx=brakeFX[id];
  fx.lens.color.setHex(braking?0xff0010:0x880011);
  fx.offHalo.opacity=braking?.95:0;
- for(const lamp of fx.lamps)lamp.scale.set(1.65,braking?.62:.49,.46);
+ for(const lamp of fx.lamps)lamp.scale.set(.95,braking?.41:.34,.22);
 }
 // Importador local no destructivo. Los modelos originales permanecen en memoria y se
 // restauran automáticamente si falla el GLB o su dependencia de carga.
