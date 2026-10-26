@@ -663,6 +663,49 @@ function carModel(id){
  hoodBadge.rotation.x=-Math.PI/2;
  return root;
 }
+async function smoothCarBodies(){
+ try{
+  const mod=await import('https://esm.sh/three@0.160.1/examples/jsm/geometries/RoundedBoxGeometry.js');
+  for(const car of cars)car.traverse(obj=>{
+   const geom=obj.geometry;
+   if(!obj.isMesh||!geom||geom.type!=='BoxGeometry')return;
+   const p=geom.parameters;
+   if(p.width<12||p.depth<4||p.height<1)return;
+   const radius=Math.min(1.7,p.width*.075,p.height*.3,p.depth*.075);
+   obj.geometry=new mod.RoundedBoxGeometry(p.width,p.height,p.depth,4,radius);
+  });
+ }catch(error){console.warn('Rounded car body addon unavailable',error);}
+}
+
+// Sombras de contacto de bordes suaves: se dibujan apenas por encima del asfalto.
+// No activan receiveShadow sobre las dos calzadas superpuestas (evita z-fighting).
+function contactShadowMap(){
+ const canvas=document.createElement('canvas');canvas.width=canvas.height=256;
+ const ctx=canvas.getContext('2d');
+ ctx.clearRect(0,0,256,256);
+ const g=ctx.createRadialGradient(128,128,12,128,128,124);
+ g.addColorStop(0,'rgba(0,0,0,.8)');
+ g.addColorStop(.34,'rgba(0,0,0,.52)');
+ g.addColorStop(.73,'rgba(0,0,0,.13)');
+ g.addColorStop(1,'rgba(0,0,0,0)');
+ ctx.fillStyle=g;ctx.fillRect(0,0,256,256);
+ const t=new THREE.CanvasTexture(canvas);
+ t.colorSpace=THREE.SRGBColorSpace;
+ t.minFilter=THREE.LinearFilter;t.magFilter=THREE.LinearFilter;
+ return t;
+}
+contactShadowMaterial=new THREE.MeshBasicMaterial({
+ map:contactShadowMap(),transparent:true,opacity:.37,depthWrite:false,
+ depthTest:true,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-6,
+ side:THREE.DoubleSide,toneMapped:false
+});
+function addContactShadow(car){
+ const shadow=new THREE.Mesh(new THREE.PlaneGeometry(36,49),contactShadowMaterial);
+ shadow.rotation.x=-Math.PI/2;
+ shadow.position.set(2,-.49,-1.5);
+ shadow.castShadow=false;shadow.receiveShadow=false;shadow.renderOrder=7;
+ car.add(shadow);
+}
 const cars=[carModel(0),carModel(1)];cars.forEach(c=>scene.add(c));
 cars.forEach(addContactShadow);
 smoothCarBodies();
