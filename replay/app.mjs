@@ -22,7 +22,7 @@ function road(c,path,start=0,end=path.points.length-1,raised=false){const indice
 // Asfalto con gradiente mineral y textura granular estable, precalculada en cache().
 const mid=project(...path.points[Math.floor((start+end)/2)]);
 const asphalt=c.createLinearGradient(mid.x-34*s,mid.y-22*s,mid.x+38*s,mid.y+30*s);
-asphalt.addColorStop(0,'#354047');asphalt.addColorStop(.28,'#222e38');asphalt.addColorStop(.58,'#19242e');asphalt.addColorStop(1,'#384249');
+asphalt.addColorStop(0,'#525d65');asphalt.addColorStop(.28,'#313c45');asphalt.addColorStop(.58,'#1c2833');asphalt.addColorStop(1,'#4a565e');
 poly(c,strip(17.5),asphalt);
 line(c,indices.map(i=>offset(path,i,16.8,.22)),'#d4d8d38c',.55);
 line(c,indices.map(i=>offset(path,i,-16.8,.22)),'#d4d8d38c',.55);
@@ -36,7 +36,7 @@ for(let n=0;n<Math.min(1000,Math.ceil((end-start)*2.2));n++){
  c.fillStyle=n%3===0?'#c7ced515':'#020a1329';
  c.fillRect(pixel.x,pixel.y,Math.max(.6,s*.95),Math.max(.6,s*.75));
 }
- for(let k=1;k<indices.length;k+=1){const i=indices[k-1],j=indices[k];const distance=path.distances[i];if(Math.floor(distance/12)%2===0){for(const side of[-1,1])poly(c,[offset(path,i,side*18),offset(path,j,side*18),offset(path,j,side*21),offset(path,i,side*21)],'#ae5146');}}
+ for(let k=1;k<indices.length;k+=1){const i=indices[k-1],j=indices[k];const distance=path.distances[i];const curbColor=Math.floor(distance/18)%2===0?'#ecf0ed':'#e52345';for(const side of[-1,1])poly(c,[offset(path,i,side*18,.35),offset(path,j,side*18,.35),offset(path,j,side*21,.35),offset(path,i,side*21,.35)],curbColor);}
  line(c,indices.map(i=>offset(path,i,0,.2)),'#adb7b04d',.7,[7,14]);
  if(showRoutes){const col=path===paths.tunnel?'#54b9ff':'#ff656c';line(c,indices.map(i=>offset(path,i,0,.5)),col+'a0',1.5,[5,8]);for(let dist=200;dist<path.length-70;dist+=370){const p=path.at(dist);if(p.z<.5&&raised)continue;if(raised===false&&p.z>2)continue;arrow(c,p,col);}}
  if(raised){line(c,indices.map(i=>offset(path,i,21,7)),'#9aa59d',1.4);line(c,indices.map(i=>offset(path,i,-21,7)),'#9aa59d',1.4);for(let k=0;k<indices.length;k+=10){const i=indices[k];for(const side of[-1,1])line(c,[offset(path,i,side*21,-3),offset(path,i,side*21,8)],'#566761',1.8);}}
@@ -65,8 +65,8 @@ function cache(){for(const c of[ground,bridge]){c.width=w*dpr;c.height=h*dpr;c.g
  textAt(g,'CIRCUITO',272,385,0,'#7b947c55',22);textAt(g,'DRIFT MASTERS',300,408,0,'#7b947c66',10);
 }
 function resize(){const r=canvas.getBoundingClientRect();w=r.width;h=r.height;dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=w*dpr;canvas.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);const height=view==='overhead'?535:408;s=Math.min((w-38)/1070,(h-95)/height);ox=w/2;oy=h/2+7;cache();}
-function drawCarOn(c,car,p,driftEnabled=true){const id=car.id;const drift=driftEnabled&&phase==='running'&&p.z<1?Math.sin(car.distance/36)*.055:0,a=p.angle+drift;const loc=(x,y,z=0)=>[p.x+Math.cos(a)*x-Math.sin(a)*y,p.y+Math.sin(a)*x+Math.cos(a)*y,p.z+z];const rect=(x1,y1,x2,y2,z,color)=>poly(c,[loc(x1,y1,z),loc(x2,y1,z),loc(x2,y2,z),loc(x1,y2,z)],color);
- poly(c,[loc(-17,-9,0),loc(17,-9,0),loc(17,9,0),loc(-17,9,0)],'#050c11aa');
+function drawCarOn(c,car,p,driftEnabled=true){const id=car.id;const drift=driftEnabled&&phase==='running'&&p.z<1?Math.sin(car.distance/36)*.055:0,a=p.angle+drift;const loc=(x,y,z=0)=>[p.x+Math.cos(a)*(x*1.30)-Math.sin(a)*(y*1.30),p.y+Math.sin(a)*(x*1.30)+Math.cos(a)*(y*1.30),p.z+z*1.16];const rect=(x1,y1,x2,y2,z,color)=>poly(c,[loc(x1,y1,z),loc(x2,y1,z),loc(x2,y2,z),loc(x1,y2,z)],color);
+ poly(c,[loc(-19,-10,-.5),loc(19,-10,-.5),loc(19,10,-.5),loc(-19,10,-.5)],'#02080edc');
  for(const x of[-10,9])for(const y of[-8,8]){rect(x-4,y-2,x+4,y+2,3,'#0a0e16');rect(x-1,y-2,x+1,y+2,3.4,'#77818b');}
  poly(c,[loc(16,-5,4),loc(12,-8,4),loc(-12,-8,4),loc(-16,-5,4),loc(-16,5,4),loc(-12,8,4),loc(12,8,4),loc(16,5,4)],id===0?'#178ed3':'#d83d4b','#0b151e',.6);
  poly(c,[loc(15,-5,6),loc(11,-7,6),loc(-12,-7,6),loc(-15,-4,6),loc(-15,4,6),loc(-12,7,6),loc(11,7,6),loc(15,5,6)],colors[id]);
