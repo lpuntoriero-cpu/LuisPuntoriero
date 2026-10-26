@@ -67,20 +67,39 @@ for(let i=0;i<path.points.length-5;i+=5){const j=Math.min(i+5,path.points.length
 strip(paths.tunnel);strip(paths.bridge);
 // Pilar y barandas: solamente en el tramo elevado, dejando el túnel libre.
 const elevated=paths.bridge.points.map((p,i)=>({p,i})).filter(x=>x.p[2]>25);
-// Dos pares de columnas simétricos. Sin vigas atravesando la calzada.
+// Tablero continuo debajo del asfalto: superficie superior a +1.15, soporte a -3.2.
+const bridgeDeck=new THREE.Mesh(ribbon(paths.bridge,43,-3.2),concrete);
+bridgeDeck.material.side=THREE.DoubleSide;
+bridgeDeck.castShadow=true;bridgeDeck.receiveShadow=true;scene.add(bridgeDeck);
+// Dos vigas longitudinales bajo los bordes del tablero; nunca sobresalen del asfalto.
+for(const side of[-1,1]){
+ const railLine=elevated.filter((_,k)=>k%4===0).map(({i})=>edge(paths.bridge,i,side*18,-5.7));
+ if(railLine.length>2){
+  const railCurve=new THREE.CatmullRomCurve3(railLine);
+  const support=new THREE.Mesh(new THREE.TubeGeometry(railCurve,Math.max(24,railLine.length*3),2.2,8,false),concrete);
+  support.castShadow=true;support.receiveShadow=true;scene.add(support);
+ }
+}
+// Dos pórticos simétricos, vigas transversales ABAJO del tablero y cuatro columnas.
 for(const fraction of [.18,.82]){
  const idx=elevated[Math.round((elevated.length-1)*fraction)].i;
- for(const side of [-1,1]){
-  const q=edge(paths.bridge,idx,side*25);
-  const underside=q.y-5.2;
-  const bottom=-6, h=Math.max(2,underside-bottom);
+ const ends=[edge(paths.bridge,idx,-24,-5.3),edge(paths.bridge,idx,24,-5.3)];
+ const bottom=-6;
+ const top=Math.min(ends[0].y,ends[1].y)-1.1;
+ for(const q of ends){
+  const h=Math.max(2,top-bottom);
   const pillar=new THREE.Mesh(new THREE.BoxGeometry(6,h,6),concrete);
   pillar.position.set(q.x,bottom+h/2,q.z);
   pillar.castShadow=true;pillar.receiveShadow=true;scene.add(pillar);
-  const cap=new THREE.Mesh(new THREE.BoxGeometry(8,1.8,8),silver);
-  cap.position.set(q.x,underside-.9,q.z);
-  cap.castShadow=true;scene.add(cap);
+  const cap=new THREE.Mesh(new THREE.BoxGeometry(9,2,9),silver);
+  cap.position.set(q.x,top+.5,q.z);cap.castShadow=true;scene.add(cap);
  }
+ const mid=ends[0].clone().add(ends[1]).multiplyScalar(.5);
+ const beamLength=ends[0].distanceTo(ends[1])+7;
+ const beam=new THREE.Mesh(new THREE.BoxGeometry(6,3,beamLength),concrete);
+ beam.position.set(mid.x,top+2.4,mid.z);
+ beam.rotation.y=Math.atan2(ends[1].x-ends[0].x,ends[1].z-ends[0].z);
+ beam.castShadow=true;beam.receiveShadow=true;scene.add(beam);
 }
 for(const side of[-1,1]){const vertices=[];for(const {i} of elevated.filter((_,k)=>k%5===0))vertices.push(edge(paths.bridge,i,side*20,7));const curve=new THREE.CatmullRomCurve3(vertices);const rail=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(16,vertices.length*3),1.3,6,false),silver);rail.castShadow=true;scene.add(rail)}
 // Línea de largada/meta horizontal a ambos carriles.
