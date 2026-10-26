@@ -602,8 +602,10 @@ let gantryCountdownStart=null,gantryGreen=false,gantryRemaining=8;
 function setGantryLeds(remaining,green=false){
  gantryRemaining=remaining;gantryGreen=green;
  for(let lane=0;lane<2;lane++)for(let i=0;i<8;i++){
-  gantryLEDs[lane*8+i].material.color.setHex(green?0x00ff24:(i<remaining?0xff0010:0x100104));
-  gantryLEDs[lane*8+i].visible=green||i<remaining;
+  // Orden corregido desde la perspectiva de las trompas: derecha -> izquierda.
+  const lit=i>=8-remaining;
+  gantryLEDs[lane*8+i].material.color.setHex(green?0x00ff24:(lit?0xff0010:0x170208));
+  gantryLEDs[lane*8+i].visible=green||lit;
  }
 }
 setGantryLeds(8,false);
@@ -620,6 +622,7 @@ function gantryWriteOLED(message){
 }
 function gantryResetCelebration(){
  gantryWinner=null;gantryCelebrationAt=null;gantryWriteOLED(null);
+ $('gantryStart').style.background='';
 }
 function gantryCheckWinner(T){
  if(gantryWinner!==null||gantryCountdownStart!==null)return;
@@ -627,6 +630,8 @@ function gantryCheckWinner(T){
  if(elapsed+1e-5<first)return;
  gantryWinner=T[0][1]===T[1][1]?'EMPATE':T[0][1]<T[1][1]?'GANÓ AZUL':'GANÓ ROJO';
  gantryCelebrationAt=performance.now();gantryWriteOLED(gantryWinner);
+ $('gantryStart').textContent='🎆 '+gantryWinner;
+ $('gantryStart').style.background=gantryWinner==='GANÓ AZUL'?'#064bb8':'#b81538';
 }
 function gantryFireworks(now){
  if(gantryCelebrationAt===null)return;
@@ -635,8 +640,8 @@ function gantryFireworks(now){
  for(let i=0;i<16;i++){
   const wave=Math.sin(seconds*15-i*.91),burst=Math.sin(seconds*7+i*2.4);
   const hue=((seconds*.23+i*.085+Math.floor(seconds*2)*.11)%1+1)%1;
-  gantryLEDs[i].visible=wave>-.58||burst>.55;
-  gantryLEDs[i].material.color.setHSL(hue,1,.5+.18*Math.max(0,burst));
+  gantryLEDs[i].visible=true;
+  gantryLEDs[i].material.color.setHSL(hue,1,Math.max(.04,Math.min(.9,.27+.45*Math.max(0,wave)+.2*Math.max(0,burst))));
  }
 }
 // Línea de largada/meta horizontal a ambos carriles.
@@ -1291,6 +1296,7 @@ function frame(now){
  update();
  gantryFireworks(now);
  if(gantryCountdownStart!==null){$('play').textContent='■ Cancelar cuenta · '+gantryRemaining;$('gantryStart').textContent='🚦 '+gantryRemaining+' LED rojos';}
+  else if(gantryWinner!==null)$('gantryStart').textContent='🎆 '+gantryWinner;
   else $('gantryStart').textContent=gantryGreen?'🟢 ¡LARGADA!':'🚦 Iniciar cuenta regresiva';
  cameras(dt);
  if(postFXReady&&composer&&qualityMode!=='normal'){
