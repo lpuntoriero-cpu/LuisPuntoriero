@@ -68,20 +68,15 @@ function ribbon(path,width,raise=0){const verts=[],uv=[],idx=[];const N=path.poi
 // Las únicas omisiones son tramos compartidos declarados explícitamente.
 // No se realizan borrados por proximidad de otros carriles.
 const CURB_WIDTH=5.25, ROAD_HALF=55.5/2;
-const curbTopology={
- tunnel:{
-   // La recta de partida llega hasta x=280, y la de llegada arranca en x=850.
-   // Su borde interior coincide con un piano central construido una sola vez.
-   shared:[{side:-1,y:525,x0:280,x1:560},{side:1,y:475,x0:560,x1:850}]
- },
- bridge:{
-   shared:[{side:1,y:475,x0:280,x1:560},{side:-1,y:525,x0:560,x1:850}]
- }
-};
-function isSharedCurb(name,side,a,b){
- const x=(a[0]+b[0])/2,y=(a[1]+b[1])/2;
- if(a[2]>1||b[2]>1)return false;
- return curbTopology[name].shared.some(t=>side===t.side&&x>=t.x0&&x<=t.x1&&Math.abs(y-t.y)<5);
+// Compartición explícita por índices de los TRAMOS rectos inicial y final.
+// Evita que una tolerancia de coordenadas deje dibujados dos pianos en el centro.
+function isSharedCurb(name,side,i,path){
+ const lastSegment=path.points.length-2;
+ const firstStraight=i<24;                 // x=560 a x=280
+ const returnStraight=i>=lastSegment-23;   // x=850 a x=560
+ if(firstStraight) return (name==='tunnel'&&side===-1)||(name==='bridge'&&side===1);
+ if(returnStraight) return (name==='tunnel'&&side===1)||(name==='bridge'&&side===-1);
+ return false;
 }
 function paintCurbQuad(a,b,c,d,mat){
  const g=new THREE.BufferGeometry();
@@ -96,7 +91,7 @@ function strip(path,name){
  for(const side of [-1,1]){
   for(let i=0;i<path.points.length-1;i++){
    const j=i+1,a=path.points[i],b=path.points[j];
-   if(isSharedCurb(name,side,a,b))continue;
+   if(isSharedCurb(name,side,i,path))continue;
    const mat=Math.floor(path.distances[i]/24)%2===0?red:white;
    // Piezas adyacentes comparten exactamente sus vértices: sin huecos de 5 puntos.
    paintCurbQuad(
