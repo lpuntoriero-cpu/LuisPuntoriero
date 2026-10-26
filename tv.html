@@ -247,22 +247,10 @@ function updateTvBluetooth(connected){
 function render(s){if(!s||s.type!=='DM_TV_STATE')return;
  if(s.photoFinish&&s.photoFinish.id!==window.dmPhotoFinishLastId){window.dmPhotoFinishLastId=s.photoFinish.id;window.dmPhotoFinishPlay?.(s.photoFinish)}
  if((s.phase==='reposo'||s.phase==='posicionamiento'||s.phase==='cuenta')&&window.dmPhotoFinishLastId){window.dmPhotoFinishReset?.();window.dmPhotoFinishLastId=null}
- // Fuente principal: datos guardados. Respaldo: relojes finales visibles en la TV.
- const parseFinalTime=value=>{
-  const match=String(value??'').replace(',','.').match(/(?:^|\s)(\d+(?:\.\d+)?)\s*s?\s*$/i);
-  return match?Number(match[1]):null;
- };
- let finalData=s.photoFinishData||null;
- if(!finalData){
-  const bt=parseFinalTime(s.blue?.time),rt=parseFinalTime(s.red?.time);
-  const completed=s.phase==='finalizada'||s.raceCompleted===true||
-   s.blue?.result==='GANADOR'||s.red?.result==='GANADOR'||s.count==='FIN';
-  if(completed&&Number.isFinite(bt)&&Number.isFinite(rt)&&Math.abs(bt-rt)<=1){
-   finalData={id:Date.now(),winner:bt<=rt?'AZUL':'ROJO',difference:Math.abs(bt-rt),
-    blueName:s.blue?.pilot||'AZUL',redName:s.red?.pilot||'ROJO',
-    blueTime:s.blue.time,redTime:s.red.time,vehicle:s.vehicleType||'drift'};
-  }
- }
+ // Foto Finish únicamente cuando la pantalla principal confirma ambos tiempos finales.
+ // No inferirlo de relojes en curso: al llegar el primero el segundo sigue contando.
+ const finalData=(s.photoFinishAvailable===true&&s.photoFinishData&&Number(s.photoFinishData.difference)<1)
+  ?s.photoFinishData:null;
  window.dmTvPhotoFinishData=finalData;
  const replay=$('tvPhotoFinishBtn');
  if(replay){replay.hidden=!finalData;replay.disabled=!finalData;}
