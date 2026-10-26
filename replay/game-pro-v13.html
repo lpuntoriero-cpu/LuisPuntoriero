@@ -58,7 +58,7 @@ body{margin:0;background:#030814;color:#f0f7ff;overflow:hidden}button,input{font
 <div class="ui" id="notice" hidden></div>
 <div class="ui glass" id="modelPanel" hidden>
 <h2>Importar Supra 3D (.glb)</h2>
-<p>La v13 intenta cargar automáticamente el Supra real. Mientras tanto podés seleccionar <code>supra_optimizado.glb</code> desde tu equipo.</p>
+<p>La v13 carga automáticamente supra_menos_25mb.glb. Mientras tanto podés seleccionar <code>supra_optimizado.glb</code> desde tu equipo.</p>
 <input id="modelFile" type="file" accept=".glb,model/gltf-binary">
 <div class="model-actions">
 <button id="modelFlip" title="Invertir frente y parte trasera del modelo">↻ Girar 180°</button>
@@ -967,7 +967,7 @@ $('modelFile').onchange=async event=>{
 };
 async function autoLoadSupra(){
  const serial=++loadSerial;
- const url=new URL('./supra_optimizado.glb',location.href);
+ const url=new URL('./supra_menos_25mb.glb',location.href);
  try{
   const response=await fetch(url,{cache:'force-cache'});
   if(!response.ok)throw Error('HTTP '+response.status);
