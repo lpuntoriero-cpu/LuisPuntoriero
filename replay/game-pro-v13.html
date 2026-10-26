@@ -878,7 +878,7 @@ const cars=[carModel(0),carModel(1)];cars.forEach(c=>scene.add(c));
 // restauran automáticamente si falla el GLB o su dependencia de carga.
 const proceduralParts=cars.map(car=>car.children.slice());
 const importedParts=[null,null];
-let importedOrientation=0;
+let importedOrientation=Math.PI;
 const setModelStatus=msg=>{$('modelStatus').textContent=msg;};
 function showAutoStatus(message,retry=false){$('autoModelStatus').hidden=false;$('autoModelLabel').textContent=message;$('retrySupra').hidden=!retry;}
 $('toggleModel').onclick=()=>{
@@ -890,7 +890,7 @@ function resetImportedModels(){
   if(importedParts[id]){cars[id].remove(importedParts[id]);importedParts[id]=null;}
   for(const node of proceduralParts[id])node.visible=true;
  }
- importedOrientation=0;
+ importedOrientation=Math.PI;
  $('modelFile').value='';
  setModelStatus('Restaurados los dos Supra procedurales de la v8.');
 }
