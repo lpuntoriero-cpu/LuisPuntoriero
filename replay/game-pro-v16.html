@@ -880,14 +880,14 @@ const brakeFX=cars.map(car=>{
  const base=new THREE.MeshBasicMaterial({color:0xff1229,transparent:true,opacity:.8,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});
  const bright=new THREE.MeshBasicMaterial({color:0xff001a,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});
  const halo=new THREE.MeshBasicMaterial({color:0xff1030,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,toneMapped:false,blending:THREE.AdditiveBlending});
- const spots=[];
+ const spots=[],nodes=[];
  for(const side of[-1,1]){
-  const lamp=new THREE.Mesh(new THREE.PlaneGeometry(4.5,1.6),base);lamp.position.set(side*5.1,7.8,-19.8);lamp.rotation.y=Math.PI;lamp.renderOrder=24;car.add(lamp);
-  const lit=new THREE.Mesh(new THREE.PlaneGeometry(4.7,1.8),bright);lit.position.set(side*5.1,7.8,-19.86);lit.rotation.y=Math.PI;lit.renderOrder=25;car.add(lit);
-  const bloom=new THREE.Mesh(new THREE.PlaneGeometry(7.8,3.4),halo);bloom.position.set(side*5.1,7.8,-19.91);bloom.rotation.y=Math.PI;bloom.renderOrder=26;car.add(bloom);
-  const spot=new THREE.PointLight(0xff001b,0,26,2);spot.position.set(side*5.1,7.9,-20.3);car.add(spot);spots.push(spot);
+  const lamp=new THREE.Mesh(new THREE.PlaneGeometry(4.5,1.6),base);lamp.position.set(side*5.1,7.8,-19.8);lamp.rotation.y=Math.PI;lamp.renderOrder=24;car.add(lamp);nodes.push(lamp);
+  const lit=new THREE.Mesh(new THREE.PlaneGeometry(4.7,1.8),bright);lit.position.set(side*5.1,7.8,-19.86);lit.rotation.y=Math.PI;lit.renderOrder=25;car.add(lit);nodes.push(lit);
+  const bloom=new THREE.Mesh(new THREE.PlaneGeometry(7.8,3.4),halo);bloom.position.set(side*5.1,7.8,-19.91);bloom.rotation.y=Math.PI;bloom.renderOrder=26;car.add(bloom);nodes.push(bloom);
+  const spot=new THREE.PointLight(0xff001b,0,26,2);spot.position.set(side*5.1,7.9,-20.3);car.add(spot);spots.push(spot);nodes.push(spot);
  }
- return {base,bright,halo,spots};
+ return {base,bright,halo,spots,nodes};
 });
 // // Marcadores de giro visibles para llantas del GLB; no se modifican
 // mallas originales porque vienen sin pivotes ni nombres de rueda fiables.
@@ -904,7 +904,7 @@ function updateDrivingFX(id,d,T){
 }
 // Importador local no destructivo. Los modelos originales permanecen en memoria y se
 // restauran automáticamente si falla el GLB o su dependencia de carga.
-const proceduralParts=cars.map(car=>car.children.slice());
+const proceduralParts=cars.map((car,id)=>car.children.filter(node=>!brakeFX[id].nodes.includes(node)));
 const importedParts=[null,null];
 let importedOrientation=0; // Este GLB ya entra invertido: 0 corrige el 180 anterior
 const setModelStatus=msg=>{$('modelStatus').textContent=msg;};
