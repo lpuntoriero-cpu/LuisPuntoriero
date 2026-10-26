@@ -1,0 +1,1238 @@
+<!doctype html>
+<html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drift Masters — Replay 3D PRO v14 · Frenos y velocidad</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,Arial,sans-serif}*{box-sizing:border-box}
+body{margin:0;background:#030814;color:#f0f7ff;overflow:hidden}button,input{font:inherit}
+#view{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none}
+.ui{position:fixed;z-index:5;pointer-events:none}.ui>*{pointer-events:auto}
+#top{top:14px;left:16px;right:16px;display:flex;align-items:start;justify-content:space-between;gap:10px}
+.glass{background:#06111ddc;border:1px solid #ffffff27;border-radius:13px;backdrop-filter:blur(10px);box-shadow:0 10px 35px #0008}
+.brand{padding:11px 15px;font-size:clamp(17px,2vw,27px);font-weight:1000;font-style:italic;letter-spacing:-.06em;line-height:1.05}
+.brand b{color:#ff355d}.brand small{display:block;margin-top:6px;color:#a8c7df;font-size:10px;font-style:normal;letter-spacing:.16em}
+.stats{display:flex;gap:18px;padding:10px 15px;align-items:center}.stat{text-align:center}.stat small{display:block;font-size:10px;color:#a5bbcf;letter-spacing:.1em}.stat strong{display:block;font-size:clamp(15px,2vw,25px);font-variant-numeric:tabular-nums}
+#timer{color:#ffc65f}#left{left:16px;bottom:112px;display:flex;gap:8px}
+.driver{min-width:156px;padding:10px 12px;border-left:4px solid #26b5ff}.driver.red{border-color:#ff4765}.driver b{font-size:12px}.driver span{display:block;font-variant-numeric:tabular-nums;font-size:17px;font-weight:800;margin-top:4px}
+#bottom{bottom:15px;left:16px;right:16px;display:flex;align-items:end;justify-content:space-between;gap:12px}
+.controls{display:flex;gap:7px;flex-wrap:wrap;padding:9px;align-items:center}.controls button,.controls select{color:white;background:#172c43;border:1px solid #41627d;border-radius:8px;padding:9px 12px;cursor:pointer;font-weight:750}.controls button.active{background:#1168a8;border-color:#6bd0ff}.controls button.go{background:#176dc6;border-color:#7fbeff}
+#settings{padding:10px;min-width:280px}#settings .inputs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}#settings label{font-size:10px;color:#b4cde0}#settings input{display:block;width:100%;min-width:0;margin-top:4px;color:white;background:#132538;border:1px solid #4a6580;border-radius:6px;padding:7px 5px;font-size:12px}#settings .help{font-size:10px;color:#91afc8;margin:6px 0 0}
+#notice{top:50%;left:50%;transform:translate(-50%,-50%);background:#04111def;border:1px solid #5b8aab;border-radius:14px;padding:15px 20px;font-weight:700;text-align:center;max-width:min(450px,90vw)}
+#done{top:40%;left:50%;transform:translate(-50%,-50%);padding:18px 26px;text-align:center;display:none;min-width:235px}#done strong{display:block;font-size:27px;color:#ffd37f;margin-top:5px}#done small{display:block;color:#b9d6e7;margin-top:6px}
+#scrub{width:min(250px,22vw);accent-color:#27a9ff}
+#quality{min-width:125px;outline-offset:2px}
+#quality:focus-visible{outline:2px solid #83d7ff}
+@media(max-width:850px){#top{left:8px;right:8px;top:8px}.stats{gap:9px;padding:10px}.brand{padding:9px}#bottom{left:8px;right:8px;bottom:8px;flex-direction:column;align-items:stretch}#settings{order:1}#left{left:8px;bottom:185px}.controls{justify-content:center}.driver{min-width:120px;padding:7px}.driver span{font-size:14px}.stat strong{font-size:16px}.stats .gap{display:none}#scrub{width:100px}}
+
+/* Edición PRO: controles legibles y HUD estilo videojuego */
+.brand{background:linear-gradient(115deg,#061425ed,#081d2fee);border-color:#50a6d75e;text-shadow:0 2px 15px #031e37}
+.brand small{color:#8ecaff}
+.stats{border-color:#47708a90}
+.controls{max-width:min(1120px,94vw);box-shadow:0 12px 45px #000a}
+.controls button:hover,.controls select:hover{background:#234969;border-color:#91ceff}
+.controls button:focus-visible{outline:2px solid #a1dfff;outline-offset:2px}
+.controls button[data-camera="cinema"].active{background:#703064;border-color:#ff83db}
+#mode.active{background:#6a4176;border-color:#d59de8}
+.driver{background:linear-gradient(120deg,#061626ed,#132b40df)}
+#shortcutHint{top:82px;right:18px;padding:8px 12px;max-width:340px;color:#b7cddd;
+ font-size:11px;text-align:right;line-height:1.5;opacity:.90}
+#shortcutHint strong{color:#e1f6ff}
+@media(max-width:850px){#shortcutHint{display:none}.controls{max-width:100%}}
+
+#modelPanel{position:fixed;top:95px;right:17px;z-index:15;width:min(365px,calc(100vw - 34px));padding:15px;pointer-events:auto}
+#modelPanel[hidden]{display:none}
+#modelPanel h2{font-size:16px;margin:0 0 8px}
+#modelPanel p{font-size:12px;color:#bad0e2;line-height:1.5;margin:7px 0}
+#modelPanel a{color:#81caff}
+#modelPanel .model-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+#modelPanel button,#modelPanel input[type=file]{font:inherit;font-size:12px}
+#modelPanel button{color:#f1f9ff;background:#193955;border:1px solid #5c829b;border-radius:8px;padding:8px;cursor:pointer}
+#modelFile{width:100%;padding:9px;background:#0b2236;border-radius:7px}
+#modelStatus{min-height:36px;white-space:normal;overflow-wrap:anywhere}
+#autoModelStatus{position:fixed;z-index:9;top:126px;right:18px;max-width:390px;pointer-events:auto;font-size:12px;line-height:1.4;padding:9px 12px;color:#d3eafb}
+#autoModelStatus[hidden]{display:none}
+#autoModelStatus button{border:1px solid #659dc8;border-radius:6px;background:#18486a;color:white;padding:5px 8px;margin-left:7px;cursor:pointer}
+@media(max-width:850px){#autoModelStatus{top:60px;right:8px;max-width:270px}}
+@media(max-width:850px){#modelPanel{top:68px;right:8px}}
+.car-speed{font-size:12px!important;color:#a9d3e8;font-variant-numeric:tabular-nums;margin-top:3px!important}
+</style></head>
+<body><canvas id="view"></canvas>
+<div class="ui" id="top"><div class="brand glass">DRIFT <b>MASTERS</b><small>CIRCUITO DRIFT MASTERS · REPLAY 3D PRO v14 · SUPRA A90</small></div><div class="stats glass"><div class="stat"><small>TIEMPO</small><strong id="timer">00:00.000</strong></div><div class="stat"><small>VUELTA</small><strong id="lap">1 / 2</strong></div><div class="stat gap"><small>DIFERENCIA FINAL</small><strong id="gap">—</strong></div></div></div>
+<div class="ui glass" id="shortcutHint"><strong>VISTA LIBRE</strong> · Botón derecho: girar · Ruedita: zoom · Espacio: pausar · 1–7: cámaras</div>
+<div id="autoModelStatus" class="glass" role="status" aria-live="polite"><span id="autoModelLabel">Preparando Supra 3D...</span><button id="retrySupra" hidden>Reintentar</button></div>
+<div class="ui" id="left"><div class="driver glass"><b style="color:#64caff">● AZUL · SUPRA 01</b><span id="blueLap">Vuelta 1</span><span id="blueTime">—</span><span id="blueSpeed" class="car-speed">—</span></div><div class="driver red glass"><b style="color:#ff8598">● ROJO · SUPRA 02</b><span id="redLap">Vuelta 1</span><span id="redTime">—</span><span id="redSpeed" class="car-speed">—</span></div></div>
+<div class="ui glass" id="done"><div>🏁 BANDERA A CUADROS</div><strong id="winner">—</strong><small id="finishDetail"></small></div>
+<div class="ui" id="notice" hidden></div>
+<div class="ui glass" id="modelPanel" hidden>
+<h2>Importar Supra 3D (.glb)</h2>
+<p>La v13 carga automáticamente supra_menos_25mb.glb. Mientras tanto podés seleccionar <code>supra_optimizado.glb</code> desde tu equipo.</p>
+<input id="modelFile" type="file" accept=".glb,model/gltf-binary">
+<div class="model-actions">
+<button id="modelFlip" title="Invertir frente y parte trasera del modelo">↻ Girar 180°</button>
+<button id="modelReset">Restaurar Supra v8</button>
+<button id="modelClose">Cerrar</button>
+</div>
+<p id="modelStatus" role="status" aria-live="polite">Ningún modelo importado. Tamaño máximo recomendado: 45 MB.</p>
+<p>Fuente de ejemplo: <a href="https://sketchfab.com/3d-models/toyota-gr-supra-2020-38704eb74b8a419da91e4bfb50a50e04" target="_blank" rel="noopener noreferrer">Toyota GR Supra 2020 — ItsDiyor (CC BY)</a>. Descargá y convertí a GLB si hace falta. Conservá la atribución del autor.</p>
+</div>
+<div class="ui" id="bottom"><div class="controls glass">
+<button class="go" id="play">▶ Reproducir</button><button id="restart">↺ Reiniciar</button>
+<button class="active" data-camera="overview">Perspectiva</button><button data-camera="top">Cenital</button><button data-camera="blue">Seguir azul</button><button data-camera="red">Seguir rojo</button>
+<button data-camera="bridge">Puente</button><button data-camera="cinema">Cine</button><button data-camera="low">A ras</button>
+<button id="resetCam" title="Restablecer cámara libre">⌖ Cámara</button>
+<button id="mode" title="Cambiar iluminación">☾ Noche</button><button id="toggleModel" title="Cargar un modelo Supra GLB">🚘 Modelo 3D</button>
+<select id="quality" aria-label="Calidad de renderizado" title="Calidad gráfica">
+<option value="normal">Normal · rápido</option>
+<option value="high" selected>Alta · SMAA</option>
+<option value="ultra">Ultra · SMAA 2×</option>
+</select>
+<select id="speed" aria-label="Velocidad"><option value=".5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select>
+<input aria-label="Posición de la repetición" type="range" min="0" max="1000" value="0" id="scrub">
+</div><div id="settings" class="glass"><div class="inputs">
+<label>Azul V1<input type="number" min=".01" step=".001" id="b1" value="7.2"></label><label>Azul total<input type="number" min=".01" step=".001" id="bt" value="14.1"></label>
+<label>Rojo V1<input type="number" min=".01" step=".001" id="r1" value="7.8"></label><label>Rojo total<input type="number" min=".01" step=".001" id="rt" value="14.9"></label></div>
+<p class="help">Tiempos reales en segundos · Frenan en curvas y aceleran en rectas · Azul: túnel primero / Rojo: puente primero</p></div></div>
+<script>
+/* El indicador de error permanece disponible aunque falle el módulo 3D. */
+window.addEventListener('error',function(ev){
+ const node=document.getElementById('notice');
+ if(!node)return;
+ node.hidden=false;
+ node.textContent='Error al cargar el Replay 3D: '+(ev.message||'revisá la consola');
+});
+window.addEventListener('unhandledrejection',function(ev){
+ const node=document.getElementById('notice');
+ if(!node)return;
+ node.hidden=false;
+ node.textContent='Error al inicializar el 3D: '+(ev.reason&&ev.reason.message||'dependencia no disponible');
+});
+</script>
+<script type="module">
+import {paths,routeFor,validateTrack} from './core.mjs';
+import * as THREE from 'https://esm.sh/three@0.160.1';
+const $=id=>document.getElementById(id);
+const valid=validateTrack();if(!valid.ok){$('notice').hidden=false;$('notice').textContent='Error de geometría: '+valid.errors.join(', ');}
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x0b1621);scene.fog=new THREE.Fog(0x0b1621,900,1950);
+const canvas=$('view');const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(1.5);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.55;
+// Near plane 12 gives ~12x finer depth precision at track distance than near=1.
+const camera=new THREE.PerspectiveCamera(42,1,12,3500);
+let qualityMode='high',composer=null,smaaPass=null,postFXReady=false;
+function pixelRatioForQuality(){
+ const asked=qualityMode==='ultra'?2:qualityMode==='high'?1.5:1;
+ // Prevent excessively large GPU buffers on 4K/retina displays.
+ const maxPixels=qualityMode==='ultra'?9500000:qualityMode==='high'?6200000:3200000;
+ return Math.max(.75,Math.min(asked,Math.sqrt(maxPixels/Math.max(1,innerWidth*innerHeight))));
+}
+function applyQuality(){
+ const ratio=pixelRatioForQuality();
+ renderer.setPixelRatio(ratio);
+ renderer.setSize(innerWidth,innerHeight,false);
+ if(composer){composer.setPixelRatio(ratio);composer.setSize(innerWidth,innerHeight);}
+ if(smaaPass)smaaPass.setSize(Math.max(1,Math.round(innerWidth*ratio)),Math.max(1,Math.round(innerHeight*ratio)));
+ const shadowRes=qualityMode==='ultra'?4096:qualityMode==='high'?3072:1536;
+ if(sun.shadow.mapSize.x!==shadowRes){
+  sun.shadow.mapSize.set(shadowRes,shadowRes);
+  if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}
+  sun.shadow.needsUpdate=true;
+ }
+}
+async function initPostProcessing(){
+ try{
+  const base='https://esm.sh/three@0.160.1/examples/jsm/postprocessing/';
+  const [ec,rp,sp,op]=await Promise.all([
+   import(base+'EffectComposer.js'),import(base+'RenderPass.js'),
+   import(base+'SMAAPass.js'),import(base+'OutputPass.js')
+  ]);
+  const chain=new ec.EffectComposer(renderer);
+  chain.addPass(new rp.RenderPass(scene,camera));
+  const aa=new sp.SMAAPass(Math.round(innerWidth*renderer.getPixelRatio()),Math.round(innerHeight*renderer.getPixelRatio()));
+  chain.addPass(aa);chain.addPass(new op.OutputPass());
+  composer=chain;smaaPass=aa;postFXReady=true;applyQuality();
+ }catch(error){postFXReady=false;composer=null;console.warn('SMAA unavailable; using native antialiasing',error);}
+}
+// 3D render begins immediately; asynchronous effects cannot block the race.
+initPostProcessing();
+// Iluminación de cielo: azul pálido y rebote cálido del entorno.
+const hemi=new THREE.HemisphereLight(0xdcecff,0x43513f,1.8);scene.add(hemi);
+// El sol apunta al centro físico de la mesa, no al origen arbitrario (0,0,0).
+// El encuadre de sombras abarca toda la pista con resolución repartida uniformemente.
+const sun=new THREE.DirectionalLight(0xffefda,2.9);
+sun.position.set(295,565,55);
+sun.target.position.set(535,0,-300);
+scene.add(sun.target);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.left=-680;sun.shadow.camera.right=680;
+sun.shadow.camera.top=550;sun.shadow.camera.bottom=-550;
+sun.shadow.camera.near=25;sun.shadow.camera.far=1400;
+sun.shadow.bias=-.0003;sun.shadow.normalBias=.035;
+sun.shadow.radius=2.5;
+scene.add(sun);
+const fill=new THREE.DirectionalLight(0xb4d6ff,.85);
+fill.position.set(900,300,-550);
+fill.target.position.set(535,0,-300);scene.add(fill.target);scene.add(fill);
+// Texturas 512x512 totalmente opacas: el fondo debe cubrir TODOS los píxeles.
+// La versión anterior sólo pintaba 256x256 y producía bloques negros y verdes.
+// Superficies fotográficas procedurales: fondo OPACO de 1024 px completo.
+// Ruido de baja amplitud y manchas difusas evitan textura plana o patrón en damero.
+function tx(base,grains,kind='asphalt'){
+ const size=1024,c=document.createElement('canvas');c.width=c.height=size;
+ const q=c.getContext('2d',{alpha:false});q.fillStyle=base;q.fillRect(0,0,size,size);
+ let seed=kind==='grass'?714239:431909;
+ const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+ const asphaltType=kind==='asphalt';
+ // Áridos del asfalto y pequeñas variaciones del césped, sin cuadrículas artificiales.
+ for(let i=0;i<grains;i++){
+  const x=Math.floor(rand()*size),y=Math.floor(rand()*size),light=rand()>.53;
+  q.fillStyle=asphaltType
+   ?(light?'rgba(230,228,219,.045)':'rgba(4,9,13,.07)')
+   :(light?'rgba(180,211,153,.035)':'rgba(9,38,20,.05)');
+  const sz=rand()>.955?2:1;q.fillRect(x,y,sz,sz);
+ }
+ // Variación tonal de escala mayor, translúcida y dispersa.
+ for(let i=0;i<(asphaltType?300:390);i++){
+  const x=rand()*size,y=rand()*size,r=10+rand()*(asphaltType?36:45);
+  const gradient=q.createRadialGradient(x,y,0,x,y,r);
+  const strength=asphaltType?.020:.026;
+  gradient.addColorStop(0,rand()>.48
+   ?'rgba(0,0,0,'+strength+')'
+   :'rgba(240,245,231,'+(strength*.56)+')');
+  gradient.addColorStop(1,'rgba(0,0,0,0)');
+  q.fillStyle=gradient;q.beginPath();q.arc(x,y,r,0,Math.PI*2);q.fill();
+ }
+ if(asphaltType){
+  // Microdesgaste del asfalto; rayas finas, casi imperceptibles.
+  q.lineWidth=1;q.strokeStyle='rgba(210,217,218,.022)';
+  for(let i=0;i<160;i++){
+   const x=rand()*size,y=rand()*size,len=6+rand()*26;
+   q.beginPath();q.moveTo(x,y);q.lineTo(x+len,y+(rand()-.5)*9);q.stroke();
+  }
+ }
+ const t=new THREE.CanvasTexture(c);
+ t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;
+ t.minFilter=THREE.LinearMipmapLinearFilter;t.magFilter=THREE.LinearFilter;
+ t.generateMipmaps=true;return t;
+}
+// Mapa de relieve muy leve: sólo modifica la respuesta a la luz, no la pista.
+function asphaltBumpTexture(){
+ const size=512,c=document.createElement('canvas');c.width=c.height=size;
+ const q=c.getContext('2d',{alpha:false});
+ q.fillStyle='#808080';q.fillRect(0,0,size,size);
+ let state=78013;
+ const r=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
+ for(let i=0;i<49000;i++){
+  const val=Math.floor(86+r()*84),x=Math.floor(r()*size),y=Math.floor(r()*size);
+  q.fillStyle='rgb('+val+','+val+','+val+')';q.fillRect(x,y,1,1);
+ }
+ const t=new THREE.CanvasTexture(c);
+ t.wrapS=t.wrapT=THREE.RepeatWrapping;t.minFilter=THREE.LinearMipmapLinearFilter;
+ t.magFilter=THREE.LinearFilter;t.generateMipmaps=true;t.colorSpace=THREE.NoColorSpace;
+ return t;
+}
+// Desgaste mínimo sobre los pianos. La pintura continúa roja/blanca sin cambiar su geometría.
+function curbTexture(){
+ const c=document.createElement('canvas');c.width=1024;c.height=128;
+ const q=c.getContext('2d',{alpha:false});
+ q.fillStyle='#ffffff';q.fillRect(0,0,c.width,c.height);
+ let state=67915;const r=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
+ for(let i=0;i<1100;i++){
+  const x=r()*1024,y=r()*128;
+  q.fillStyle=r()>.45?'rgba(47,42,40,.035)':'rgba(170,171,166,.025)';
+  q.fillRect(x,y,3+r()*17,.5+r()*1.8);
+ }
+ for(let i=0;i<100;i++){
+  const x=r()*1024,y=r()*128,rad=3+r()*14;
+  const gradient=q.createRadialGradient(x,y,0,x,y,rad);
+  gradient.addColorStop(0,'rgba(48,46,44,.045)');
+  gradient.addColorStop(1,'rgba(48,46,44,0)');
+  q.fillStyle=gradient;q.beginPath();q.arc(x,y,rad,0,Math.PI*2);q.fill();
+ }
+ const t=new THREE.CanvasTexture(c);
+ t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;
+ t.minFilter=THREE.LinearMipmapLinearFilter;t.magFilter=THREE.LinearFilter;
+ t.generateMipmaps=true;return t;
+}
+const asphalt=tx('#34393b',47000,'asphalt'),grass=tx('#2d5034',46000,'grass');
+const asphaltBump=asphaltBumpTexture(),curbWear=curbTexture();
+// El asfalto repite a lo largo de su UV existente; el césped usa UV del tablero.
+asphalt.repeat.set(1,2);asphaltBump.repeat.copy(asphalt.repeat);grass.repeat.set(8,5);
+const textureAnisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+for(const t of [asphalt,asphaltBump,grass,curbWear])t.anisotropy=textureAnisotropy;
+const roadmat=new THREE.MeshPhysicalMaterial({map:asphalt,bumpMap:asphaltBump,bumpScale:.11,color:0xffffff,roughness:.95,metalness:0,clearcoat:0,side:THREE.DoubleSide,transparent:false,depthTest:true,depthWrite:true,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2});
+const grassmat=new THREE.MeshStandardMaterial({map:grass,roughness:1});
+const table=new THREE.Mesh(new THREE.BoxGeometry(1290,16,770),new THREE.MeshStandardMaterial({color:0x4a483a,roughness:1}));table.position.set(535,-15,-300);table.receiveShadow=true;scene.add(table);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(1250,730),grassmat);ground.rotation.x=-Math.PI/2;ground.position.set(535,-6,-300);ground.receiveShadow=true;scene.add(ground);
+const red=new THREE.MeshPhysicalMaterial({map:curbWear,color:0xe63a4e,roughness:.72,metalness:0,clearcoat:.09,clearcoatRoughness:.8}),white=new THREE.MeshPhysicalMaterial({map:curbWear,color:0xf0efeb,roughness:.78,metalness:0,clearcoat:.06,clearcoatRoughness:.84});
+// Pianos: layer rendered above asphalt but still depth-tested against elevated bridge/objects.
+const redCurb=red.clone(),whiteCurb=white.clone();
+for(const mat of [redCurb,whiteCurb]){
+ mat.side=THREE.DoubleSide;mat.depthTest=true;mat.depthWrite=false;
+ mat.polygonOffset=true;mat.polygonOffsetFactor=-4;mat.polygonOffsetUnits=-8;
+}
+const bridgeRoadMat=roadmat.clone();
+bridgeRoadMat.polygonOffset=true;
+bridgeRoadMat.polygonOffsetFactor=-2;
+bridgeRoadMat.polygonOffsetUnits=-5;
+const silver=new THREE.MeshStandardMaterial({color:0x99a8b8,metalness:.64,roughness:.35});
+const concrete=new THREE.MeshStandardMaterial({color:0x636c77,roughness:.9});
+function vec(p,dy=0){return new THREE.Vector3(p[0],p[2]*.38+dy,-p[1])}
+function tangent(path,i){const a=path.points[Math.max(0,i-1)],b=path.points[Math.min(path.points.length-1,i+1)];return new THREE.Vector3(b[0]-a[0],0,-(b[1]-a[1])).normalize()}
+function edge(path,i,amount,up=0){const t=tangent(path,i),p=vec(path.points[i],up);return p.add(new THREE.Vector3(-t.z*amount,0,t.x*amount))}
+function ribbon(path,width,raise=0){const verts=[],uv=[],idx=[];const N=path.points.length;for(let i=0;i<N;i++){const a=edge(path,i,-width/2,raise),b=edge(path,i,width/2,raise);verts.push(...a.toArray(),...b.toArray());const u=path.distances[i]/100;uv.push(u,0,u,1);if(i<N-1){const j=i*2;idx.push(j,j+2,j+1,j+1,j+2,j+3)}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g}
+// Detectar pianos coincidentes en los dos recorridos, conservando solo el primero.
+// Un solo piano por borde visible: eliminar trazos de la pista que quedan
+// dentro del asfalto del otro recorrido, siempre a la misma altura.
+// Bordes compartidos: topología explícita, NO filtros ni borrados por proximidad.
+// Un solo piano rojo/blanco une ambos carriles a través de la recta central.
+// En la curva izquierda conservamos el borde interior del túnel; en la derecha también.
+const CURB_HALF_ROAD=27.75,CURB_EXTRA=5.25,CURB_Y=1.92;
+const INLEFT_END=24,INRIGHT_START=(paths.tunnel.points.length-1)-24; // Puntos exactos de la recta
+const BRIDGE_LEFT_SPLIT=5*24,BRIDGE_RIGHT_JOIN=25*24;
+// Empalme del piano interior en la salida derecha: termina antes de su duplicado.
+const BRIDGE_EXIT_MERGE_START=BRIDGE_RIGHT_JOIN-18;
+const BRIDGE_EXIT_BLEND_START=BRIDGE_EXIT_MERGE_START-24;
+// Salida física del puente: intervalo geométrico b[340..425], junto al túnel.
+// Mantener siempre el piano del túnel (side +1); compartir sólo el del puente (side -1).
+const RAMP_CURB_JOIN_BEGIN=324,RAMP_CURB_HIDDEN_BEGIN=342;
+const RAMP_CURB_HIDDEN_END=400,RAMP_CURB_SEPARATE_END=430;
+const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};
+function nearestTunneledEdge(pos,side){
+ const path=paths.tunnel;let best=Infinity,closest=null;
+ for(let k=0;k<path.points.length;k++){
+  if(path.points[k][2]>1)continue;
+  const c=edge(path,k,side*30.375,CURB_Y),d=(c.x-pos.x)**2+(c.z-pos.z)**2;
+  if(d<best){best=d;closest=c;}
+ }
+ return closest;
+}
+// Proyectar exactamente el piano del puente sobre el borde existente del túnel.
+// Interpolamos sobre segmentos, en vez de usar el vértice más cercano y provocar quiebres.
+function nearestContinuousTunnelCurb(pos,side){
+ const path=paths.tunnel;let best=Infinity,closest=null;
+ for(let j=445;j<Math.min(565,path.points.length-1);j++){
+  const v=edge(path,j,side*30.375,CURB_Y),w=edge(path,j+1,side*30.375,CURB_Y);
+  const dx=w.x-v.x,dz=w.z-v.z;
+  const t=Math.max(0,Math.min(1,((pos.x-v.x)*dx+(pos.z-v.z)*dz)/(dx*dx+dz*dz||1)));
+  const x=v.x+t*dx,z=v.z+t*dz;
+  const dist=(pos.x-x)**2+(pos.z-z)**2;
+  if(dist<best){best=dist;closest=new THREE.Vector3(x,CURB_Y,z);}
+ }
+ return closest;
+}
+// Devuelve los dos vértices del piano para una sola estación de la curva.
+function curbStation(path,side,i){
+ const a=edge(path,i,side*CURB_HALF_ROAD,CURB_Y);
+ const b=edge(path,i,side*(CURB_HALF_ROAD+CURB_EXTRA),CURB_Y);
+ // Unir el piano central de la recta con la curva, sin corte ni doble línea.
+ if(path===paths.tunnel&&side===-1&&i>=INLEFT_END&&i<=INLEFT_END+24){
+  const f=1-smooth((i-INLEFT_END)/24);
+  const center=a.clone().add(b).multiplyScalar(.5);
+  const shift=new THREE.Vector3(280-center.x,0,-500-center.z).multiplyScalar(f);
+  a.add(shift);b.add(shift);
+ }
+ if(path===paths.tunnel&&side===1&&i>=INRIGHT_START-24&&i<=INRIGHT_START){
+  const f=smooth((i-(INRIGHT_START-24))/24);
+  const center=a.clone().add(b).multiplyScalar(.5);
+  const shift=new THREE.Vector3(850-center.x,0,-500-center.z).multiplyScalar(f);
+  a.add(shift);b.add(shift);
+ }
+ // Unificación REAL de la salida del puente con el piano del túnel.
+ // Empalme antes de ocultar el duplicado y bifurcación al salir del tramo común.
+ if(path===paths.bridge&&side===-1&&i>=RAMP_CURB_JOIN_BEGIN&&i<=RAMP_CURB_SEPARATE_END){
+  let blend=0;
+  if(i<RAMP_CURB_HIDDEN_BEGIN)blend=smooth((i-RAMP_CURB_JOIN_BEGIN)/(RAMP_CURB_HIDDEN_BEGIN-RAMP_CURB_JOIN_BEGIN));
+  else if(i<=RAMP_CURB_HIDDEN_END)blend=1;
+  else blend=1-smooth((i-RAMP_CURB_HIDDEN_END)/(RAMP_CURB_SEPARATE_END-RAMP_CURB_HIDDEN_END));
+  if(blend>0){
+   const mid=a.clone().add(b).multiplyScalar(.5);
+   const target=nearestContinuousTunnelCurb(mid,1);
+   if(target){
+    const shift=target.sub(mid).multiplyScalar(blend);
+    a.add(shift);b.add(shift);
+   }
+  }
+ }
+ // El borde independiente nace del compartido en la curva izquierda.
+ if(path===paths.bridge&&side===1&&i>=BRIDGE_LEFT_SPLIT&&i<=BRIDGE_LEFT_SPLIT+48){
+  const f=1-smooth((i-BRIDGE_LEFT_SPLIT)/48);
+  const center=a.clone().add(b).multiplyScalar(.5);
+  const closest=nearestTunneledEdge(center,-1);
+  if(closest){const shift=closest.sub(center).multiplyScalar(f);a.add(shift);b.add(shift);}
+ }
+ // El borde independiente se incorpora al compartido en la curva derecha.
+ if(path===paths.bridge&&side===-1&&i>=BRIDGE_EXIT_BLEND_START&&i<=BRIDGE_EXIT_MERGE_START){
+  // Llegar al borde que conservamos ANTES de ocultar el duplicado;
+  // evita cortar la línea en seco o dejar un vacío entre ambos.
+  const f=smooth((i-BRIDGE_EXIT_BLEND_START)/(BRIDGE_EXIT_MERGE_START-BRIDGE_EXIT_BLEND_START));
+  const center=a.clone().add(b).multiplyScalar(.5);
+  const closest=nearestTunneledEdge(center,1);
+  if(closest){const shift=closest.sub(center).multiplyScalar(f);a.add(shift);b.add(shift);}
+ }
+ return [a,b];
+}
+function visibleCurbSegment(path,side,i){
+ if(path===paths.tunnel){
+  if(side===-1&&i<INLEFT_END)return false;
+  if(side===1&&i>=INRIGHT_START)return false;
+ }else{
+  if(side===1&&i<BRIDGE_LEFT_SPLIT)return false;
+  if(side===-1&&i>=RAMP_CURB_HIDDEN_BEGIN&&i<RAMP_CURB_HIDDEN_END)return false;
+  if(side===-1&&i>=BRIDGE_EXIT_MERGE_START)return false;
+ }
+ return true;
+}
+// Dos lotes geométricos únicos (rojo/blanco) evitan miles de draw calls y
+// hacen que cada tramo consecutivo tenga una posición estable en pantalla.
+const curbMeshes=new Map([[red,{coords:[],uvs:[],indices:[]}],[white,{coords:[],uvs:[],indices:[]}]]);
+function paintCurbSegment(a,b,c,d,material,u0=0,u1=1){
+ const batch=curbMeshes.get(material),offset=batch.coords.length/3;
+ batch.coords.push(...a.toArray(),...b.toArray(),...c.toArray(),...d.toArray());
+ batch.uvs.push(u0,0,u0,1,u1,0,u1,1);
+ batch.indices.push(offset,offset+2,offset+1,offset+1,offset+2,offset+3);
+}
+function finalizeCurbs(){
+ for(const [mat,batch] of curbMeshes){
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(batch.coords,3));
+  g.setAttribute('uv',new THREE.Float32BufferAttribute(batch.uvs,2));
+  g.setIndex(batch.indices);g.computeVertexNormals();
+  const mesh=new THREE.Mesh(g,mat===red?redCurb:whiteCurb);
+  mesh.receiveShadow=false;mesh.castShadow=false;mesh.renderOrder=8;
+  scene.add(mesh);
+ }
+}
+function buildCurb(path){
+ for(const side of[-1,1]){
+  for(let i=0;i<path.points.length-1;i++){
+   if(!visibleCurbSegment(path,side,i))continue;
+   const [a,b]=curbStation(path,side,i),[c,d]=curbStation(path,side,i+1);
+   const mat=Math.floor(path.distances[i]/24)%2===0?red:white;
+   paintCurbSegment(a,b,c,d,mat,path.distances[i]/90,path.distances[i+1]/90);
+  }
+ }
+}
+function strip(path){
+ // Two colliding road ribbons previously differed by only 0.04; force stable depth priority.
+ const upper=path===paths.bridge;
+ const road=new THREE.Mesh(ribbon(path,55.5,upper?1.45:1.15),upper?bridgeRoadMat:roadmat);
+ road.receiveShadow=false;road.castShadow=false;road.renderOrder=upper?3:2;scene.add(road);
+ buildCurb(path);
+}
+strip(paths.tunnel);strip(paths.bridge);
+// ÚNICO piano central. Las cuatro piezas interiores de ambas rectas
+// se omiten del trazado individual y se reemplazan por este borde continuo.
+for(let x=280,k=0;x<850;x+=24,k++){
+ const x1=Math.min(850,x+24);
+ const mat=k%2===0?red:white;
+ paintCurbSegment(
+  new THREE.Vector3(x,CURB_Y,-500+CURB_EXTRA/2),
+  new THREE.Vector3(x,CURB_Y,-500-CURB_EXTRA/2),
+  new THREE.Vector3(x1,CURB_Y,-500+CURB_EXTRA/2),
+  new THREE.Vector3(x1,CURB_Y,-500-CURB_EXTRA/2),mat,(x-280)/90,(x1-280)/90
+ );
+}
+finalizeCurbs();
+// Pilar y barandas: solamente en el tramo elevado, dejando el túnel libre.
+const elevated=paths.bridge.points.map((p,i)=>({p,i})).filter(x=>x.p[2]>25);
+// Tablero continuo debajo del asfalto: superficie superior a +1.15, soporte a -3.2.
+// Estructura opaca bajo el asfalto; la calzada permanece por encima del tablero.
+const bridgeDeck=new THREE.Mesh(ribbon(paths.bridge,64.5,-3.2),concrete);
+bridgeDeck.material.side=THREE.DoubleSide;
+bridgeDeck.castShadow=true;bridgeDeck.receiveShadow=true;scene.add(bridgeDeck);
+// Dos vigas longitudinales bajo los bordes del tablero; nunca sobresalen del asfalto.
+for(const side of[-1,1]){
+ const railLine=elevated.filter((_,k)=>k%4===0).map(({i})=>edge(paths.bridge,i,side*27,-5.7));
+ if(railLine.length>2){
+  const railCurve=new THREE.CatmullRomCurve3(railLine);
+  const support=new THREE.Mesh(new THREE.TubeGeometry(railCurve,Math.max(24,railLine.length*3),2.2,8,false),concrete);
+  support.castShadow=true;support.receiveShadow=true;scene.add(support);
+ }
+}
+// Dos pórticos simétricos, vigas transversales ABAJO del tablero y cuatro columnas.
+for(const fraction of [.18,.82]){
+ const idx=elevated[Math.round((elevated.length-1)*fraction)].i;
+ const ends=[edge(paths.bridge,idx,-31.5,-5.3),edge(paths.bridge,idx,31.5,-5.3)];
+ const bottom=-6;
+ const top=Math.min(ends[0].y,ends[1].y)-1.1;
+ for(const q of ends){
+  const h=Math.max(2,top-bottom);
+  const pillar=new THREE.Mesh(new THREE.BoxGeometry(6,h,6),concrete);
+  pillar.position.set(q.x,bottom+h/2,q.z);
+  pillar.castShadow=true;pillar.receiveShadow=true;scene.add(pillar);
+  const cap=new THREE.Mesh(new THREE.BoxGeometry(9,2,9),silver);
+  cap.position.set(q.x,top+.5,q.z);cap.castShadow=true;scene.add(cap);
+ }
+ const mid=ends[0].clone().add(ends[1]).multiplyScalar(.5);
+ const beamLength=ends[0].distanceTo(ends[1])+7;
+ const beam=new THREE.Mesh(new THREE.BoxGeometry(6,3,beamLength),concrete);
+ beam.position.set(mid.x,top+2.4,mid.z);
+ beam.rotation.y=Math.atan2(ends[1].x-ends[0].x,ends[1].z-ends[0].z);
+ beam.castShadow=true;beam.receiveShadow=true;scene.add(beam);
+}
+for(const side of[-1,1]){
+ const vertices=[];
+ for(const {i} of elevated.filter((_,k)=>k%5===0))vertices.push(edge(paths.bridge,i,side*30,7));
+ const curve=new THREE.CatmullRomCurve3(vertices);
+ for(const [rad,down,mat] of [[1.4,0,silver],[.65,-4,concrete]]){
+  const curvePts=vertices.map(p=>p.clone().add(new THREE.Vector3(0,down,0)));
+  const c=new THREE.CatmullRomCurve3(curvePts);
+  const rail=new THREE.Mesh(new THREE.TubeGeometry(c,Math.max(16,vertices.length*3),rad,8,false),mat);
+  rail.castShadow=false;scene.add(rail);
+ }
+}
+// Alumbrado perimetral, fuera del trazado; sin sombras costosas.
+const lamps=[];
+const lampPoleMat=new THREE.MeshStandardMaterial({color:0x586d7d,metalness:.65,roughness:.4});
+const lampGlass=new THREE.MeshBasicMaterial({color:0xffefd4});
+for(const [x,z] of [[-35,-55],[1080,-55],[-35,-570],[1095,-585]]){
+ const pole=new THREE.Mesh(new THREE.CylinderGeometry(1.6,2,83,10),lampPoleMat);
+ pole.position.set(x,35,z);scene.add(pole);
+ const hood=new THREE.Mesh(new THREE.BoxGeometry(15,3,10),lampPoleMat);
+ hood.position.set(x,77,z);scene.add(hood);
+ const bulb=new THREE.Mesh(new THREE.BoxGeometry(12,1,8),lampGlass);
+ bulb.position.set(x,75,z);scene.add(bulb);
+ const spotlight=new THREE.SpotLight(0xffe8c7,0,1450,.83,.65,1);
+ spotlight.position.set(x,73,z);
+ spotlight.target.position.set(535,1,-300);
+ scene.add(spotlight);scene.add(spotlight.target);lamps.push(spotlight);
+}
+// Placas publicitarias discretas fuera de los bordes, sin ocupar las calzadas.
+function signTexture(textA,textB){
+ const c=document.createElement('canvas');c.width=1024;c.height=256;
+ const g=c.getContext('2d');g.fillStyle='#081624';g.fillRect(0,0,1024,256);
+ g.strokeStyle='#35aafa';g.lineWidth=12;g.strokeRect(6,6,1012,244);
+ g.textAlign='center';g.fillStyle='#eaf7ff';g.font='900 105px Arial';g.fillText(textA,512,116);
+ g.fillStyle='#f74865';g.font='700 65px Arial';g.fillText(textB,512,210);
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+for(const [x,z,rot] of [[350,-16,0],[835,-585,Math.PI]]){
+ const board=new THREE.Mesh(new THREE.PlaneGeometry(130,33),new THREE.MeshBasicMaterial({map:signTexture('DRIFT','MASTERS'),side:THREE.DoubleSide}));
+ board.position.set(x,26,z);board.rotation.y=rot;scene.add(board);
+ for(const dx of[-58,58]){
+  const support=new THREE.Mesh(new THREE.BoxGeometry(2,23,2),lampPoleMat);
+  support.position.set(x+dx,10,z);scene.add(support);
+ }
+}
+let nightMode=false;
+// SetNight corre antes de construir los autos; la sombra se añade más adelante.
+let contactShadowMaterial=null;
+function setNight(on){
+ nightMode=on;
+ scene.background.set(on?0x030913:0x0b1621);
+ scene.fog.color.set(on?0x030913:0x0b1621);
+ hemi.intensity=on?.58:1.8;sun.intensity=on?.28:2.9;fill.intensity=on?.42:.85;
+ if(contactShadowMaterial)contactShadowMaterial.opacity=on?.20:.37;
+ renderer.toneMappingExposure=on?1.72:1.49;
+ for(const light of lamps)light.intensity=on?3200:0;
+ $('mode').textContent=on?'☀ Día':'☾ Noche';
+ $('mode').classList.toggle('active',on);
+}
+$('mode').onclick=()=>setNight(!nightMode);
+setNight(false);
+// Línea de largada/meta horizontal a ambos carriles.
+for(let col=0;col<12;col++)for(let row=0;row<2;row++){const m=new THREE.Mesh(new THREE.PlaneGeometry(4.4,4.4),((row+col)%2===0?white:concrete));m.rotation.x=-Math.PI/2;m.position.set(560+row*4.4,2.24,-452-col*8.2);m.renderOrder=9;m.material.side=THREE.DoubleSide;scene.add(m)}
+// Modelos deportivos proporcionados al tamaño original; sin cambiar velocidades.
+// GR SUPRA A90 inspirado en el modelo 1/24: carrocería curvada, cockpit retrasado.
+// Sólo es geometría de visualización. Ruta, escala de carrera y tiempos intactos.
+function carNumberTexture(id){
+ const c=document.createElement('canvas');c.width=256;c.height=128;
+ const q=c.getContext('2d',{alpha:false});
+ q.fillStyle='#111923';q.fillRect(0,0,256,128);
+ q.fillStyle=id===0?'#56c6fc':'#ff6679';q.fillRect(7,7,242,114);
+ q.fillStyle='#09121c';q.font='900 83px Arial';q.textAlign='center';
+ q.fillText(id===0?'01':'02',128,94);
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
+ t.anisotropy=renderer.capabilities.getMaxAnisotropy();return t;
+}
+function supraDecal(id){
+ const c=document.createElement('canvas');c.width=512;c.height=256;
+ const q=c.getContext('2d');
+ q.fillStyle=id?'#db264a':'#087bc7';q.fillRect(0,0,512,256);
+ q.strokeStyle='#f4f8ff';q.lineWidth=11;q.strokeRect(8,8,496,240);
+ q.fillStyle='white';q.textAlign='center';q.font='bold 65px Arial';
+ q.fillText('SUPRA',256,90);
+ q.font='900 128px Arial';q.fillText(id?'02':'01',256,218);
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+// Perfil transversal variable, con capó largo y pasos de rueda anchos.
+// Usa normales suaves para evitar la silueta cúbica de las primeras versiones.
+function contouredBody(sections,material){
+ const coords=[],uv=[],faces=[];
+ const count=10;
+ // Catmull-Rom sobre las secciones para eliminar quiebres visibles del capó y techo.
+ const smoothed=[];
+ const cat=(a,b,c,d,t)=>{
+  const t2=t*t,t3=t2*t;
+  return .5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t2+(-a+3*b-3*c+d)*t3);
+ };
+ for(let i=0;i<sections.length-1;i++){
+  const a=sections[Math.max(0,i-1)],b=sections[i],c=sections[i+1];
+  const d=sections[Math.min(sections.length-1,i+2)];
+  for(let j=0;j<4;j++){
+   const t=j/4;
+   smoothed.push(b.map((_,k)=>{
+    const v=cat(a[k],b[k],c[k],d[k],t);
+    return k===1?Math.max(.4,v):v;
+   }));
+  }
+ }
+ smoothed.push(sections[sections.length-1]);
+ for(let i=0;i<smoothed.length;i++){
+  const [z,w,bottom,shoulder,top]=smoothed[i],topW=w*.78;
+  const ring=[
+   [-w*.72,bottom],[-w,bottom+.7],[-w*1.025,shoulder],
+   [-topW,top],[0,top+.24],[topW,top],
+   [w*1.025,shoulder],[w,bottom+.7],[w*.72,bottom],[0,bottom-.14]
+  ];
+  for(let j=0;j<count;j++){
+   coords.push(ring[j][0],ring[j][1],z);
+   uv.push(i/(smoothed.length-1),j/(count-1));
+  }
+  if(i){
+   for(let j=0;j<count;j++){
+    const a=(i-1)*count+j,b=(i-1)*count+(j+1)%count;
+    const c=i*count+j,d=i*count+(j+1)%count;
+    faces.push(a,b,c,b,d,c);
+   }
+  }
+ }
+ // Tapar las puntas, sin partes transparentes ni cortes.
+ for(const first of[0,smoothed.length-1]){
+  const center=coords.length/3;
+  coords.push(0,(smoothed[first][2]+smoothed[first][4])*.5,smoothed[first][0]);
+  uv.push(.5,.5);
+  for(let j=0;j<count;j++){
+   const a=first*count+j,b=first*count+(j+1)%count;
+   if(first===0)faces.push(center,b,a);else faces.push(center,a,b);
+  }
+ }
+ const g=new THREE.BufferGeometry();
+ g.setAttribute('position',new THREE.Float32BufferAttribute(coords,3));
+ g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(faces);
+ g.computeVertexNormals();
+ const mesh=new THREE.Mesh(g,material);
+ mesh.castShadow=true;mesh.receiveShadow=true;return mesh;
+}
+function supraPanel(parent,coords,material){
+ const g=new THREE.BufferGeometry();
+ const points=coords.map(p=>new THREE.Vector3(...p));
+ g.setFromPoints(points);
+ g.setIndex([0,1,2,0,2,3]);g.computeVertexNormals();
+ const mesh=new THREE.Mesh(g,material);mesh.castShadow=false;
+ mesh.receiveShadow=true;parent.add(mesh);return mesh;
+}
+// Reflejos ambientales de softbox, generados dentro del navegador y sin descargar archivos.
+// La panorámica se usa sólo en los materiales de los Supra y no altera el asfalto.
+function supraEnvironment(){
+ const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=512;
+ const ctx=canvas.getContext('2d',{alpha:false});
+ const sky=ctx.createLinearGradient(0,0,0,512);
+ sky.addColorStop(0,'#d4e1ed');sky.addColorStop(.35,'#a9bdca');
+ sky.addColorStop(.49,'#87929d');sky.addColorStop(.53,'#565962');
+ sky.addColorStop(1,'#252e38');
+ ctx.fillStyle=sky;ctx.fillRect(0,0,1024,512);
+ // Tarjetas de luz anchas, de brillo suave, como en fotografía automotriz.
+ for(const spec of [[95,92,180,88],[400,48,115,138],[740,105,215,75]]){
+  const [x,y,w,h]=spec;
+  const g=ctx.createLinearGradient(x,y,x,y+h);
+  g.addColorStop(0,'rgba(252,254,255,.06)');
+  g.addColorStop(.26,'rgba(252,254,255,.86)');
+  g.addColorStop(.72,'rgba(244,249,255,.66)');
+  g.addColorStop(1,'rgba(248,251,255,.03)');
+  ctx.fillStyle=g;ctx.fillRect(x,y,w,h);
+ }
+ const t=new THREE.CanvasTexture(canvas);
+ t.mapping=THREE.EquirectangularReflectionMapping;
+ t.colorSpace=THREE.SRGBColorSpace;
+ return t;
+}
+const supraEnv=supraEnvironment();
+// Trazos 3D suaves que siguen la chapa: no modifican las rutas ni el tamaño RC.
+function supraLine(root,coords,mat,r=.18){
+ const curve=new THREE.CatmullRomCurve3(coords.map(p=>new THREE.Vector3(...p)));
+ const geo=new THREE.TubeGeometry(curve,Math.max(12,coords.length*7),r,6,false);
+ const mesh=new THREE.Mesh(geo,mat);mesh.castShadow=false;root.add(mesh);
+ return mesh;
+}
+function supraFender(root,side,zCenter,paint,trim){
+ const arch=[];
+ for(let k=0;k<=18;k++){
+  const a=.10+(Math.PI-.20)*k/18;
+  const z=zCenter+Math.cos(a)*4.62;
+  const y=4.25+Math.sin(a)*4.75;
+  arch.push([side*9.02,y,z]);
+ }
+ supraLine(root,arch,trim,.42);
+ // A subtle painted lip gives the wider rear shoulders a rounded highlight.
+ supraLine(root,arch.map(([x,y,z])=>[x-side*.12,y+.23,z]),paint,.27);
+}
+function carModel(id){
+ const root=new THREE.Group(),blue=id===0;
+ const wheelAssemblies=[];
+ const bodyPaint=new THREE.MeshPhysicalMaterial({
+  color:blue?0x087bc5:0xcc1d39,metalness:.52,roughness:.23,
+  clearcoat:1,clearcoatRoughness:.11,envMap:supraEnv,envMapIntensity:.65,
+  side:THREE.DoubleSide
+ });
+ const accents=new THREE.MeshStandardMaterial({color:0x151b24,roughness:.52,metalness:.15});
+ const skirts=new THREE.MeshStandardMaterial({color:0x0b1118,roughness:.46,metalness:.23});
+ const glass=new THREE.MeshPhysicalMaterial({
+  color:0x1a2c3b,metalness:.2,roughness:.11,clearcoat:1,
+  clearcoatRoughness:.07,envMap:supraEnv,envMapIntensity:.48,
+  side:THREE.DoubleSide
+ });
+ const chrome=new THREE.MeshStandardMaterial({color:0x9aabb9,metalness:.82,roughness:.27,envMap:supraEnv,envMapIntensity:.55});
+ const tireMat=new THREE.MeshStandardMaterial({color:0x121416,metalness:0,roughness:.96});
+ const lights=new THREE.MeshStandardMaterial({color:0xeef6ff,emissive:0xa1c8ff,emissiveIntensity:1.2});
+ const tails=new THREE.MeshStandardMaterial({color:0xf32248,emissive:0xff082a,emissiveIntensity:1.25});
+ const headHousing=new THREE.MeshPhysicalMaterial({color:0x0b1b28,metalness:.25,roughness:.18,clearcoat:1,side:THREE.DoubleSide});
+ const frontIntake=new THREE.MeshStandardMaterial({color:0x070c13,roughness:.83,metalness:.04,side:THREE.DoubleSide});
+ const seam=new THREE.MeshStandardMaterial({color:blue?0x125075:0x74202b,metalness:.2,roughness:.5});
+ const tintedTail=new THREE.MeshStandardMaterial({color:0x460714,metalness:.1,roughness:.22,side:THREE.DoubleSide,emissive:0x14020a,emissiveIntensity:.24});
+ const add=(geometry,material,x,y,z,parent=root)=>{
+  const mesh=new THREE.Mesh(geometry,material);mesh.position.set(x,y,z);
+  mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+ };
+ // El frente mira a +Z; coincide con el sistema actual de setCar().
+ root.add(contouredBody([
+  [-16.7,6.3,4.5,6.4,7.3],[-14.8,8.0,3.9,7.3,8.4],
+  [-11.5,8.8,3.7,8.7,9.1],[-8.6,8.85,3.7,9.1,9.3],
+  [-4.1,8.2,3.6,8.2,9.1],[1.8,8.2,3.6,8.0,9.0],
+  [7.9,8.75,3.7,8.5,9.7],[11.0,8.8,3.7,8.7,9.5],
+  [14.6,8.0,3.8,7.8,8.5],[16.8,6.5,4.1,6.4,7.1]
+ ],bodyPaint));
+ // Cabina elevada, con silueta de coupé, parabrisas inclinado y techo bajo.
+ root.add(contouredBody([
+  [-8.7,5.3,8.3,8.5,8.9],[-6.4,6.15,8.3,10.3,11.2],
+  [-3.6,6.0,8.3,12.7,13.8],[-.7,5.9,8.3,13.1,14.2],
+  [1.4,5.95,8.3,12.6,13.6],[4.4,5.5,8.3,9.4,9.8]
+ ],glass));
+ // Líneas del capó: dos crestas suaves que convergen cerca de la trompa.
+ for(const side of[-1,1]){
+  supraLine(root,[[side*3.5,8.82,15.1],[side*4.1,9.45,11.6],[side*4.9,9.75,8.4],[side*5.15,9.4,6.5]],bodyPaint,.18);
+ }
+ // Panel de techo y marco negro brillante.
+ add(new THREE.BoxGeometry(10.4,.65,5.5),bodyPaint,0,14.25,-1.85);
+ // Parabrisas de dos planos y luneta posterior, separados del techo.
+ supraPanel(root,[[-5.15,9.3,4.15],[5.15,9.3,4.15],[4.7,13.65,1.2],[-4.7,13.65,1.2]],glass);
+ supraPanel(root,[[5.0,9.2,-8.45],[-5.0,9.2,-8.45],[-4.5,13.65,-4.9],[4.5,13.65,-4.9]],glass);
+ // Guardabarros con hombros suaves, sin cubos encima de las ruedas.
+ for(const side of[-1,1]){
+  // Guardabarros tipo A90: arco superior real con hombros pronunciados.
+  for(const zWheel of[-10.6,10.6])supraFender(root,side,zWheel,bodyPaint,skirts);
+  // Pliegue curvado del lateral que enfatiza cintura y cintura trasera.
+  supraLine(root,[
+   [side*8.6,8.65,-14.0],[side*9.03,9.05,-10.0],
+   [side*8.5,8.46,-6.2],[side*8.26,7.6,0.3],
+   [side*8.7,8.4,5.2]
+  ],seam,.14);
+  // Entrada de aire vertical detrás de la rueda delantera (detalle exterior).
+  supraPanel(root,[
+   [side*8.97,8.05,5.55],[side*9.00,8.55,5.07],
+   [side*8.99,6.45,3.5],[side*9.01,6.15,4.25]
+  ],frontIntake);
+  // Pequeños espejos y falda aerodinámica.
+  const mirror=add(new THREE.SphereGeometry(1.2,14,8),bodyPaint,side*8.0,10.15,3.5);
+  mirror.scale.set(1.28,.55,.8);
+  add(new THREE.BoxGeometry(.75,1,20),skirts,side*8.5,4.05,.1);
+  // Ruedas dinámicas agrupadas: los neumáticos, aros y radios giran juntos.
+  // Delanteras: pivote de dirección además del giro sobre el eje de las ruedas.
+  for(const z of[-10.6,10.6]){
+   const steerPivot=new THREE.Group();
+   steerPivot.position.set(side*9.05,4.25,z);root.add(steerPivot);
+   const spinner=new THREE.Group();steerPivot.add(spinner);
+   const tire=add(new THREE.CylinderGeometry(4.25,4.25,3.2,32),tireMat,0,0,0,spinner);
+   tire.rotation.z=Math.PI/2;
+   const hub=add(new THREE.CylinderGeometry(2.72,2.72,3.35,24),chrome,side*.03,0,0,spinner);
+   hub.rotation.z=Math.PI/2;
+   const outerX=side*1.82;
+   const ring=add(new THREE.TorusGeometry(2.8,.37,9,28),chrome,outerX,0,0,spinner);
+   ring.rotation.y=Math.PI/2;
+   const tireLip=add(new THREE.TorusGeometry(3.85,.28,8,32),tireMat,outerX,0,0,spinner);
+   tireLip.rotation.y=Math.PI/2;
+   const center=add(new THREE.CylinderGeometry(.9,.9,.5,16),accents,outerX,0,0,spinner);
+   center.rotation.z=Math.PI/2;
+   for(let k=0;k<5;k++){
+    const theta=k*Math.PI*2/5;
+    const spoke=add(new THREE.BoxGeometry(.36,2.2,.64),chrome,
+     outerX,Math.cos(theta)*1.25,Math.sin(theta)*1.25,spinner);
+    spoke.rotation.x=-theta;
+   }
+   wheelAssemblies.push({steerPivot,spinner,front:z>0});
+  }
+  // Firma LED del A90: faro estrecho que se abre hacia los guardabarros.
+  supraPanel(root,[
+   [side*2.8,8.25,16.72],[side*7.55,9.25,14.64],
+   [side*7.6,8.33,15.05],[side*3.3,7.83,16.72]
+  ],headHousing);
+  supraLine(root,[
+   [side*3.25,8.32,16.8],[side*4.8,8.72,16.35],
+   [side*6.6,9.02,15.15],[side*7.5,9.05,14.84]
+  ],lights,.18);
+  // Tres zonas de toma de aire en el frente: la central y dos laterales.
+  supraPanel(root,[
+   [side*4.2,6.93,16.52],[side*7.75,7.2,15.85],
+   [side*7.55,4.65,16.2],[side*4.0,4.98,16.79]
+  ],frontIntake);
+  // Ópticas traseras en forma de ala; rojas y más largas que en la v6.
+  supraPanel(root,[
+   [side*2.55,7.78,-16.69],[side*7.65,8.63,-15.65],
+   [side*7.7,7.5,-16.05],[side*2.85,7.18,-16.75]
+  ],tintedTail);
+  supraLine(root,[
+   [side*3.05,7.88,-16.80],[side*4.9,8.2,-16.65],
+   [side*6.9,8.35,-16.12],[side*7.65,8.33,-15.88]
+  ],tails,.24);
+  // Ventana lateral triangular del Supra.
+  supraPanel(root,[
+   [side*6.18,9.6,-7.2],[side*6.18,9.8,3.15],
+   [side*5.5,12.0,1.1],[side*5.65,13.25,-3.5]
+  ],glass);
+ }
+ // Moldura de umbral que conecta visualmente los guardabarros.
+ for(const side of[-1,1]){
+  supraLine(root,[[side*8.3,4.85,-7.0],[side*8.48,4.75,-2.2],[side*8.6,5.0,3.1]],skirts,.27);
+ }
+ // Tomas de aire, spoiler bajo y difusor trasero.
+ add(new THREE.BoxGeometry(8.4,1.2,.47),frontIntake,0,5.72,16.91);
+ // Línea frontal baja y tomas de aire divididas; no tapan los LED.
+ for(const x of[-2.2,2.2])add(new THREE.BoxGeometry(.42,1.05,.28),seam,x,5.72,17.08);
+ add(new THREE.BoxGeometry(16.1,.48,2.3),skirts,0,3.85,16.5);
+ add(new THREE.BoxGeometry(14.2,1.3,.8),skirts,0,5.1,-16.65);
+ for(const side of[-1,1]){
+  add(new THREE.BoxGeometry(.85,3.4,1.15),accents,side*5.1,10.7,-13.2);
+ }
+ // Ducktail trasero de la silueta Supra más alerón bajo de competición.
+ supraLine(root,[[-7.15,9.35,-14.6],[-3.5,9.88,-15.18],[0,10.01,-15.24],
+  [3.5,9.88,-15.18],[7.15,9.35,-14.6]],bodyPaint,.42);
+ const wing=add(new THREE.BoxGeometry(17.2,.64,2.6),accents,0,12.2,-14.65);
+ wing.rotation.x=-.08;
+ // Escape doble cromado.
+ for(const x of[-4.0,4.0]){
+  const pipe=add(new THREE.CylinderGeometry(.62,.62,2.2,16),chrome,x,4.35,-16.7);
+  pipe.rotation.x=Math.PI/2;
+ }
+ // Insignia / números sobre el techo.
+ const number=new THREE.Mesh(new THREE.PlaneGeometry(7.5,4.6),
+  new THREE.MeshBasicMaterial({map:carNumberTexture(id),side:THREE.DoubleSide}));
+ number.rotation.x=-Math.PI/2;number.position.set(0,14.65,-1.8);root.add(number);
+ // Identificador Supra visible en el capó desde tomas cenitales.
+ const supraLogo=document.createElement('canvas');
+ supraLogo.width=256;supraLogo.height=64;
+ const ctx=supraLogo.getContext('2d');ctx.clearRect(0,0,256,64);
+ ctx.font='italic 900 48px Arial';ctx.fillStyle='white';ctx.textAlign='center';
+ ctx.fillText('SUPRA',128,51);
+ const badgeTexture=new THREE.CanvasTexture(supraLogo);badgeTexture.colorSpace=THREE.SRGBColorSpace;
+ const hoodBadge=add(new THREE.PlaneGeometry(10,2.5),
+  new THREE.MeshBasicMaterial({map:badgeTexture,transparent:true,side:THREE.DoubleSide,depthWrite:false}),
+  0,10.15,9);
+ hoodBadge.rotation.x=-Math.PI/2;
+ root.userData.wheels=wheelAssemblies;
+ return root;
+}
+async function smoothCarBodies(){
+ try{
+  const mod=await import('https://esm.sh/three@0.160.1/examples/jsm/geometries/RoundedBoxGeometry.js');
+  for(const car of cars)car.traverse(obj=>{
+   const geom=obj.geometry;
+   if(!obj.isMesh||!geom||geom.type!=='BoxGeometry')return;
+   const p=geom.parameters;
+   if(p.width<12||p.depth<4||p.height<1)return;
+   const radius=Math.min(1.7,p.width*.075,p.height*.3,p.depth*.075);
+   obj.geometry=new mod.RoundedBoxGeometry(p.width,p.height,p.depth,4,radius);
+  });
+ }catch(error){console.warn('Rounded car body addon unavailable',error);}
+}
+
+// Sombras de contacto de bordes suaves: se dibujan apenas por encima del asfalto.
+// No activan receiveShadow sobre las dos calzadas superpuestas (evita z-fighting).
+function contactShadowMap(){
+ const canvas=document.createElement('canvas');canvas.width=canvas.height=256;
+ const ctx=canvas.getContext('2d');
+ ctx.clearRect(0,0,256,256);
+ const g=ctx.createRadialGradient(128,128,12,128,128,124);
+ g.addColorStop(0,'rgba(0,0,0,.8)');
+ g.addColorStop(.34,'rgba(0,0,0,.52)');
+ g.addColorStop(.73,'rgba(0,0,0,.13)');
+ g.addColorStop(1,'rgba(0,0,0,0)');
+ ctx.fillStyle=g;ctx.fillRect(0,0,256,256);
+ const t=new THREE.CanvasTexture(canvas);
+ t.colorSpace=THREE.SRGBColorSpace;
+ t.minFilter=THREE.LinearFilter;t.magFilter=THREE.LinearFilter;
+ return t;
+}
+contactShadowMaterial=new THREE.MeshBasicMaterial({
+ map:contactShadowMap(),transparent:true,opacity:.37,depthWrite:false,
+ depthTest:true,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-6,
+ side:THREE.DoubleSide,toneMapped:false
+});
+function addContactShadow(car){
+ const shadow=new THREE.Mesh(new THREE.PlaneGeometry(36,49),contactShadowMaterial);
+ shadow.rotation.x=-Math.PI/2;
+ shadow.position.set(2,-.49,-1.5);
+ shadow.castShadow=false;shadow.receiveShadow=false;shadow.renderOrder=7;
+ car.add(shadow);
+}
+const cars=[carModel(0),carModel(1)];cars.forEach(c=>scene.add(c));
+// PRO v14: luces traseras vinculadas al cambio de velocidad real, sin tocar el GLB.
+const brakeFX=cars.map((car,i)=>{
+ const led=new THREE.MeshBasicMaterial({color:0xff2037,transparent:true,opacity:.28,depthWrite:false,side:THREE.DoubleSide});
+ const glows=[];
+ for(const side of [-1,1]){
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(3.6,1.15),led);
+  m.position.set(side*5.2,7.65,-17.3);
+  m.rotation.y=Math.PI;
+  m.renderOrder=18;car.add(m);glows.push(m);
+ }
+ return {led,glows};
+});
+const lastMotion=[null,null];
+function motionTelemetry(id,d,T){
+ const time=elapsed,lapStart=d.lap?T[id][0]:0,lapEnd=T[id][d.lap];
+ const delta=.09,ta=Math.max(lapStart,time-delta),tb=Math.min(lapEnd,time+delta);
+ const pa=sample(id,ta,T).dist,pb=sample(id,tb,T).dist;
+ const velocity=(pb-pa)/Math.max(.02,tb-ta);
+ const earlier=Math.max(lapStart,time-.35);
+ const oldDistance=sample(id,earlier,T).dist;
+ const previousSpeed=(d.dist-oldDistance)/Math.max(.02,time-earlier);
+ const braking=time>earlier+.02 && velocity<previousSpeed*.89 && velocity>0;
+ brakeFX[id].led.opacity=braking?.95:.30;
+ $(id?'redSpeed':'blueSpeed').textContent='Vel. virtual '+Math.round(Math.max(0,velocity))+' u/s'+(braking?' · FRENO':'');
+}
+
+// Importador local no destructivo. Los modelos originales permanecen en memoria y se
+// restauran automáticamente si falla el GLB o su dependencia de carga.
+const proceduralParts=cars.map(car=>car.children.slice());
+const importedParts=[null,null];
+let importedOrientation=0; // Este GLB ya entra invertido: 0 corrige el 180 anterior
+const setModelStatus=msg=>{$('modelStatus').textContent=msg;};
+function showAutoStatus(message,retry=false){$('autoModelStatus').hidden=false;$('autoModelLabel').textContent=message;$('retrySupra').hidden=!retry;}
+$('toggleModel').onclick=()=>{
+ $('modelPanel').hidden=!$('modelPanel').hidden;
+};
+$('modelClose').onclick=()=>{$('modelPanel').hidden=true;};
+function resetImportedModels(){
+ for(let id=0;id<2;id++){
+  if(importedParts[id]){cars[id].remove(importedParts[id]);importedParts[id]=null;}
+  for(const node of proceduralParts[id])node.visible=true;
+ }
+ importedOrientation=0;
+ $('modelFile').value='';
+ setModelStatus('Restaurados los dos Supra procedurales de la v8.');
+}
+$('modelReset').onclick=resetImportedModels;
+$('modelFlip').onclick=()=>{
+ importedOrientation=importedOrientation===0?Math.PI:0;
+ for(const node of importedParts){if(node)node.rotation.y=importedOrientation;}
+ setModelStatus(importedParts[0]?'Orientación del modelo GLB ajustada.':'Primero importá un GLB.');
+};
+function retintGLB(root,id){
+ let matches=0;
+ root.traverse(node=>{
+  if(!node.isMesh)return;
+  const materials=Array.isArray(node.material)?node.material:[node.material];
+  if(!materials.some(Boolean))return;
+  const updated=materials.map(material=>{
+   if(!material||!material.color||!material.isMeshStandardMaterial)return material;
+   const names=(node.name+' '+(material.name||'')).toLowerCase();
+   // Sólo paneles inequívocos. Nunca colorear llantas, vidrio, ópticas ni calcos.
+   if(!/(body|paint|carpaint|shell|car_body|bodywork|carroceria|carrocería)/.test(names)||
+      /(glass|window|tyre|tire|wheel|light|badge|logo|trim)/.test(names))return material;
+   const copy=material.clone();copy.color.setHex(id===0?0x188bda:0xe52b47);
+   copy.metalness=Math.max(.25,copy.metalness||0);
+   matches++;return copy;
+  });
+  node.material=Array.isArray(node.material)?updated:updated[0];
+  node.castShadow=true;node.receiveShadow=true;
+ });
+ return matches;
+}
+function prepareGLB(source,id){
+ const model=source.clone(true);
+ const mount=new THREE.Group();
+ mount.add(model);
+ model.updateMatrixWorld(true);
+ const bounds=new THREE.Box3().setFromObject(model);
+ let size=bounds.getSize(new THREE.Vector3());
+ if(!Number.isFinite(size.x+size.y+size.z)||Math.max(size.x,size.y,size.z)<.0001){
+  throw Error('El GLB no tiene una geometría visible.');
+ }
+ // Los GLB suelen venir en metros y con el largo en X o Z.
+ if(size.x>size.z*1.15){model.rotation.y=Math.PI/2;model.updateMatrixWorld(true);}
+ bounds.setFromObject(model);size=bounds.getSize(new THREE.Vector3());
+ const length=Math.max(size.x,size.z);
+ if(length<.001)throw Error('No se pudo determinar el largo del vehículo.');
+ const center=bounds.getCenter(new THREE.Vector3());
+ model.position.set(-center.x,-bounds.min.y,-center.z);
+ mount.scale.setScalar(33.5/length);
+ // Aplicar el giro al nodo del GLB, DESPUÉS de detectar su eje largo.
+ // No depender de la orientación del contenedor utilizado para las rutas.
+ model.rotation.y+=importedOrientation;
+ model.updateMatrixWorld(true);
+ mount.rotation.y=0;
+ retintGLB(model,id);
+ return mount;
+}
+let userPickedModel=false,loadSerial=0;
+async function installSupraBuffer(buffer,label,serial){
+ if(serial!==loadSerial)return;
+ showAutoStatus('Procesando modelo Supra 3D…');
+ const header=new DataView(buffer);
+ if(buffer.byteLength<20||header.getUint32(0,true)!==0x46546c67)throw Error('El archivo no es GLB válido.');
+ const {GLTFLoader}=await import('https://esm.sh/three@0.160.1/examples/jsm/loaders/GLTFLoader.js');
+ const result=await new Promise((resolve,reject)=>new GLTFLoader().parse(buffer,'',resolve,reject));
+ if(serial!==loadSerial)return;
+ const next=[prepareGLB(result.scene,0),prepareGLB(result.scene,1)];
+ if(serial!==loadSerial)return;
+ for(let i=0;i<2;i++){
+  if(importedParts[i])cars[i].remove(importedParts[i]);
+  for(const part of proceduralParts[i])part.visible=false;
+  importedParts[i]=next[i];cars[i].add(next[i]);
+ }
+ setModelStatus('Supra 3D cargado en ambos autos desde '+label+'.');
+ showAutoStatus('✓ Supra 3D real cargado en ambos autos.');
+}
+$('modelFile').onchange=async event=>{
+ const file=event.target.files?.[0];if(!file)return;
+ userPickedModel=true;const serial=++loadSerial;
+ if(!/\.glb$/i.test(file.name)){setModelStatus('Seleccioná un archivo .glb.');return;}
+ if(file.size>45*1024*1024){setModelStatus('Archivo demasiado grande: usá supra_optimizado.glb.');return;}
+ const wasPlaying=playing;playing=false;
+ setModelStatus('Cargando '+file.name+'…');showAutoStatus('Importando '+file.name+'…');
+ try{await installSupraBuffer(await file.arrayBuffer(),file.name,serial);}
+ catch(err){setModelStatus('No se pudo cargar el GLB: '+(err?.message||err));showAutoStatus('Error de GLB: '+(err?.message||err),true);console.warn(err);}
+ finally{playing=wasPlaying;update();}
+};
+async function autoLoadSupra(){
+ const serial=++loadSerial;
+ const url=new URL('./supra_menos_25mb.glb',location.href);
+ // Nuevo intento evita la caché negativa del CDN tras publicar el binario.
+ url.searchParams.set('v','20261026-2');
+ showAutoStatus('Descargando Supra 3D automático…');
+ try{
+  const response=await fetch(url,{cache:'no-store'});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const contentType=response.headers.get('content-type')||'';
+  const buffer=await response.arrayBuffer();
+  if(buffer.byteLength<10000)throw Error('El archivo recibido es demasiado pequeño ('+buffer.byteLength+' bytes; '+contentType+').');
+  if(userPickedModel||serial!==loadSerial)return;
+  await installSupraBuffer(buffer,'el repositorio',serial);
+ }catch(err){
+  if(userPickedModel||serial!==loadSerial)return;
+  const reason=err?.message||String(err);
+  setModelStatus('Carga automática fallida: '+reason+'. También podés cargar el GLB manualmente.');
+  showAutoStatus('Supra no cargado: '+reason,true);
+  console.warn('Auto GLB not available',err);
+ }
+}
+$('retrySupra').onclick=()=>{if(!userPickedModel)autoLoadSupra();else{$('modelPanel').hidden=false;showAutoStatus('Abrí Modelo 3D y seleccioná tu GLB.',false);}};
+autoLoadSupra();
+
+cars.forEach(addContactShadow);
+smoothCarBodies();
+// Movimiento dependiente de la distancia recorrida: estable al pausar y rebobinar.
+function setCar(id,d){
+ const {lap,path,dist}=d,car=cars[id],L=path.length;
+ const p=path.at(dist);
+ const back=path.at(Math.max(0,dist-10));
+ const front=path.at(Math.min(L,dist+10));
+ const dx=front.x-back.x,dy=front.y-back.y;
+ const horizontal=Math.max(.01,Math.hypot(dx,dy));
+ const heading=Math.atan2(dx,-dy);
+ // Yaw, luego pitch, luego roll: los giros son relativos a los ejes del auto.
+ car.rotation.order='YXZ';
+ car.rotation.y=heading;
+ const slope=Math.atan2((front.z-back.z)*.38,horizontal);
+ // Delante = +Z local. Un pitch negativo alza la trompa en subida.
+ const pitch=Math.max(-.13,Math.min(.13,-slope));
+ const glbOn=!!importedParts[id];
+ car.rotation.x=pitch;
+ const prev=path.at(Math.max(0,dist-24));
+ const next=path.at(Math.min(L,dist+24));
+ const before=Math.atan2(p.x-prev.x,-(p.y-prev.y));
+ const after=Math.atan2(next.x-p.x,-(next.y-p.y));
+ const curve=dist<2||dist>L-2?0:Math.atan2(Math.sin(after-before),Math.cos(after-before));
+ const steer=Math.max(-.24,Math.min(.24,curve*1.3));
+ // El GLB ya tiene posición lateral y neumáticos: el roll adicional sobre
+ // el tablero estrecho lo hace parecer ladeado y hunde una rueda en el puente.
+ car.rotation.z=glbOn?0:Math.max(-.025,Math.min(.025,-curve*.055));
+ // Medir la rampa bajo ambos ejes y extremos del coche. El punto central
+ // original equivale a +0.75 sobre la superficie y se conserva en plano.
+ let baseY=p.z*.38+2.2;
+ if(glbOn){
+  const halfLength=16.75;
+  const desiredGap=.70;
+  const offsets=[-halfLength,-10,0,10,halfLength];
+  for(const localZ of offsets){
+   // Buscar la calzada en la misma distancia longitudinal del auto.
+   const probe=path.at(Math.max(0,Math.min(L,dist+localZ)));
+   const deckY=probe.z*.38+(probe.z>0.1?1.45:1.15);
+   // Giro X del automóvil: y local de la rueda=0, z local corregida.
+   const localYOffset=-Math.sin(pitch)*localZ;
+   baseY=Math.max(baseY,deckY+desiredGap-localYOffset);
+  }
+ }
+ car.position.set(p.x,baseY,-p.y);
+ const travelled=(lap?routeFor(id,0).length:0)+dist;
+ for(const wheel of car.userData.wheels){
+  wheel.spinner.rotation.x=-travelled/4.25;
+  wheel.steerPivot.rotation.y=wheel.front?steer:0;
+ }
+}
+let cameraMode='overview',playing=false,elapsed=0,speed=1,maxTime=15,previous=performance.now();
+const initial=new URLSearchParams(location.search);for(const [k,param] of [['b1','b1'],['bt','bt'],['r1','r1'],['rt','rt']]){const n=Number(initial.get(param));if(initial.has(param)&&Number.isFinite(n)&&n>0)$(k).value=n.toFixed(3)}
+function times(){const a=['b1','bt','r1','rt'].map(id=>Number($(id).value));if(a.some(x=>!Number.isFinite(x)||x<=0)||a[1]<=a[0]||a[3]<=a[2])return null;return [[a[0],a[1]],[a[2],a[3]]]}
+// Perfil de velocidad por recorrido. En curvas cerradas, menor velocidad;
+ // en rectas, mayor. Conserva EXACTAMENTE el tiempo de vuelta ingresado.
+ const speedProfiles=new Map();
+ function speedProfile(path){
+  if(speedProfiles.has(path))return speedProfiles.get(path);
+  const steps=Math.max(400,Math.ceil(path.length/2.3)),weights=new Float64Array(steps+1);
+  const velocities=new Float64Array(steps+1);
+  const headings=new Float64Array(steps+1);
+  for(let i=0;i<=steps;i++){
+   const d=path.length*i/steps;
+   const ahead=path.at(Math.min(path.length,d+13));
+   const behind=path.at(Math.max(0,d-13));
+   headings[i]=Math.atan2(ahead.y-behind.y,ahead.x-behind.x);
+  }
+  for(let i=0;i<=steps;i++){
+   const back=headings[Math.max(0,i-6)],front=headings[Math.min(steps,i+6)];
+   const angle=Math.abs(Math.atan2(Math.sin(front-back),Math.cos(front-back)));
+   // Los vértices ya vienen suavizados, por lo que se mide el giro en una
+   // ventana ancha y no un segmento aislado (evita acelerones repentinos).
+   const bend=Math.min(1,angle/.58);
+   velocities[i]=1.35-.76*Math.pow(bend,.73);
+  }
+  // Suavizar la variación de velocidad para que frenar/acelerar sea progresivo.
+  const smooth=new Float64Array(steps+1);
+  for(let i=0;i<=steps;i++){
+   let sum=0,n=0;
+   for(let k=Math.max(0,i-9);k<=Math.min(steps,i+9);k++){
+    sum+=velocities[k];n++;
+   }
+   smooth[i]=sum/n;
+  }
+  weights[0]=0;
+  for(let i=1;i<=steps;i++){
+   const v=Math.max(.4,(smooth[i-1]+smooth[i])*.5);
+   weights[i]=weights[i-1]+(path.length/steps)/v;
+  }
+  const profile={steps,cumulative:weights,total:weights[steps],speed:smooth};
+  speedProfiles.set(path,profile);return profile;
+ }
+ function distanceForLapFraction(path,frac){
+  if(frac<=0)return 0;if(frac>=1)return path.length;
+  const profile=speedProfile(path),target=frac*profile.total;
+  const times=profile.cumulative;
+  let lo=0,hi=profile.steps;
+  while(hi-lo>1){const mid=(hi+lo)>>1;if(times[mid]<target)lo=mid;else hi=mid;}
+  const between=(target-times[lo])/(times[hi]-times[lo]||1);
+  return path.length*(lo+between)/profile.steps;
+ }
+ function sample(id,t,T){
+  const a=T[id],l=t<a[0]?0:1,entry=l?a[0]:0;
+  const duration=l?a[1]-a[0]:a[0],path=routeFor(id,l);
+  const frac=Math.max(0,Math.min(1,(t-entry)/duration));
+  return{lap:l,path,dist:distanceForLapFraction(path,frac),frac};
+ }
+function displayTime(t){const min=Math.floor(t/60),sec=t%60;return String(min).padStart(2,'0')+':'+sec.toFixed(3).padStart(6,'0')}
+function update(){const T=times();if(!T){$('notice').hidden=false;$('notice').textContent='Ingresá tiempos válidos: el total debe superar a la vuelta 1 de cada auto.';playing=false;return}$('notice').hidden=true;maxTime=Math.max(T[0][1],T[1][1]);elapsed=Math.min(elapsed,maxTime);
+const data=[sample(0,elapsed,T),sample(1,elapsed,T)];data.forEach((d,i)=>{setCar(i,d);motionTelemetry(i,d,T);});
+$('timer').textContent=displayTime(elapsed);$('lap').textContent=(Math.min(2,1+Math.floor(Math.min(data[0].lap,data[1].lap))))+' / 2';
+$('gap').textContent=Math.abs(T[0][1]-T[1][1]).toFixed(3)+' s';
+for(let i=0;i<2;i++){$(i?'redLap':'blueLap').textContent='Vuelta '+(data[i].lap+1);$(i?'redTime':'blueTime').textContent=elapsed>=T[i][1]?T[i][1].toFixed(3)+' s · META':(elapsed>=T[i][0]? 'V1 '+T[i][0].toFixed(3)+' s':'EN PISTA')}
+$('scrub').value=Math.round(1000*elapsed/maxTime);
+$('done').style.display=elapsed>=maxTime?'block':'none';if(elapsed>=maxTime){const winner=T[0][1]===T[1][1]?'EMPATE':T[0][1]<T[1][1]?'GANA AZUL':'GANA ROJO';$('winner').textContent=winner;$('finishDetail').textContent='Diferencia: '+Math.abs(T[0][1]-T[1][1]).toFixed(3)+' s';playing=false}
+$('play').textContent=playing?'Ⅱ Pausar':'▶ Reproducir'}
+// Perspectiva más cercana y controles libres de cámara: botón derecho para orbitar, rueda para zoom.
+const orbitTarget=new THREE.Vector3(535,10,-300);
+const followLook=new THREE.Vector3(535,10,-300);
+let orbitRadius=690,orbitAzimuth=.58,orbitPolar=.76,orbitDragging=false,lastMouseX=0,lastMouseY=0;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+canvas.addEventListener('pointerdown',e=>{if(e.button!==2||cameraMode!=='overview')return;orbitDragging=true;lastMouseX=e.clientX;lastMouseY=e.clientY;canvas.setPointerCapture(e.pointerId);e.preventDefault();});
+canvas.addEventListener('pointermove',e=>{if(!orbitDragging)return;orbitAzimuth-=(e.clientX-lastMouseX)*.006;orbitPolar=clamp(orbitPolar+(e.clientY-lastMouseY)*.005,.18,1.48);lastMouseX=e.clientX;lastMouseY=e.clientY;});
+const endOrbit=e=>{if(e.button===2||e.type==='pointercancel'){orbitDragging=false;if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId)}};
+canvas.addEventListener('pointerup',endOrbit);canvas.addEventListener('pointercancel',endOrbit);
+canvas.addEventListener('wheel',e=>{if(cameraMode!=='overview')return;e.preventDefault();orbitRadius=clamp(orbitRadius*Math.exp(e.deltaY*.0011),150,1900)},{passive:false});
+function cameras(dt){
+ camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();camera.up.set(0,1,0);
+ if(cameraMode==='top'){camera.position.lerp(new THREE.Vector3(535,980,-300),Math.min(1,dt*3));camera.lookAt(535,0,-300)}
+ else if(cameraMode==='bridge'){
+  const target=new THREE.Vector3(555,30,-285);
+  camera.position.lerp(new THREE.Vector3(690,255,90),Math.min(1,dt*2.1));
+  camera.lookAt(target);
+ }else if(cameraMode==='cinema'){
+  const n=Math.floor(Math.max(0,elapsed)/4)%2,p=cars[n].position;
+  const heading=cars[n].rotation.y;
+  const theta=elapsed*.16+.4+heading,radius=125;
+  const desired=new THREE.Vector3(p.x+Math.sin(theta)*radius,p.y+70,p.z+Math.cos(theta)*radius);
+  const alpha=1-Math.exp(-dt*2.5);
+  camera.position.lerp(desired,alpha);
+  followLook.lerp(new THREE.Vector3(p.x,p.y+7,p.z),alpha);
+  camera.lookAt(followLook);
+ }else if(cameraMode==='overview'){
+ const sn=Math.sin(orbitPolar),desired=new THREE.Vector3(orbitTarget.x+orbitRadius*sn*Math.sin(orbitAzimuth),orbitTarget.y+orbitRadius*Math.cos(orbitPolar),orbitTarget.z+orbitRadius*sn*Math.cos(orbitAzimuth));
+ camera.position.lerp(desired,Math.min(1,dt*5));camera.lookAt(orbitTarget);
+ }else{
+ // Cámara detrás del vehículo: sigue su ORIENTACIÓN incluso en las curvas.
+ const n=cameraMode==='red'?1:0,car=cars[n],p=car.position;
+ const forward=new THREE.Vector3(Math.sin(car.rotation.y),0,Math.cos(car.rotation.y));
+ const low=cameraMode==='low';
+ const desired=p.clone().addScaledVector(forward,low?-53:-90);
+ desired.y+=low?24:62;
+ const alpha=1-Math.exp(-dt*(low?4.2:3.3));
+ camera.position.lerp(desired,alpha);
+ const target=p.clone().addScaledVector(forward,low?15:21);
+ target.y+=low?7:10;
+ followLook.lerp(target,alpha);
+ camera.lookAt(followLook);
+ }
+}
+function frame(now){
+ requestAnimationFrame(frame);
+ const dt=Math.min(.05,(now-previous)/1000);previous=now;
+ if(playing)elapsed+=dt*speed;
+ update();cameras(dt);
+ if(postFXReady&&composer&&qualityMode!=='normal'){
+  try{composer.render(dt);}catch(err){
+   console.warn('Render fallback',err);postFXReady=false;
+   renderer.setRenderTarget(null);renderer.render(scene,camera);
+  }
+ }else renderer.render(scene,camera);
+}
+function resize(){
+ camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+ applyQuality();
+}
+window.addEventListener('resize',resize);resize();
+$('quality').onchange=e=>{
+ qualityMode=e.target.value;
+ applyQuality();
+};
+$('play').onclick=()=>{if(elapsed>=maxTime)elapsed=0;playing=!playing};
+$('restart').onclick=()=>{elapsed=0;playing=false;update()};
+$('speed').onchange=e=>speed=Number(e.target.value);
+$('scrub').oninput=e=>{elapsed=Number(e.target.value)/1000*maxTime;playing=false;update()};
+for(const id of ['b1','bt','r1','rt'])$(id).onchange=()=>{elapsed=0;playing=false;update()};
+function changeCamera(mode){
+ cameraMode=mode;
+ document.querySelectorAll('[data-camera]').forEach(x=>x.classList.toggle('active',x.dataset.camera===mode));
+}
+document.querySelectorAll('[data-camera]').forEach(b=>b.onclick=()=>changeCamera(b.dataset.camera));
+$('resetCam').onclick=()=>{
+ orbitRadius=690;orbitAzimuth=.58;orbitPolar=.76;orbitDragging=false;
+ orbitTarget.set(535,10,-300);changeCamera('overview');
+};
+document.addEventListener('keydown',e=>{
+ if(e.target instanceof HTMLInputElement||e.target instanceof HTMLSelectElement||e.repeat)return;
+ if(e.code==='Space'){e.preventDefault();$('play').click();}
+ const keys={'Digit1':'overview','Digit2':'top','Digit3':'blue','Digit4':'red','Digit5':'bridge','Digit6':'cinema','Digit7':'low'};
+ if(keys[e.code])changeCamera(keys[e.code]);
+ if(e.code==='KeyN')$('mode').click();
+ if(e.code==='KeyR')$('restart').click();
+});
+update();requestAnimationFrame(frame);
+</script></body></html>
