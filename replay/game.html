@@ -94,9 +94,30 @@ for(let i=0;i<2;i++){$(i?'redLap':'blueLap').textContent='Vuelta '+(data[i].lap+
 $('scrub').value=Math.round(1000*elapsed/maxTime);
 $('done').style.display=elapsed>=maxTime?'block':'none';if(elapsed>=maxTime){const winner=T[0][1]===T[1][1]?'EMPATE':T[0][1]<T[1][1]?'GANA AZUL':'GANA ROJO';$('winner').textContent=winner;$('finishDetail').textContent='Diferencia: '+Math.abs(T[0][1]-T[1][1]).toFixed(3)+' s';playing=false}
 $('play').textContent=playing?'Ⅱ Pausar':'▶ Reproducir'}
-function cameras(dt){const aspect=innerWidth/innerHeight;camera.aspect=aspect;camera.updateProjectionMatrix();if(cameraMode==='top'){camera.position.lerp(new THREE.Vector3(535,1250,-300),Math.min(1,dt*3));camera.up.set(0,0,-1);camera.lookAt(535,0,-300)}else if(cameraMode==='overview'){camera.up.set(0,1,0);camera.position.lerp(new THREE.Vector3(760,850,940),Math.min(1,dt*2));camera.lookAt(535,0,-300)}else{camera.up.set(0,1,0);const n=cameraMode==='blue'?0:1,p=cars[n].position;const target=new THREE.Vector3(p.x+75,p.y+90,p.z+100);camera.position.lerp(target,Math.min(1,dt*3));camera.lookAt(p.x,p.y,p.z)}}
+// Perspectiva más cercana y controles libres de cámara: botón derecho para orbitar, rueda para zoom.
+const orbitTarget=new THREE.Vector3(535,10,-300);
+let orbitRadius=690,orbitAzimuth=.58,orbitPolar=.76,orbitDragging=false,lastMouseX=0,lastMouseY=0;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+canvas.addEventListener('pointerdown',e=>{if(e.button!==2||cameraMode!=='overview')return;orbitDragging=true;lastMouseX=e.clientX;lastMouseY=e.clientY;canvas.setPointerCapture(e.pointerId);e.preventDefault();});
+canvas.addEventListener('pointermove',e=>{if(!orbitDragging)return;orbitAzimuth-=(e.clientX-lastMouseX)*.006;orbitPolar=clamp(orbitPolar+(e.clientY-lastMouseY)*.005,.18,1.48);lastMouseX=e.clientX;lastMouseY=e.clientY;});
+const endOrbit=e=>{if(e.button===2||e.type==='pointercancel'){orbitDragging=false;if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId)}};
+canvas.addEventListener('pointerup',endOrbit);canvas.addEventListener('pointercancel',endOrbit);
+canvas.addEventListener('wheel',e=>{if(cameraMode!=='overview')return;e.preventDefault();orbitRadius=clamp(orbitRadius*Math.exp(e.deltaY*.0011),150,1900)},{passive:false});
+function cameras(dt){
+ camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();camera.up.set(0,1,0);
+ if(cameraMode==='top'){camera.position.lerp(new THREE.Vector3(535,1250,-300),Math.min(1,dt*3));camera.lookAt(535,0,-300)}
+ else if(cameraMode==='overview'){
+ const sn=Math.sin(orbitPolar),desired=new THREE.Vector3(orbitTarget.x+orbitRadius*sn*Math.sin(orbitAzimuth),orbitTarget.y+orbitRadius*Math.cos(orbitPolar),orbitTarget.z+orbitRadius*sn*Math.cos(orbitAzimuth));
+ camera.position.lerp(desired,Math.min(1,dt*5));camera.lookAt(orbitTarget);
+ }else{
+ const n=cameraMode==='blue'?0:1,p=cars[n].position;
+ const target=new THREE.Vector3(p.x+75,p.y+90,p.z+100);
+ camera.position.lerp(target,Math.min(1,dt*3));camera.lookAt(p.x,p.y,p.z);
+ }
+}
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-previous)/1000);previous=now;if(playing)elapsed+=dt*speed;update();cameras(dt);renderer.render(scene,camera)}
-function resize(){renderer.setSize(innerWidth,innerHeight,false)}window.addEventListener('resize',resize);resize();
+function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()}window.addEventListener('resize',resize);resize();
 $('play').onclick=()=>{if(elapsed>=maxTime)elapsed=0;playing=!playing};
 $('restart').onclick=()=>{elapsed=0;playing=false;update()};
 $('speed').onchange=e=>speed=Number(e.target.value);
