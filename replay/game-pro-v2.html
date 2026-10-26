@@ -112,8 +112,26 @@ initPostProcessing();
 const hemi=new THREE.HemisphereLight(0xbadfff,0x263922,2.0);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xffeed7,3.1);sun.position.set(-240,470,310);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-800;sun.shadow.camera.right=800;sun.shadow.camera.top=700;sun.shadow.camera.bottom=-700;sun.shadow.camera.near=20;sun.shadow.camera.far=1200;sun.shadow.bias=-.0004;sun.shadow.normalBias=.025;scene.add(sun);
 const fill=new THREE.DirectionalLight(0x6ca7ff,1.1);fill.position.set(400,240,-100);scene.add(fill);
-function tx(base,grains){const c=document.createElement('canvas');c.width=c.height=512;const q=c.getContext('2d');q.fillStyle=base;q.fillRect(0,0,256,256);let n=101;for(let i=0;i<grains;i++){n=(Math.imul(n,1664525)+1013904223)>>>0;const x=n%512;n=(Math.imul(n,1664525)+1013904223)>>>0;const y=n%512;const z=(n>>9)&31;q.fillStyle=i%3?'rgba(226,237,243,.065)':'rgba(0,0,0,.15)';q.fillRect(x,y,1+z%2,1+z%2)}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;return t}
-const asphalt=tx('#323a3d',12500),grass=tx('#25472e',16000);
+// Texturas 512x512 totalmente opacas: el fondo debe cubrir TODOS los píxeles.
+// La versión anterior sólo pintaba 256x256 y producía bloques negros y verdes.
+function tx(base,grains){
+ const c=document.createElement('canvas');c.width=c.height=512;
+ const q=c.getContext('2d',{alpha:false});
+ q.fillStyle=base;q.fillRect(0,0,512,512);
+ let n=101;
+ const rand=()=>{n=(Math.imul(n,1664525)+1013904223)>>>0;return n/4294967296;};
+ // Grano discreto y no periódico: usar bits altos evita las grillas de la LCG.
+ for(let i=0;i<grains;i++){
+  const x=Math.floor(rand()*512),y=Math.floor(rand()*512);
+  const light=rand()>.54;
+  q.fillStyle=light?'rgba(220,229,230,.052)':'rgba(4,12,16,.095)';
+  const size=rand()>.92?2:1;q.fillRect(x,y,size,size);
+ }
+ const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;
+ t.colorSpace=THREE.SRGBColorSpace;t.minFilter=THREE.LinearMipmapLinearFilter;t.magFilter=THREE.LinearFilter;
+ t.generateMipmaps=true;return t;
+}
+const asphalt=tx('#353a3c',22000),grass=tx('#294e31',26000);
 grass.repeat.set(8,5);
 asphalt.anisotropy=renderer.capabilities.getMaxAnisotropy();
 grass.anisotropy=renderer.capabilities.getMaxAnisotropy();
