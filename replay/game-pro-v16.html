@@ -875,32 +875,41 @@ function addContactShadow(car){
  car.add(shadow);
 }
 const cars=[carModel(0),carModel(1)];cars.forEach(c=>scene.add(c));
-// Luces de freno rojo intenso, halo y focos de iluminación.
+// Luces 3D verdaderas: geometría visible desde todos los ángulos, fuera de la carrocería.
+let brakeTest=false;
 const brakeFX=cars.map(car=>{
- const base=new THREE.MeshBasicMaterial({color:0xff1229,transparent:true,opacity:.8,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});
- const bright=new THREE.MeshBasicMaterial({color:0xff001a,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});
- const halo=new THREE.MeshBasicMaterial({color:0xff1030,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,toneMapped:false,blending:THREE.AdditiveBlending});
- const spots=[],nodes=[];
- for(const side of[-1,1]){
-  const lamp=new THREE.Mesh(new THREE.PlaneGeometry(4.5,1.6),base);lamp.position.set(side*5.1,7.8,-19.8);lamp.rotation.y=Math.PI;lamp.renderOrder=24;car.add(lamp);nodes.push(lamp);
-  const lit=new THREE.Mesh(new THREE.PlaneGeometry(4.7,1.8),bright);lit.position.set(side*5.1,7.8,-19.86);lit.rotation.y=Math.PI;lit.renderOrder=25;car.add(lit);nodes.push(lit);
-  const bloom=new THREE.Mesh(new THREE.PlaneGeometry(7.8,3.4),halo);bloom.position.set(side*5.1,7.8,-19.91);bloom.rotation.y=Math.PI;bloom.renderOrder=26;car.add(bloom);nodes.push(bloom);
-  const spot=new THREE.PointLight(0xff001b,0,26,2);spot.position.set(side*5.1,7.9,-20.3);car.add(spot);spots.push(spot);nodes.push(spot);
+ const lens=new THREE.MeshBasicMaterial({color:0x9d0012,toneMapped:false,depthTest:false});
+ const lit=new THREE.MeshBasicMaterial({color:0xff081c,toneMapped:false,depthTest:false});
+ const offHalo=new THREE.MeshBasicMaterial({color:0xff0a20,transparent:true,opacity:0,depthWrite:false,depthTest:false,blending:THREE.AdditiveBlending,toneMapped:false});
+ const nodes=[],lamps=[],halos=[];
+ for(const side of [-1,1]){
+  // La trompa del coche apunta al +Z: la parte trasera está en -Z.
+  const lamp=new THREE.Mesh(new THREE.SphereGeometry(1.65,16,10),lens);
+  lamp.scale.set(1.65,.49,.46);lamp.position.set(side*5.5,6.8,-18.3);
+  lamp.renderOrder=100;car.add(lamp);nodes.push(lamp);lamps.push(lamp);
+  const glow=new THREE.Mesh(new THREE.SphereGeometry(2.35,16,10),offHalo);
+  glow.scale.set(1.75,.75,.32);glow.position.set(side*5.5,6.8,-19);
+  glow.renderOrder=101;car.add(glow);nodes.push(glow);halos.push(glow);
  }
- return {base,bright,halo,spots,nodes};
+ return {lens,lit,offHalo,nodes,lamps,halos};
 });
-// // Marcadores de giro visibles para llantas del GLB; no se modifican
+const brakeTestButton=document.createElement('button');
+brakeTestButton.id='brakeTest';brakeTestButton.textContent='🔴 Probar frenos';
+brakeTestButton.title='Encender y apagar las luces de freno para comprobar su posición';
+document.querySelector('.controls').appendChild(brakeTestButton);
+brakeTestButton.onclick=()=>{brakeTest=!brakeTest;brakeTestButton.classList.toggle('active',brakeTest);brakeTestButton.textContent=brakeTest?'🔴 Frenos encendidos':'🔴 Probar frenos';update();};
+// Marcadores de giro visibles para llantas del GLB; no se modifican
 // mallas originales porque vienen sin pivotes ni nombres de rueda fiables.
 function updateDrivingFX(id,d,T){
  const start=d.lap?T[id][0]:0,end=T[id][d.lap],t=Math.min(end,elapsed);
  const before=Math.max(start,t-.32),after=Math.min(end,t+.12);
  const current=(d.dist-sample(id,before,T).dist)/Math.max(.02,t-before);
  const next=(sample(id,after,T).dist-d.dist)/Math.max(.02,after-t);
- const braking=t>start+.06&&t<end-.04&&next<current*.975;
-  const fx=brakeFX[id];fx.bright.opacity=braking?1:0;
-  fx.base.opacity=braking?1:.78;fx.halo.opacity=braking?.83:0;
-  for(const spot of fx.spots)spot.intensity=braking?105:0;
-
+ const braking=brakeTest||(t>start+.06&&t<end-.04&&next<current*.99);
+ const fx=brakeFX[id];
+ fx.lens.color.setHex(braking?0xff0010:0x880011);
+ fx.offHalo.opacity=braking?.95:0;
+ for(const lamp of fx.lamps)lamp.scale.set(1.65,braking?.62:.49,.46);
 }
 // Importador local no destructivo. Los modelos originales permanecen en memoria y se
 // restauran automáticamente si falla el GLB o su dependencia de carga.
