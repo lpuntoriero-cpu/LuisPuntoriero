@@ -1017,9 +1017,10 @@ function setCar(id,d){
  const dx=front.x-back.x,dy=front.y-back.y;
  const horizontal=Math.max(.01,Math.hypot(dx,dy));
  const heading=Math.atan2(dx,-dy);
- // Yaw, luego pitch, luego roll: los giros son relativos a los ejes del auto.
+ // Drift reproducible: la trayectoria y los tiempos son los originales.
+ // La carrocería gana ángulo de deslizamiento al entrar en curvas,
+ // mientras que el centro del auto sólo se desplaza ligeramente en zonas planas.
  car.rotation.order='YXZ';
- car.rotation.y=heading;
  const slope=Math.atan2((front.z-back.z)*.38,horizontal);
  // Delante = +Z local. Un pitch negativo alza la trompa en subida.
  const pitch=Math.max(-.13,Math.min(.13,-slope));
@@ -1030,7 +1031,18 @@ function setCar(id,d){
  const before=Math.atan2(p.x-prev.x,-(p.y-prev.y));
  const after=Math.atan2(next.x-p.x,-(next.y-p.y));
  const curve=dist<2||dist>L-2?0:Math.atan2(Math.sin(after-before),Math.cos(after-before));
- const steer=Math.max(-.24,Math.min(.24,curve*1.3));
+ const upcoming=path.at(Math.min(L,dist+38));
+ const approach=Math.atan2(upcoming.x-p.x,-(upcoming.y-p.y));
+ const leadCurve=Math.atan2(Math.sin(approach-heading),Math.cos(approach-heading));
+ const bend=Math.abs(curve);
+ const driftStrength=Math.min(1,Math.max(0,(bend-.095)/.43));
+ // El puente y sus rampas exigen conservar el centro exacto de cada carril.
+ const onBridge=p.z>.12||Math.abs(front.z-back.z)>.35;
+ const drift=onBridge?0:driftStrength;
+ const slipAngle=Math.max(-.29,Math.min(.29,-curve*.48*drift));
+ car.rotation.y=heading+slipAngle;
+ // Contravolante visual: en curva fuerte las ruedas apuntan contra el sobreviraje.
+ const steer=Math.max(-.32,Math.min(.32,leadCurve*.72+curve*(1-drift)*.35-slipAngle*1.65));
  // El GLB ya tiene posición lateral y neumáticos: el roll adicional sobre
  // el tablero estrecho lo hace parecer ladeado y hunde una rueda en el puente.
  car.rotation.z=glbOn?0:Math.max(-.025,Math.min(.025,-curve*.055));
@@ -1050,7 +1062,9 @@ function setCar(id,d){
    baseY=Math.max(baseY,deckY+desiredGap-localYOffset);
   }
  }
- car.position.set(p.x,baseY,-p.y);
+ // Offset lateral contenido: no cambia avances, cronómetro ni orden de llegada.
+ const lateral=Math.max(-1.7,Math.min(1.7,curve*2.6*drift));
+ car.position.set(p.x+Math.cos(heading)*lateral,baseY,-p.y-Math.sin(heading)*lateral);
  const travelled=(lap?routeFor(id,0).length:0)+dist;
  for(const wheel of car.userData.wheels){
   wheel.spinner.rotation.x=-travelled/4.25;
