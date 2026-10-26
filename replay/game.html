@@ -67,25 +67,20 @@ for(let i=0;i<path.points.length-5;i+=5){const j=Math.min(i+5,path.points.length
 strip(paths.tunnel);strip(paths.bridge);
 // Pilar y barandas: solamente en el tramo elevado, dejando el túnel libre.
 const elevated=paths.bridge.points.map((p,i)=>({p,i})).filter(x=>x.p[2]>25);
-// Dos pórticos simétricos: cada uno tiene un par de columnas, una por lado.
-// Se ubican a ambos extremos del tramo alto, dejando libre el túnel central.
+// Dos pares de columnas simétricos. Sin vigas atravesando la calzada.
 for(const fraction of [.18,.82]){
- const anchor=elevated[Math.round((elevated.length-1)*fraction)];
- const idx=anchor.i,positions=[edge(paths.bridge,idx,-25),edge(paths.bridge,idx,25)];
- const top=Math.min(positions[0].y,positions[1].y)-1.5;
- for(const q of positions){
-  const bottom=-6,h=Math.max(5,top-bottom);
+ const idx=elevated[Math.round((elevated.length-1)*fraction)].i;
+ for(const side of [-1,1]){
+  const q=edge(paths.bridge,idx,side*25);
+  const underside=q.y-5.2;
+  const bottom=-6, h=Math.max(2,underside-bottom);
   const pillar=new THREE.Mesh(new THREE.BoxGeometry(6,h,6),concrete);
   pillar.position.set(q.x,bottom+h/2,q.z);
   pillar.castShadow=true;pillar.receiveShadow=true;scene.add(pillar);
-  const cap=new THREE.Mesh(new THREE.BoxGeometry(8,2.2,8),silver);
-  cap.position.set(q.x,top-.9,q.z);cap.castShadow=true;scene.add(cap);
+  const cap=new THREE.Mesh(new THREE.BoxGeometry(8,1.8,8),silver);
+  cap.position.set(q.x,underside-.9,q.z);
+  cap.castShadow=true;scene.add(cap);
  }
- const middle=positions[0].clone().add(positions[1]).multiplyScalar(.5);
- const beam=new THREE.Mesh(new THREE.BoxGeometry(6,4,52),concrete);
- beam.position.set(middle.x,top+1,middle.z);
- beam.rotation.y=Math.atan2(positions[1].x-positions[0].x,positions[1].z-positions[0].z);
- beam.castShadow=true;scene.add(beam);
 }
 for(const side of[-1,1]){const vertices=[];for(const {i} of elevated.filter((_,k)=>k%5===0))vertices.push(edge(paths.bridge,i,side*20,7));const curve=new THREE.CatmullRomCurve3(vertices);const rail=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(16,vertices.length*3),1.3,6,false),silver);rail.castShadow=true;scene.add(rail)}
 // Línea de largada/meta horizontal a ambos carriles.
