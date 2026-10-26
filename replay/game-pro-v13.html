@@ -48,11 +48,16 @@ body{margin:0;background:#030814;color:#f0f7ff;overflow:hidden}button,input{font
 #modelPanel button{color:#f1f9ff;background:#193955;border:1px solid #5c829b;border-radius:8px;padding:8px;cursor:pointer}
 #modelFile{width:100%;padding:9px;background:#0b2236;border-radius:7px}
 #modelStatus{min-height:36px;white-space:normal;overflow-wrap:anywhere}
+#autoModelStatus{position:fixed;z-index:9;top:126px;right:18px;max-width:390px;pointer-events:auto;font-size:12px;line-height:1.4;padding:9px 12px;color:#d3eafb}
+#autoModelStatus[hidden]{display:none}
+#autoModelStatus button{border:1px solid #659dc8;border-radius:6px;background:#18486a;color:white;padding:5px 8px;margin-left:7px;cursor:pointer}
+@media(max-width:850px){#autoModelStatus{top:60px;right:8px;max-width:270px}}
 @media(max-width:850px){#modelPanel{top:68px;right:8px}}
 </style></head>
 <body><canvas id="view"></canvas>
-<div class="ui" id="top"><div class="brand glass">DRIFT <b>MASTERS</b><small>CIRCUITO DRIFT MASTERS · REPLAY 3D PRO v13 · SUPRA A90</small></div><div class="stats glass"><div class="stat"><small>TIEMPO</small><strong id="timer">00:00.000</strong></div><div class="stat"><small>VUELTA</small><strong id="lap">1 / 2</strong></div><div class="stat gap"><small>DIFERENCIA FINAL</small><strong id="gap">—</strong></div></div></div>
+<div class="ui" id="top"><div class="brand glass">DRIFT <b>MASTERS</b><small>CIRCUITO DRIFT MASTERS · REPLAY 3D PRO v13.1 · SUPRA A90</small></div><div class="stats glass"><div class="stat"><small>TIEMPO</small><strong id="timer">00:00.000</strong></div><div class="stat"><small>VUELTA</small><strong id="lap">1 / 2</strong></div><div class="stat gap"><small>DIFERENCIA FINAL</small><strong id="gap">—</strong></div></div></div>
 <div class="ui glass" id="shortcutHint"><strong>VISTA LIBRE</strong> · Botón derecho: girar · Ruedita: zoom · Espacio: pausar · 1–7: cámaras</div>
+<div id="autoModelStatus" class="glass" role="status" aria-live="polite"><span id="autoModelLabel">Preparando Supra 3D...</span><button id="retrySupra" hidden>Reintentar</button></div>
 <div class="ui" id="left"><div class="driver glass"><b style="color:#64caff">● AZUL · SUPRA 01</b><span id="blueLap">Vuelta 1</span><span id="blueTime">—</span></div><div class="driver red glass"><b style="color:#ff8598">● ROJO · SUPRA 02</b><span id="redLap">Vuelta 1</span><span id="redTime">—</span></div></div>
 <div class="ui glass" id="done"><div>🏁 BANDERA A CUADROS</div><strong id="winner">—</strong><small id="finishDetail"></small></div>
 <div class="ui" id="notice" hidden></div>
@@ -875,6 +880,7 @@ const proceduralParts=cars.map(car=>car.children.slice());
 const importedParts=[null,null];
 let importedOrientation=0;
 const setModelStatus=msg=>{$('modelStatus').textContent=msg;};
+function showAutoStatus(message,retry=false){$('autoModelStatus').hidden=false;$('autoModelLabel').textContent=message;$('retrySupra').hidden=!retry;}
 $('toggleModel').onclick=()=>{
  $('modelPanel').hidden=!$('modelPanel').hidden;
 };
@@ -940,6 +946,7 @@ function prepareGLB(source,id){
 let userPickedModel=false,loadSerial=0;
 async function installSupraBuffer(buffer,label,serial){
  if(serial!==loadSerial)return;
+ showAutoStatus('Procesando modelo Supra 3D…');
  const header=new DataView(buffer);
  if(buffer.byteLength<20||header.getUint32(0,true)!==0x46546c67)throw Error('El archivo no es GLB válido.');
  const {GLTFLoader}=await import('https://esm.sh/three@0.160.1/examples/jsm/loaders/GLTFLoader.js');
@@ -953,6 +960,7 @@ async function installSupraBuffer(buffer,label,serial){
   importedParts[i]=next[i];cars[i].add(next[i]);
  }
  setModelStatus('Supra 3D cargado en ambos autos desde '+label+'.');
+ showAutoStatus('✓ Supra 3D real cargado en ambos autos.');
 }
 $('modelFile').onchange=async event=>{
  const file=event.target.files?.[0];if(!file)return;
@@ -960,26 +968,34 @@ $('modelFile').onchange=async event=>{
  if(!/\.glb$/i.test(file.name)){setModelStatus('Seleccioná un archivo .glb.');return;}
  if(file.size>45*1024*1024){setModelStatus('Archivo demasiado grande: usá supra_optimizado.glb.');return;}
  const wasPlaying=playing;playing=false;
- setModelStatus('Cargando '+file.name+'…');
+ setModelStatus('Cargando '+file.name+'…');showAutoStatus('Importando '+file.name+'…');
  try{await installSupraBuffer(await file.arrayBuffer(),file.name,serial);}
- catch(err){setModelStatus('No se pudo cargar el GLB: '+(err?.message||err));console.warn(err);}
+ catch(err){setModelStatus('No se pudo cargar el GLB: '+(err?.message||err));showAutoStatus('Error de GLB: '+(err?.message||err),true);console.warn(err);}
  finally{playing=wasPlaying;update();}
 };
 async function autoLoadSupra(){
  const serial=++loadSerial;
  const url=new URL('./supra_menos_25mb.glb',location.href);
+ // Nuevo intento evita la caché negativa del CDN tras publicar el binario.
+ url.searchParams.set('v','20261026-2');
+ showAutoStatus('Descargando Supra 3D automático…');
  try{
-  const response=await fetch(url,{cache:'force-cache'});
+  const response=await fetch(url,{cache:'no-store'});
   if(!response.ok)throw Error('HTTP '+response.status);
+  const contentType=response.headers.get('content-type')||'';
   const buffer=await response.arrayBuffer();
+  if(buffer.byteLength<10000)throw Error('El archivo recibido es demasiado pequeño ('+buffer.byteLength+' bytes; '+contentType+').');
   if(userPickedModel||serial!==loadSerial)return;
   await installSupraBuffer(buffer,'el repositorio',serial);
  }catch(err){
   if(userPickedModel||serial!==loadSerial)return;
-  setModelStatus('Modelo 3D pendiente de publicar en el repositorio. Mientras tanto, cargá supra_optimizado.glb manualmente.');
-  console.info('Auto GLB not available',err);
+  const reason=err?.message||String(err);
+  setModelStatus('Carga automática fallida: '+reason+'. También podés cargar el GLB manualmente.');
+  showAutoStatus('Supra no cargado: '+reason,true);
+  console.warn('Auto GLB not available',err);
  }
 }
+$('retrySupra').onclick=()=>{if(!userPickedModel)autoLoadSupra();else{$('modelPanel').hidden=false;showAutoStatus('Abrí Modelo 3D y seleccioná tu GLB.',false);}};
 autoLoadSupra();
 
 cars.forEach(addContactShadow);
