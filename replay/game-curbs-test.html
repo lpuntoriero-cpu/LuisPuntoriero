@@ -74,8 +74,10 @@ function isSharedCurb(name,side,i,path){
  const lastSegment=path.points.length-2;
  const firstStraight=i<24;                 // x=560 a x=280
  const returnStraight=i>=lastSegment-23;   // x=850 a x=560
- if(firstStraight) return (name==='tunnel'&&side===-1)||(name==='bridge'&&side===1);
- if(returnStraight) return (name==='tunnel'&&side===1)||(name==='bridge'&&side===-1);
+ // Mantener ambos bordes del túnel: su piano interior es el compartido.
+ // Quitar exclusivamente el piano interior duplicado del puente.
+ if(firstStraight) return name==='bridge'&&side===1;
+ if(returnStraight) return name==='bridge'&&side===-1;
  return false;
 }
 function paintCurbQuad(a,b,c,d,mat){
@@ -102,14 +104,8 @@ function strip(path,name){
  }
 }
 strip(paths.tunnel,'tunnel');strip(paths.bridge,'bridge');
-// Un único piano divisorio sobre la recta compartida.
-// Al ser una sola línea, no hay duplicados superpuestos en la división.
-for(let x=280,k=0;x<850;x+=24,k++){
- const length=Math.min(24,850-x);
- const mesh=new THREE.Mesh(new THREE.BoxGeometry(length,.24,CURB_WIDTH),k%2===0?red:white);
- mesh.position.set(x+length/2,1.58,-500);
- mesh.receiveShadow=true;mesh.castShadow=false;mesh.renderOrder=5;scene.add(mesh);
-}
+// El borde interior del túnel hace de piano central compartido.
+// No se dibuja una segunda pieza rectangular encima.
 // Pilar y barandas: solamente en el tramo elevado, dejando el túnel libre.
 const elevated=paths.bridge.points.map((p,i)=>({p,i})).filter(x=>x.p[2]>25);
 // Tablero continuo debajo del asfalto: superficie superior a +1.15, soporte a -3.2.
