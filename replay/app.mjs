@@ -271,7 +271,7 @@ $('saveFinish').addEventListener('click',()=>{
   const fecha=new Date();
   const dateLabel=fecha.toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
   c.textAlign='left';c.fillStyle='#f1f7ff';c.font='bold 37px system-ui';c.fillText('DRIFT MASTERS · FOTO DE LLEGADA',40,716);
-  c.fillStyle='#91a7bb';c.font='18px system-ui';c.fillText(dateLabel+' · RC 1/24 · RECREACIÓN SIMULADA',40,745);
+  c.fillStyle='#91a7bb';c.font='18px system-ui';c.fillText(dateLabel+' · CIRCUITO DRIFT MASTERS · RECREACIÓN SIMULADA',40,745);
   c.font='bold 26px system-ui';
   c.fillStyle='#54cfff';c.fillText('AZUL · '+pilotLabels[0].toUpperCase().slice(0,18)+' · '+blue.toFixed(3)+' s',40,789,520);
   c.fillStyle='#ff6585';c.fillText('ROJO · '+pilotLabels[1].toUpperCase().slice(0,18)+' · '+red.toFixed(3)+' s',575,789,480);
