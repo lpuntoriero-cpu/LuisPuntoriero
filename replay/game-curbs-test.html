@@ -70,6 +70,9 @@ function ribbon(path,width,raise=0){const verts=[],uv=[],idx=[];const N=path.poi
 const CURB_HALF_ROAD=27.75,CURB_EXTRA=5.25,CURB_Y=1.62;
 const INLEFT_END=24,INRIGHT_START=(paths.tunnel.points.length-1)-24; // Puntos exactos de la recta
 const BRIDGE_LEFT_SPLIT=5*24,BRIDGE_RIGHT_JOIN=25*24;
+// Empalme del piano interior en la salida derecha: termina antes de su duplicado.
+const BRIDGE_EXIT_MERGE_START=BRIDGE_RIGHT_JOIN-18;
+const BRIDGE_EXIT_BLEND_START=BRIDGE_EXIT_MERGE_START-24;
 const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};
 function nearestTunneledEdge(pos,side){
  const path=paths.tunnel;let best=Infinity,closest=null;
@@ -105,8 +108,10 @@ function curbStation(path,side,i){
   if(closest){const shift=closest.sub(center).multiplyScalar(f);a.add(shift);b.add(shift);}
  }
  // El borde independiente se incorpora al compartido en la curva derecha.
- if(path===paths.bridge&&side===-1&&i>=BRIDGE_RIGHT_JOIN-24&&i<=BRIDGE_RIGHT_JOIN){
-  const f=smooth((i-(BRIDGE_RIGHT_JOIN-24))/24);
+ if(path===paths.bridge&&side===-1&&i>=BRIDGE_EXIT_BLEND_START&&i<=BRIDGE_EXIT_MERGE_START){
+  // Llegar al borde que conservamos ANTES de ocultar el duplicado;
+  // evita cortar la línea en seco o dejar un vacío entre ambos.
+  const f=smooth((i-BRIDGE_EXIT_BLEND_START)/(BRIDGE_EXIT_MERGE_START-BRIDGE_EXIT_BLEND_START));
   const center=a.clone().add(b).multiplyScalar(.5);
   const closest=nearestTunneledEdge(center,1);
   if(closest){const shift=closest.sub(center).multiplyScalar(f);a.add(shift);b.add(shift);}
@@ -119,7 +124,7 @@ function visibleCurbSegment(path,side,i){
   if(side===1&&i>=INRIGHT_START)return false;
  }else{
   if(side===1&&i<BRIDGE_LEFT_SPLIT)return false;
-  if(side===-1&&i>=BRIDGE_RIGHT_JOIN)return false;
+  if(side===-1&&i>=BRIDGE_EXIT_MERGE_START)return false;
  }
  return true;
 }
