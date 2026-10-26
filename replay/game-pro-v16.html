@@ -1017,7 +1017,7 @@ function setCar(id,d){
  const dx=front.x-back.x,dy=front.y-back.y;
  const horizontal=Math.max(.01,Math.hypot(dx,dy));
  const heading=Math.atan2(dx,-dy);
- // Orientación original: el automóvil sigue la tangente del recorrido.
+ // Yaw, luego pitch, luego roll: los giros son relativos a los ejes del auto.
  car.rotation.order='YXZ';
  car.rotation.y=heading;
  const slope=Math.atan2((front.z-back.z)*.38,horizontal);
