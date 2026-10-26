@@ -94,11 +94,15 @@ function strip(path,name){
   for(let i=0;i<path.points.length-1;i++){
    const j=i+1,a=path.points[i],b=path.points[j];
    if(isSharedCurb(name,side,i,path))continue;
+   // Piano exterior superior: renderizarlo por encima de ambos asfaltos
+   // en la recta inicial (puente) y en la recta final (túnel).
+   const topOuter=(side===-1&&((name==='bridge'&&i<24)||(name==='tunnel'&&i>=path.points.length-25)));
+   const curbElevation=topOuter?2.45:1.50;
    const mat=Math.floor(path.distances[i]/24)%2===0?red:white;
    // Piezas adyacentes comparten exactamente sus vértices: sin huecos de 5 puntos.
    paintCurbQuad(
-     edge(path,i,side*ROAD_HALF,1.50),edge(path,i,side*(ROAD_HALF+CURB_WIDTH),1.50),
-     edge(path,j,side*ROAD_HALF,1.50),edge(path,j,side*(ROAD_HALF+CURB_WIDTH),1.50),mat
+     edge(path,i,side*ROAD_HALF,curbElevation),edge(path,i,side*(ROAD_HALF+CURB_WIDTH),curbElevation),
+     edge(path,j,side*ROAD_HALF,curbElevation),edge(path,j,side*(ROAD_HALF+CURB_WIDTH),curbElevation),mat
    );
   }
  }
