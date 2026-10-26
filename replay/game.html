@@ -73,7 +73,7 @@ function curbDuplicate(q){
  }
  return false;
 }
-function registerCurb(q){const key=curbCellKey(q.x,q.z);if(!curbCells.has(key))curbCells.set(key,[]);curbCells.get(key).push(q)}
+function registerCurb(q,source,dir){const key=curbCellKey(q.x,q.z);if(!curbCells.has(key))curbCells.set(key,[]);curbCells.get(key).push({p:q,source,dir})}
 function strip(path){const road=new THREE.Mesh(ribbon(path,55.5,1.15),roadmat);road.receiveShadow=true;road.castShadow=false;road.renderOrder=2;scene.add(road);
 for(let i=0;i<path.points.length-5;i+=5){const j=Math.min(i+5,path.points.length-1),mat=(Math.floor(path.distances[i]/24)%2===0?red:white);for(const side of[-1,1]){const v=[edge(path,i,side*27.75,1.4),edge(path,i,side*33,1.4),edge(path,j,side*27.75,1.4),edge(path,j,side*33,1.4)];const midpoint=v[0].clone().add(v[1]).add(v[2]).add(v[3]).multiplyScalar(.25);
 const pa=path.points[i],pb=path.points[j];
@@ -82,8 +82,22 @@ const mx=(pa[0]+pb[0])/2,my=(pa[1]+pb[1])/2;
 const mainStraight=mx>=280&&mx<=850&&Math.abs(my-475)<4&&Math.abs(pa[2])<1&&Math.abs(pb[2])<1;
 const lowerStraight=mx>=280&&mx<=850&&Math.abs(my-525)<4&&Math.abs(pa[2])<1&&Math.abs(pb[2])<1;
 if((mainStraight&&side===1)||(lowerStraight&&side===-1))continue;
-if(path===paths.bridge&&curbDuplicate(midpoint))continue;
-registerCurb(midpoint);const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([...v[0].toArray(),...v[1].toArray(),...v[2].toArray(),...v[3].toArray()],3));g.setIndex([0,2,1,1,2,3]);g.computeVertexNormals();const m=new THREE.Mesh(g,mat);m.material.side=THREE.DoubleSide;m.receiveShadow=true;m.castShadow=false;m.renderOrder=3;scene.add(m)}}
+// Cerca de la salida del puente, los pianos de ambos recorridos son paralelos.
+// Conservamos el piano continuo del túnel y omitimos solamente el duplicado del puente.
+if(path===paths.bridge){
+ const direction=new THREE.Vector3(pb[0]-pa[0],0,-(pb[1]-pa[1])).normalize();
+ const cx=Math.floor(midpoint.x/curbCellSize),cz=Math.floor(midpoint.z/curbCellSize);
+ let duplicate=false;
+ for(let dx=-3;dx<=3&&!duplicate;dx++)for(let dz=-3;dz<=3&&!duplicate;dz++){
+  for(const entry of curbCells.get((cx+dx)+','+(cz+dz))||[]){
+   if(entry.source!=='tunnel'||Math.abs(entry.p.y-midpoint.y)>3.5)continue;
+   const separation=Math.hypot(entry.p.x-midpoint.x,entry.p.z-midpoint.z);
+   if(separation<26 && Math.abs(entry.dir.dot(direction))>.92){duplicate=true;break;}
+  }
+ }
+ if(duplicate)continue;
+}
+registerCurb(midpoint,path===paths.tunnel?'tunnel':'bridge',new THREE.Vector3(pb[0]-pa[0],0,-(pb[1]-pa[1])).normalize());const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([...v[0].toArray(),...v[1].toArray(),...v[2].toArray(),...v[3].toArray()],3));g.setIndex([0,2,1,1,2,3]);g.computeVertexNormals();const m=new THREE.Mesh(g,mat);m.material.side=THREE.DoubleSide;m.receiveShadow=true;m.castShadow=false;m.renderOrder=3;scene.add(m)}}
 }
 strip(paths.tunnel);strip(paths.bridge);
 // Piano central único: sin cortes ni dos líneas paralelas en la recta compartida.
