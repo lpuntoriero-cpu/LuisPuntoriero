@@ -340,7 +340,7 @@ function setNight(on){
 $('mode').onclick=()=>setNight(!nightMode);
 setNight(false);
 // Línea de largada/meta horizontal a ambos carriles.
-for(let col=0;col<12;col++)for(let row=0;row<2;row++){const m=new THREE.Mesh(new THREE.PlaneGeometry(4.4,4.4),((row+col)%2===0?white:concrete));m.rotation.x=-Math.PI/2;m.position.set(560+row*4.4,1.05,-452-col*8.2);scene.add(m)}
+for(let col=0;col<12;col++)for(let row=0;row<2;row++){const m=new THREE.Mesh(new THREE.PlaneGeometry(4.4,4.4),((row+col)%2===0?white:concrete));m.rotation.x=-Math.PI/2;m.position.set(560+row*4.4,2.24,-452-col*8.2);m.renderOrder=9;m.material.side=THREE.DoubleSide;scene.add(m)}
 // Modelos deportivos proporcionados al tamaño original; sin cambiar velocidades.
 function carNumberTexture(id){
  const c=document.createElement('canvas');c.width=256;c.height=128;
