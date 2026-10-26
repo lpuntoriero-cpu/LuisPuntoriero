@@ -875,34 +875,31 @@ function addContactShadow(car){
  car.add(shadow);
 }
 const cars=[carModel(0),carModel(1)];cars.forEach(c=>scene.add(c));
-// Luces traseras vinculadas a la desaceleración, visibles detrás del GLB.
+// Luces de freno rojo intenso, halo y focos de iluminación.
 const brakeFX=cars.map(car=>{
- const lights=[];
- const base=new THREE.MeshBasicMaterial({color:0xfc1432,transparent:true,opacity:.70,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});
- const bright=new THREE.MeshBasicMaterial({color:0xff243d,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});
+ const base=new THREE.MeshBasicMaterial({color:0xff1229,transparent:true,opacity:.8,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});
+ const bright=new THREE.MeshBasicMaterial({color:0xff001a,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});
+ const halo=new THREE.MeshBasicMaterial({color:0xff1030,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,toneMapped:false,blending:THREE.AdditiveBlending});
+ const spots=[];
  for(const side of[-1,1]){
-  const lamp=new THREE.Mesh(new THREE.PlaneGeometry(3.8,1.25),base);
-  lamp.position.set(side*5.1,7.8,-19.1);
-  lamp.rotation.y=Math.PI;lamp.renderOrder=24;
-  car.add(lamp);
-  const glow=new THREE.Mesh(new THREE.PlaneGeometry(5.0,1.65),bright);
-  glow.position.set(side*5.1,7.8,-19.16);
-  glow.rotation.y=Math.PI;glow.renderOrder=25;
-  car.add(glow);
-  lights.push(lamp,glow);
+  const lamp=new THREE.Mesh(new THREE.PlaneGeometry(4.5,1.6),base);lamp.position.set(side*5.1,7.8,-19.8);lamp.rotation.y=Math.PI;lamp.renderOrder=24;car.add(lamp);
+  const lit=new THREE.Mesh(new THREE.PlaneGeometry(4.7,1.8),bright);lit.position.set(side*5.1,7.8,-19.86);lit.rotation.y=Math.PI;lit.renderOrder=25;car.add(lit);
+  const bloom=new THREE.Mesh(new THREE.PlaneGeometry(7.8,3.4),halo);bloom.position.set(side*5.1,7.8,-19.91);bloom.rotation.y=Math.PI;bloom.renderOrder=26;car.add(bloom);
+  const spot=new THREE.PointLight(0xff001b,0,26,2);spot.position.set(side*5.1,7.9,-20.3);car.add(spot);spots.push(spot);
  }
- return {base,bright,lights};
+ return {base,bright,halo,spots};
 });
-// Marcadores de giro visibles para llantas del GLB; no se modifican
+// // Marcadores de giro visibles para llantas del GLB; no se modifican
 // mallas originales porque vienen sin pivotes ni nombres de rueda fiables.
 function updateDrivingFX(id,d,T){
  const start=d.lap?T[id][0]:0,end=T[id][d.lap],t=Math.min(end,elapsed);
  const before=Math.max(start,t-.32),after=Math.min(end,t+.12);
  const current=(d.dist-sample(id,before,T).dist)/Math.max(.02,t-before);
  const next=(sample(id,after,T).dist-d.dist)/Math.max(.02,after-t);
- const braking=t>start+.06&&t<end-.04&&next<current*.94;
- brakeFX[id].bright.opacity=braking?.98:0;
- brakeFX[id].base.opacity=braking?1:.65;
+ const braking=t>start+.06&&t<end-.04&&next<current*.975;
+  const fx=brakeFX[id];fx.bright.opacity=braking?1:0;
+  fx.base.opacity=braking?1:.78;fx.halo.opacity=braking?.83:0;
+  for(const spot of fx.spots)spot.intensity=braking?105:0;
 
 }
 // Importador local no destructivo. Los modelos originales permanecen en memoria y se
