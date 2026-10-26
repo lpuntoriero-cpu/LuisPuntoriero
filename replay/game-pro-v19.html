@@ -1307,9 +1307,10 @@ function editFactory(item){
    const count=Math.max(2,Math.ceil(path.getLength()/20));
    for(let i=0;i<count;i++){const a=path.getPoint(i/count),b=path.getPoint((i+1)/count);const mid=a.clone().add(b).multiplyScalar(.5);const len=a.distanceTo(b);
     for(const y of [4,23]){const rail=add(new THREE.BoxGeometry(len,1.7,1.5),editMat.fence,mid.x,y,mid.z);rail.rotation.y=-Math.atan2(b.z-a.z,b.x-a.x);}
-    const pole=add(new THREE.BoxGeometry(2,29,2),editMat.fence,a.x,14.5,a.z);
+    add(new THREE.BoxGeometry(2,29,2),editMat.fence,a.x,14.5,a.z);
    }
-   return g;
+   g.position.set(item.x,item.y||0,item.z);g.rotation.y=item.rot*Math.PI/180;g.scale.setScalar(item.scale/100);
+   g.userData.editId=item.id;return g;
   }
   add(new THREE.BoxGeometry(55,2,2),editMat.fence,0,23,0);
   add(new THREE.BoxGeometry(55,2,2),editMat.fence,0,4,0);
