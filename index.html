@@ -553,7 +553,7 @@ td{background:#09192c}
 .dm-confirm-dialog p{line-height:1.55;color:#c0d7e8;margin-bottom:22px}
 .dm-confirm-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}
 .dm-confirm-actions .btn{flex:1;min-width:145px}
-.dm-lap1{position:absolute;top:39px;right:9px;left:auto;z-index:3;margin:0;padding:4px 7px;max-width:calc(100% - 18px);border:1px solid #448aa7;border-radius:8px;background:#082b43ee;color:#9ce6ff;font-size:12px;font-weight:900;letter-spacing:.2px;text-align:center;white-space:nowrap;box-shadow:0 2px 9px #0008}
+.dm-lap1{position:absolute;top:3px;right:9px;left:auto;z-index:3;margin:0;padding:3px 6px;max-width:calc(100% - 18px);border:1px solid #448aa7;border-radius:8px;background:#082b43ee;color:#9ce6ff;font-size:12px;font-weight:900;letter-spacing:.2px;text-align:center;white-space:nowrap;box-shadow:0 2px 9px #0008}
 .redlane .dm-lap1{border-color:#bc476b;background:#411727;color:#ffbed0}
 .dm-lap1[hidden]{display:none!important}
 /* Marcador de vuelta 1: parcial normal + diferencia del más lento en rojo. */
@@ -563,19 +563,10 @@ td{background:#09192c}
 .dm-lap1 .dm-f1-lap-gap{color:#ff4968;font-weight:1000;font-variant-numeric:tabular-nums}
 body.dm-theater .dm-lap1.dm-f1-lap-loser{font-size:clamp(12px,1.4vw,19px)}
 @media(max-width:600px){.dm-lap1.dm-f1-lap-loser{font-size:10px;padding:4px 4px}}
-/* POSICIÓN REAL VUELTA 1: una fila superior exclusiva para el parcial.
-   A diferencia de sólo cambiar top, reubicamos título, estado y vehículo,
-   evitando que el cartel tape el Supra/Tinybit en cualquier carril. */
-.lane.dm-lap-active .dm-lap1{top:5px;right:8px;padding:4px 7px;max-width:calc(100% - 16px)}
-.lane.dm-lap-active h2{top:38px}
-.lane.dm-lap-active .state{top:69px}
-.lane.dm-lap-active .car{top:33%;height:36%;transition:top .2s,height .2s,filter .5s,transform .5s}
+/* Sólo se mueve el cartel Vuelta 1: los autos, títulos y estados mantienen su posición original. */
 @media(max-width:530px){
- .lane.dm-lap-active .dm-lap1{top:3px;right:5px;padding:3px 4px;font-size:10px}
- .lane.dm-lap-active .dm-lap1.dm-f1-lap-loser{padding:3px 4px;font-size:9px}
- .lane.dm-lap-active h2{top:26px}
- .lane.dm-lap-active .state{top:44px}
- .lane.dm-lap-active .car{top:32%;height:39%}
+ .dm-lap1{top:2px;right:5px;padding:3px 4px;font-size:10px}
+ .dm-lap1.dm-f1-lap-loser{padding:3px 4px;font-size:9px}
 }
 /* CELULAR */
 @media(max-width:850px){
@@ -1350,11 +1341,6 @@ const visualClockFinished={blue:false,red:false};
 // Parciales enviados por sensores de meta en milisegundos, independientes del reloj visual.
 const dmLap1Millis={AZUL:null,ROJO:null};
 function dmPaintLap1(){
- // Reservar una franja superior en AMBAS tarjetas al llegar el primer parcial.
- // Esto impide solapamientos y mantiene los dos autos alineados visualmente.
- const lapHeaderVisible=Number.isFinite(dmLap1Millis.AZUL)||Number.isFinite(dmLap1Millis.ROJO);
- $("blueLane").classList.toggle("dm-lap-active",lapHeaderVisible);
- $("redLane").classList.toggle("dm-lap-active",lapHeaderVisible);
  const both=Number.isFinite(dmLap1Millis.AZUL)&&Number.isFinite(dmLap1Millis.ROJO);
  const slower=both&&dmLap1Millis.AZUL!==dmLap1Millis.ROJO
   ?(dmLap1Millis.AZUL>dmLap1Millis.ROJO?'AZUL':'ROJO'):null;
