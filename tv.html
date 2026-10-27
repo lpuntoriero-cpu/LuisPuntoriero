@@ -51,6 +51,13 @@ footer{text-align:center;flex:0 0 auto;min-height:4vh;font-size:clamp(15px,2.2vw
  white-space:nowrap;letter-spacing:-.035em}
 .clock.dm-f1-loser .f1-value{color:#fff}
 .clock.dm-f1-loser .f1-gap{color:#ff4968;font-size:.87em;font-weight:1000}
+.lap.dm-f1-lap-loser{display:inline-flex;align-items:center;gap:clamp(4px,.45vw,9px);
+ max-width:100%;padding:7px 10px;border:1px solid #536a80;border-left:4px solid #ff365c;
+ border-radius:4px 10px 10px 4px;background:linear-gradient(105deg,#162437,#09131f);
+ color:#f4f8ff;font-weight:900;white-space:nowrap;font-size:clamp(11px,1.2vw,23px);
+ font-variant-numeric:tabular-nums}
+.lap.dm-f1-lap-loser .f1-lap-gap{color:#ff4968;font-weight:1000}
+@media(max-width:740px){.lap.dm-f1-lap-loser{font-size:clamp(9px,1.85vw,14px);padding:4px 6px;gap:3px}}
 @media(max-width:740px){.clock.dm-f1-loser{font-size:clamp(10px,2.5vw,20px)!important;gap:4px;padding:5px}}
 </style><style id="dm-tv-visual-pack">
 .tv-led{position:relative;background:radial-gradient(circle at 35% 23%,#677587,#243248 56%,#111928 90%);border:2px solid #677b91;box-shadow:inset 0 3px 9px #000c,inset 0 -2px 4px #b3c5d433}
@@ -192,6 +199,18 @@ function drawEffects(){
 }
 requestAnimationFrame(drawEffects);
 
+function renderF1Lap(color,value){
+ const node=$(color+'Lap'),txt=String(value||'');
+ const match=txt.match(/^(VUELTA 1 · \d+(?:\.\d+)? s)(\s*\(\+\d+(?:\.\d+)? s\))$/i);
+ node.classList.toggle('dm-f1-lap-loser',!!match);
+ if(!match){if(node.textContent!==txt)node.textContent=txt;return;}
+ if(node.dataset.f1LapText===txt&&node.querySelector('.f1-lap-gap'))return;
+ node.dataset.f1LapText=txt;
+ const normal=document.createElement('span'),gap=document.createElement('span');
+ normal.textContent=match[1];
+ gap.className='f1-lap-gap';gap.textContent=match[2];
+ node.replaceChildren(normal,gap);
+}
 function renderF1Clock(color,value){
  const clock=$(color+'Time'),text=String(value||'--.-- s');
  const match=text.match(/^(.*?)(\s*\(\+\d+(?:\.\d+)? s\))$/);
@@ -317,7 +336,7 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
   const d=s[color]||{};
   $(color+'Pilot').textContent=d.pilot||color.toUpperCase();
   if(!(tvClock.started&&tvClock[color+'Active']))renderF1Clock(color,d.time||'--.-- s');
-  $(color+'Lap').textContent=d.lap||'';
+  renderF1Lap(color,d.lap||'');
   const ganadorEnResultado=String(d.result||'').trim().toUpperCase()==='GANADOR';
   const winnerPersistente=ganadorEnResultado||(phase==='finalizada'&&tvWinner===color);
   $(color+'Result').textContent=winnerPersistente?'GANADOR':(d.result||'');
