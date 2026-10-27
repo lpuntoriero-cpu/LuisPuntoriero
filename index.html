@@ -1915,9 +1915,11 @@ $("openReplayBtn").onclick = () => {
     b1:msToSeconds(d.azul1),bt:msToSeconds(d.azulTotal),
     r1:msToSeconds(d.rojo1),rt:msToSeconds(d.rojoTotal),
     pb:pilotNames.azul,pr:pilotNames.rojo,
-    autoplay:"1",v:"20261027-replay3d"
+    // Drift car / RC car => Supra; Yahboom / RC micro:bit => Tinybit.
+    vehicle:["yahboom","microbit"].includes($("vehicleType").value)?"tinybit":"supra",
+    autoplay:"1",v:"20261027-replay-vehiculo"
   });
-  const destino=new URL("./replay/game-pro-v62-integrado-drift-masters.html",window.location.href);
+  const destino=new URL("./replay/game-pro-v63-vehiculo-automatico.html",window.location.href);
   destino.search=q.toString();
   const marco=$("replayFrame");
   marco.src=destino.href;
