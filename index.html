@@ -185,6 +185,19 @@ button:disabled{opacity:.4;cursor:not-allowed}
 }
 .timing{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px}
 .timing .time{flex:0 0 auto;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* Marcador estilo clasificación F1 para el segundo auto. */
+.timing .time.dm-f1-loser{display:inline-flex;align-items:center;justify-content:center;gap:clamp(5px,.7vw,11px);
+ max-width:calc(100% - 12px);padding:7px clamp(9px,1.4vw,17px);border:1px solid #536373;
+ border-left:4px solid #ff3557;border-radius:4px 12px 12px 4px;
+ background:linear-gradient(105deg,#151f2e 0%,#07111b 100%);
+ box-shadow:0 7px 22px #0008,inset 0 1px #ffffff1b;
+ font:900 clamp(14px,1.8vw,25px)/1.15 system-ui,sans-serif!important;
+ font-style:italic!important;letter-spacing:-.035em;text-shadow:none!important;white-space:nowrap}
+.time.dm-f1-loser .dm-f1-value{color:#f3f8ff;font-variant-numeric:tabular-nums}
+.time.dm-f1-loser .dm-f1-gap{color:#ff4968;font-weight:1000;font-size:.84em;font-variant-numeric:tabular-nums}
+body.dm-theater .top .time.dm-f1-loser{font-size:clamp(18px,3vw,39px)!important;padding:10px clamp(10px,1.4vw,22px)}
+@media(max-width:600px){.timing .time.dm-f1-loser{gap:5px;padding:6px 8px;font-size:clamp(11px,2.9vw,16px)!important}
+body.dm-theater .top .time.dm-f1-loser{font-size:clamp(12px,3vw,21px)!important}}
 .result{display:flex;align-items:center;justify-content:center;min-height:19px;width:max-content;max-width:94%;margin:0 auto;color:#d2e2f0;font-size:10px}
 .result.dm-result-winner{padding:1px 8px;border:1px solid #65f6ad;border-radius:999px;background:linear-gradient(135deg,#0c593a,#123e34);color:#dcffe9;font-size:11px;font-weight:900;letter-spacing:.4px;text-shadow:0 0 6px #42ff9a;box-shadow:0 0 10px #36ec8944;animation:dmWinnerStatusGlow 1.5s ease-in-out infinite alternate}
 @keyframes dmWinnerStatusGlow{to{box-shadow:0 0 23px #36ec8980}}
@@ -1587,8 +1600,10 @@ function resetDisplay(){
   $("redLap1").hidden=true;
   $("blueLap1").textContent="VUELTA 1 · --.-- s";
   $("redLap1").textContent="VUELTA 1 · --.-- s";
-  $("blueTime").textContent="--.-- s";
-  $("redTime").textContent="--.-- s";
+  for(const id of ["blueTime","redTime"]){
+    $(id).classList.remove("dm-f1-loser");
+    $(id).textContent="--.-- s";
+  }
 
   $("blueResult").classList.remove("dm-result-winner");
   $("redResult").classList.remove("dm-result-winner");
@@ -1833,11 +1848,23 @@ function results(payload){
     w="SIN GANADOR";
   }
 
-  $("blueTime").textContent=
-    b===null?"DESCALIFICADO":fmt(b);
-
-  $("redTime").textContent=
-    r===null?"DESCALIFICADO":fmt(r);
+  // Resultado a la F1: tiempo absoluto blanco y brecha del perdedor en rojo.
+  // La brecha sólo existe cuando ambos autos completaron la carrera.
+  const classifiedLoser=b!==null&&r!==null&&b!==r?(b>r?"blue":"red"):null;
+  const delta=b!==null&&r!==null?Math.abs(b-r).toFixed(2):null;
+  function paintF1Time(lane,time){
+    const el=$(lane+"Time"),isLoser=lane===classifiedLoser;
+    el.classList.toggle("dm-f1-loser",isLoser);
+    if(time===null){el.textContent="DESCALIFICADO";return;}
+    if(!isLoser){el.textContent=fmt(time);return;}
+    const value=document.createElement("span"),gap=document.createElement("span");
+    value.className="dm-f1-value";value.textContent=fmt(time);
+    gap.className="dm-f1-gap";gap.textContent=" (+"+delta+" s)";
+    el.replaceChildren(value,gap);
+    el.setAttribute("aria-label",fmt(time)+"; diferencia más "+delta+" segundos");
+  }
+  paintF1Time("blue",b);
+  paintF1Time("red",r);
 
   $("blueResult").textContent=
     b===null?(r===null?"ANULADA POR TIEMPO":"DESCALIFICADO"):
