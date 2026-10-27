@@ -559,7 +559,13 @@ td{background:#09192c}
 /* Marcador de vuelta 1: parcial normal + diferencia del más lento en rojo. */
 .dm-lap1.dm-f1-lap-loser{border-left:4px solid #ff365d;border-color:#5d7185;border-left-color:#ff365d;
  background:linear-gradient(105deg,#182637,#09121d);color:#f1f7ff;
- box-shadow:0 4px 15px #0008;font-size:clamp(10px,1vw,13px);white-space:nowrap}
+ box-shadow:0 4px 15px #0008;font-size:clamp(10px,1vw,13px);
+ /* No ocupar toda la tarjeta ni montarse sobre la carrocería.
+    Si ambas cifras no caben, la diferencia roja salta a una segunda fila. */
+ display:inline-flex;flex-flow:row wrap;justify-content:flex-end;align-items:center;
+ column-gap:4px;row-gap:2px;width:max-content;max-width:min(196px,calc(100% - 18px));
+ white-space:normal;line-height:1.15}
+.dm-lap1 .dm-f1-lap-base,.dm-lap1 .dm-f1-lap-gap{display:inline-block;white-space:nowrap;flex:0 0 auto}
 .dm-lap1 .dm-f1-lap-gap{color:#ff4968;font-weight:1000;font-variant-numeric:tabular-nums}
 body.dm-theater .dm-lap1.dm-f1-lap-loser{font-size:clamp(12px,1.4vw,19px)}
 @media(max-width:600px){.dm-lap1.dm-f1-lap-loser{font-size:10px;padding:4px 4px}}
@@ -1352,10 +1358,10 @@ function dmPaintLap1(){
   if(!visible){cell.textContent='VUELTA 1 · --.-- s';continue;}
   const normal='VUELTA 1 · '+(ms/1000).toFixed(2)+' s';
   if(color!==slower){cell.textContent=normal;continue;}
-  const gap=document.createElement('span');
-  gap.className='dm-f1-lap-gap';
-  gap.textContent=' (+'+delta+' s)';
-  cell.replaceChildren(document.createTextNode(normal),gap);
+  const base=document.createElement('span'),gap=document.createElement('span');
+  base.className='dm-f1-lap-base';base.textContent=normal;
+  gap.className='dm-f1-lap-gap';gap.textContent='(+'+delta+' s)';
+  cell.replaceChildren(base,gap);
  }
 }
 let winnerAnnounced=false;
