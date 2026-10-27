@@ -1846,9 +1846,15 @@ function borrarRepeticion(){
 $("openReplayBtn").onclick = () => {
   if(!datosRepeticion)return;
   const d=datosRepeticion;
-  const q=new URLSearchParams({a1:String(d.azul1),at:String(d.azulTotal),r1:String(d.rojo1),rt:String(d.rojoTotal),pb:pilotNames.azul,pr:pilotNames.rojo});
-  const destino=new URL("./replay/index.html",window.location.href);
-  q.set("version","20261022poster");
+  // VUELTAS de micro:bit llega en milisegundos; Replay 3D trabaja en segundos.
+  const msToSeconds=ms=>(Number(ms)/1000).toFixed(3);
+  const q=new URLSearchParams({
+    b1:msToSeconds(d.azul1),bt:msToSeconds(d.azulTotal),
+    r1:msToSeconds(d.rojo1),rt:msToSeconds(d.rojoTotal),
+    pb:pilotNames.azul,pr:pilotNames.rojo,
+    autoplay:"1",v:"20261027-replay3d"
+  });
+  const destino=new URL("./replay/game-pro-v62-integrado-drift-masters.html",window.location.href);
   destino.search=q.toString();
   const marco=$("replayFrame");
   marco.src=destino.href;
@@ -2686,7 +2692,7 @@ if ("serviceWorker" in navigator) {
 }
 </script>
 <section id="replayModal" role="dialog" aria-modal="true" aria-label="Race Replay" hidden>
- <div class="replay-top"><strong>DRIFT MASTERS · RACE REPLAY</strong><button id="replayClose" type="button">✕ VOLVER A DRIFT MASTERS</button></div>
+ <div class="replay-top"><strong>DRIFT MASTERS · RACE REPLAY 3D</strong><button id="replayClose" type="button">✕ VOLVER A DRIFT MASTERS</button></div>
  <iframe id="replayFrame" title="Repetición de carrera" loading="eager" allow="fullscreen"></iframe>
 </section>
 <script>
