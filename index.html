@@ -556,6 +556,13 @@ td{background:#09192c}
 .dm-lap1{position:absolute;top:65px;right:9px;left:auto;z-index:3;margin:0;padding:6px 8px;max-width:calc(100% - 18px);border:1px solid #448aa7;border-radius:8px;background:#082b43ee;color:#9ce6ff;font-size:12px;font-weight:900;letter-spacing:.2px;text-align:center;white-space:nowrap;box-shadow:0 2px 9px #0008}
 .redlane .dm-lap1{border-color:#bc476b;background:#411727;color:#ffbed0}
 .dm-lap1[hidden]{display:none!important}
+/* Marcador de vuelta 1: parcial normal + diferencia del más lento en rojo. */
+.dm-lap1.dm-f1-lap-loser{border-left:4px solid #ff365d;border-color:#5d7185;border-left-color:#ff365d;
+ background:linear-gradient(105deg,#182637,#09121d);color:#f1f7ff;
+ box-shadow:0 4px 15px #0008;font-size:clamp(10px,1vw,13px);white-space:nowrap}
+.dm-lap1 .dm-f1-lap-gap{color:#ff4968;font-weight:1000;font-variant-numeric:tabular-nums}
+body.dm-theater .dm-lap1.dm-f1-lap-loser{font-size:clamp(12px,1.4vw,19px)}
+@media(max-width:600px){.dm-lap1.dm-f1-lap-loser{font-size:10px;padding:5px 4px}}
 /* CELULAR */
 @media(max-width:850px){
   .top{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
@@ -1326,6 +1333,26 @@ let bannerTimer = null;
 let visualRaceStart=0;
 let visualRaceRunning=false;
 const visualClockFinished={blue:false,red:false};
+// Parciales enviados por sensores de meta en milisegundos, independientes del reloj visual.
+const dmLap1Millis={AZUL:null,ROJO:null};
+function dmPaintLap1(){
+ const both=Number.isFinite(dmLap1Millis.AZUL)&&Number.isFinite(dmLap1Millis.ROJO);
+ const slower=both&&dmLap1Millis.AZUL!==dmLap1Millis.ROJO
+  ?(dmLap1Millis.AZUL>dmLap1Millis.ROJO?'AZUL':'ROJO'):null;
+ const delta=both?(Math.abs(dmLap1Millis.AZUL-dmLap1Millis.ROJO)/1000).toFixed(2):'0.00';
+ for(const [color,id] of [['AZUL','blueLap1'],['ROJO','redLap1']]){
+  const cell=$(id),ms=dmLap1Millis[color],visible=Number.isFinite(ms);
+  cell.hidden=!visible;
+  cell.classList.toggle('dm-f1-lap-loser',visible&&color===slower);
+  if(!visible){cell.textContent='VUELTA 1 · --.-- s';continue;}
+  const normal='VUELTA 1 · '+(ms/1000).toFixed(2)+' s';
+  if(color!==slower){cell.textContent=normal;continue;}
+  const gap=document.createElement('span');
+  gap.className='dm-f1-lap-gap';
+  gap.textContent=' (+'+delta+' s)';
+  cell.replaceChildren(document.createTextNode(normal),gap);
+ }
+}
 let winnerAnnounced=false;
 // Relojes estimados del navegador; los sensores de micro:bit tienen prioridad.
 function stopVisualClocks(){
@@ -1596,10 +1623,9 @@ function resetDisplay(){
   $("blueState").textContent="LISTO PARA SALIR";
   $("redState").textContent="LISTO PARA SALIR";
 
-  $("blueLap1").hidden=true;
-  $("redLap1").hidden=true;
-  $("blueLap1").textContent="VUELTA 1 · --.-- s";
-  $("redLap1").textContent="VUELTA 1 · --.-- s";
+  dmLap1Millis.AZUL=null;
+  dmLap1Millis.ROJO=null;
+  dmPaintLap1();
   for(const id of ["blueTime","redTime"]){
     $(id).classList.remove("dm-f1-loser");
     $(id).textContent="--.-- s";
@@ -1982,9 +2008,8 @@ function processMessage(raw){
     const carril=partes[0].trim().toUpperCase();
     const ms=Number(partes[1]);
     if(partes.length===2&&(carril==="AZUL"||carril==="ROJO")&&Number.isFinite(ms)&&ms>0&&faseCarrera==="corriendo"){
-      const celda=$(carril==="AZUL"?"blueLap1":"redLap1");
-      celda.textContent="VUELTA 1 · "+(ms/1000).toFixed(2)+" s";
-      celda.hidden=false;
+      dmLap1Millis[carril]=ms;
+      dmPaintLap1();
     }
     return;
   }
@@ -1993,6 +2018,9 @@ function processMessage(raw){
     if(v.length===4 && v.every(Number.isFinite) &&
        v[0]>0 && v[1]>v[0] && v[2]>0 && v[3]>v[2]){
       datosRepeticion={azul1:v[0],azulTotal:v[1],rojo1:v[2],rojoTotal:v[3]};
+      // Garantizar la diferencia V1 aunque los parciales UART individuales
+      // se hayan perdido antes del paquete consolidado VUELTAS.
+      dmLap1Millis.AZUL=v[0];dmLap1Millis.ROJO=v[2];dmPaintLap1();
       estadoRepeticion();
     }else{
       borrarRepeticion();
