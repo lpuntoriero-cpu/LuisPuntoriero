@@ -42,6 +42,16 @@ footer{text-align:center;flex:0 0 auto;min-height:4vh;font-size:clamp(15px,2.2vw
 #banner em{display:block;font-style:normal;font-size:clamp(24px,3.5vw,72px)}
 #hint{position:fixed;bottom:8px;right:12px;font-size:11px;color:#6d89a5;z-index:30}button{background:#112c46;border:1px solid #456b87;border-radius:8px;color:white;padding:8px;cursor:pointer}
 @media(max-width:740px){main{padding:7px}.arena{grid-template-columns:minmax(0,1fr) 21% minmax(0,1fr)}.lane{padding:8px 2px}.pilot{font-size:17px}.clock{font-size:clamp(20px,5vw,42px)}.count{font-size:45px}.message{font-size:10px}}
+/* Marcador F1 en pantalla gigante: delta rojo del segundo clasificado. */
+.clock.dm-f1-loser{display:inline-flex;align-items:center;justify-content:center;gap:clamp(5px,.5vw,12px);
+ max-width:100%;padding:clamp(6px,.6vw,12px) clamp(8px,1vw,20px);
+ font:900 clamp(15px,2.3vw,50px)/1.1 system-ui,sans-serif!important;font-style:italic!important;
+ background:linear-gradient(105deg,#162536,#071019);border:1px solid #61758d;border-left:5px solid #ff375a;
+ border-radius:4px 14px 14px 4px;box-shadow:0 12px 35px #0009;text-shadow:none!important;
+ white-space:nowrap;letter-spacing:-.035em}
+.clock.dm-f1-loser .f1-value{color:#fff}
+.clock.dm-f1-loser .f1-gap{color:#ff4968;font-size:.87em;font-weight:1000}
+@media(max-width:740px){.clock.dm-f1-loser{font-size:clamp(10px,2.5vw,20px)!important;gap:4px;padding:5px}}
 </style><style id="dm-tv-visual-pack">
 .tv-led{position:relative;background:radial-gradient(circle at 35% 23%,#677587,#243248 56%,#111928 90%);border:2px solid #677b91;box-shadow:inset 0 3px 9px #000c,inset 0 -2px 4px #b3c5d433}
 .tv-led:after{content:"";position:absolute;left:17%;top:10%;width:48%;height:27%;border-radius:50%;background:linear-gradient(#ffffffa0,#ffffff00);transform:rotate(-20deg)}
@@ -182,6 +192,18 @@ function drawEffects(){
 }
 requestAnimationFrame(drawEffects);
 
+function renderF1Clock(color,value){
+ const clock=$(color+'Time'),text=String(value||'--.-- s');
+ const match=text.match(/^(.*?)(\s*\(\+\d+(?:\.\d+)? s\))$/);
+ clock.classList.toggle('dm-f1-loser',!!match);
+ if(!match){if(clock.textContent!==text)clock.textContent=text;return;}
+ if(clock.dataset.f1Text===text&&clock.querySelector('.f1-gap'))return;
+ clock.dataset.f1Text=text;
+ const normal=document.createElement('span'),gap=document.createElement('span');
+ normal.className='f1-value';normal.textContent=match[1];
+ gap.className='f1-gap';gap.textContent=match[2];
+ clock.replaceChildren(normal,gap);
+}
 function syncClock(s){
  const c=s.raceClock||{};
  const active=!!(c.running&&c.startEpoch);
@@ -291,7 +313,18 @@ function render(s){if(!s||s.type!=='DM_TV_STATE')return;
   clock.classList.toggle('dm-long-time',v.length>11);
   clock.classList.toggle('dm-very-long',v.length>16);
  }
- for(const color of ['blue','red']){const d=s[color]||{};$(color+'Pilot').textContent=d.pilot||color.toUpperCase();if(!(tvClock.started&&tvClock[color+'Active']))$(color+'Time').textContent=d.time||'--.-- s';$(color+'Lap').textContent=d.lap||'';const ganadorEnResultado=String(d.result||'').trim().toUpperCase()==='GANADOR';const winnerPersistente=ganadorEnResultado||(phase==='finalizada'&&tvWinner===color);$(color+'Result').textContent=winnerPersistente?'GANADOR':(d.result||'');$(color+'Result').classList.toggle('win',winnerPersistente||!!d.win);$(color+'Lane').classList.toggle('win',!!d.win);$(color+'Lane').classList.toggle('lose',!!d.lose)}
+ for(const color of ['blue','red']){
+  const d=s[color]||{};
+  $(color+'Pilot').textContent=d.pilot||color.toUpperCase();
+  if(!(tvClock.started&&tvClock[color+'Active']))renderF1Clock(color,d.time||'--.-- s');
+  $(color+'Lap').textContent=d.lap||'';
+  const ganadorEnResultado=String(d.result||'').trim().toUpperCase()==='GANADOR';
+  const winnerPersistente=ganadorEnResultado||(phase==='finalizada'&&tvWinner===color);
+  $(color+'Result').textContent=winnerPersistente?'GANADOR':(d.result||'');
+  $(color+'Result').classList.toggle('win',winnerPersistente||!!d.win);
+  $(color+'Lane').classList.toggle('win',!!d.win);
+  $(color+'Lane').classList.toggle('lose',!!d.lose);
+ }
  if(!tvGoEpoch||phase!=='corriendo'){
   $('count').textContent=s.count||'—';
   $('count').classList.toggle('go',false);
