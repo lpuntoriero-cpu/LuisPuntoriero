@@ -553,7 +553,7 @@ td{background:#09192c}
 .dm-confirm-dialog p{line-height:1.55;color:#c0d7e8;margin-bottom:22px}
 .dm-confirm-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}
 .dm-confirm-actions .btn{flex:1;min-width:145px}
-.dm-lap1{position:absolute;top:65px;right:9px;left:auto;z-index:3;margin:0;padding:6px 8px;max-width:calc(100% - 18px);border:1px solid #448aa7;border-radius:8px;background:#082b43ee;color:#9ce6ff;font-size:12px;font-weight:900;letter-spacing:.2px;text-align:center;white-space:nowrap;box-shadow:0 2px 9px #0008}
+.dm-lap1{position:absolute;top:39px;right:9px;left:auto;z-index:3;margin:0;padding:4px 7px;max-width:calc(100% - 18px);border:1px solid #448aa7;border-radius:8px;background:#082b43ee;color:#9ce6ff;font-size:12px;font-weight:900;letter-spacing:.2px;text-align:center;white-space:nowrap;box-shadow:0 2px 9px #0008}
 .redlane .dm-lap1{border-color:#bc476b;background:#411727;color:#ffbed0}
 .dm-lap1[hidden]{display:none!important}
 /* Marcador de vuelta 1: parcial normal + diferencia del más lento en rojo. */
@@ -562,7 +562,8 @@ td{background:#09192c}
  box-shadow:0 4px 15px #0008;font-size:clamp(10px,1vw,13px);white-space:nowrap}
 .dm-lap1 .dm-f1-lap-gap{color:#ff4968;font-weight:1000;font-variant-numeric:tabular-nums}
 body.dm-theater .dm-lap1.dm-f1-lap-loser{font-size:clamp(12px,1.4vw,19px)}
-@media(max-width:600px){.dm-lap1.dm-f1-lap-loser{font-size:10px;padding:5px 4px}}
+@media(max-width:600px){.dm-lap1.dm-f1-lap-loser{font-size:10px;padding:4px 4px}}
+@media(max-width:530px){.dm-lap1{top:30px;right:6px;padding:3px 5px;font-size:10px}.dm-lap1.dm-f1-lap-loser{padding:3px 4px;font-size:9px}}
 /* CELULAR */
 @media(max-width:850px){
   .top{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
