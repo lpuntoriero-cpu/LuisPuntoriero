@@ -566,6 +566,9 @@ td{background:#09192c}
  column-gap:4px;row-gap:2px;width:max-content;max-width:min(196px,calc(100% - 18px));
  white-space:normal;line-height:1.15}
 .dm-lap1 .dm-f1-lap-base,.dm-lap1 .dm-f1-lap-gap{display:inline-block;white-space:nowrap;flex:0 0 auto}
+/* En la tarjeta del perdedor, el (+0.60 s) ocupa su propia fila.
+   Evita desbordes por diferencias largas, zoom y ancho del celular. */
+.dm-lap1.dm-f1-lap-loser .dm-f1-lap-gap{flex:0 0 100%;display:block;text-align:right}
 .dm-lap1 .dm-f1-lap-gap{color:#ff4968;font-weight:1000;font-variant-numeric:tabular-nums}
 body.dm-theater .dm-lap1.dm-f1-lap-loser{font-size:clamp(12px,1.4vw,19px)}
 @media(max-width:600px){.dm-lap1.dm-f1-lap-loser{font-size:10px;padding:4px 4px}}
