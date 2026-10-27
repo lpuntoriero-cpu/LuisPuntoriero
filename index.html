@@ -1944,9 +1944,9 @@ $("openReplayBtn").onclick = () => {
     pb:pilotNames.azul,pr:pilotNames.rojo,
     // Enviar la modalidad exacta: distingue Yahboom con guía de Microbit RC sin guía.
     vehicle:$("vehicleType").value,
-    autoplay:"1",v:"20261027-replay-v64"
+    autoplay:"1",v:"20261027-f1-score"
   });
-  const destino=new URL("./replay/game-pro-v64-vehiculos-fijos-segun-modo.html",window.location.href);
+  const destino=new URL("./replay/game-pro-v65-marcador-f1.html",window.location.href);
   destino.search=q.toString();
   const marco=$("replayFrame");
   marco.src=destino.href;
