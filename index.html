@@ -1915,11 +1915,11 @@ $("openReplayBtn").onclick = () => {
     b1:msToSeconds(d.azul1),bt:msToSeconds(d.azulTotal),
     r1:msToSeconds(d.rojo1),rt:msToSeconds(d.rojoTotal),
     pb:pilotNames.azul,pr:pilotNames.rojo,
-    // Drift car / RC car => Supra; Yahboom / RC micro:bit => Tinybit.
-    vehicle:["yahboom","microbit"].includes($("vehicleType").value)?"tinybit":"supra",
-    autoplay:"1",v:"20261027-replay-vehiculo"
+    // Enviar la modalidad exacta: distingue Yahboom con guía de Microbit RC sin guía.
+    vehicle:$("vehicleType").value,
+    autoplay:"1",v:"20261027-replay-v64"
   });
-  const destino=new URL("./replay/game-pro-v63-vehiculo-automatico.html",window.location.href);
+  const destino=new URL("./replay/game-pro-v64-vehiculos-fijos-segun-modo.html",window.location.href);
   destino.search=q.toString();
   const marco=$("replayFrame");
   marco.src=destino.href;
