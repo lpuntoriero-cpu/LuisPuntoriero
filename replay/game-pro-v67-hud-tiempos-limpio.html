@@ -175,7 +175,7 @@ body{margin:0;background:#030814;color:#f0f7ff;overflow:hidden}button,input{font
 }
 .dm-telemetry-head .dm-driver-number{
  display:inline-grid;place-items:center;flex:0 0 auto;width:22px;height:22px;
- border-radius:5px;background:#ffffff10;color:var(--lane-accent);
+ border-radius:5px;background:#ffffff10;color:var(--lane-accent);margin:0;
  font:900 11px/1 system-ui,sans-serif;letter-spacing:0
 }
 #left.dm-scoreboard .dm-telemetry-head b.dm-telemetry-name{
@@ -236,12 +236,12 @@ body{margin:0;background:#030814;color:#f0f7ff;overflow:hidden}button,input{font
 <div id="autoModelStatus" class="glass" role="status" aria-live="polite"><span id="autoModelLabel">Preparando Supra 3D...</span><button id="retrySupra" hidden>Reintentar</button></div>
 <div class="ui dm-scoreboard" id="left" aria-label="Marcador de tiempos de vuelta y totales">
  <div class="driver glass dm-telemetry">
-  <div class="dm-telemetry-head"><span class="dm-driver-number">01</span><b class="dm-telemetry-name" id="blueDriverName">● AZUL · SUPRA 01</b></div>
+  <div class="dm-telemetry-head"><span class="dm-driver-number">01</span><b class="dm-telemetry-name" id="blueDriverName">AZUL · SUPRA</b></div>
   <div class="dm-telemetry-row" id="blueLapRow"><span class="dm-telemetry-label">V1</span><span class="dm-telemetry-reading dm-pending" id="blueLap">—</span></div>
   <div class="dm-telemetry-row" id="blueTotalRow"><span class="dm-telemetry-label">TOTAL</span><span class="dm-telemetry-reading dm-pending" id="blueTime">EN PISTA</span></div>
  </div>
  <div class="driver red glass dm-telemetry">
-  <div class="dm-telemetry-head"><span class="dm-driver-number">02</span><b class="dm-telemetry-name" id="redDriverName">● ROJO · SUPRA 02</b></div>
+  <div class="dm-telemetry-head"><span class="dm-driver-number">02</span><b class="dm-telemetry-name" id="redDriverName">ROJO · SUPRA</b></div>
   <div class="dm-telemetry-row" id="redLapRow"><span class="dm-telemetry-label">V1</span><span class="dm-telemetry-reading dm-pending" id="redLap">—</span></div>
   <div class="dm-telemetry-row" id="redTotalRow"><span class="dm-telemetry-label">TOTAL</span><span class="dm-telemetry-reading dm-pending" id="redTime">EN PISTA</span></div>
  </div>
@@ -1926,8 +1926,8 @@ function refreshDriverLabels(){
  const car=$('vehicleType').value==='tinybit'?'TINYBIT':'SUPRA';
  const blue=replayPilotNames.azul&&replayPilotNames.azul.toUpperCase()!=='AZUL'?' · '+replayPilotNames.azul:'';
  const red=replayPilotNames.rojo&&replayPilotNames.rojo.toUpperCase()!=='ROJO'?' · '+replayPilotNames.rojo:'';
- $('blueDriverName').textContent='● AZUL · '+car+' 01'+blue;
- $('redDriverName').textContent='● ROJO · '+car+' 02'+red;
+ $('blueDriverName').textContent='AZUL · '+car+blue;
+ $('redDriverName').textContent='ROJO · '+car+red;
 }
 $('vehicleType').addEventListener('change',refreshDriverLabels);
 refreshDriverLabels();
