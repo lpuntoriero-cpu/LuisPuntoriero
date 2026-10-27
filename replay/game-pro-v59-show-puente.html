@@ -713,7 +713,7 @@ const bridgeSparkBases=Array.from({length:bridgeBursts*2},(_,idx)=>{
  const station=idx>>1,side=idx%2===0?-1:1;
  return bridgeSidePosition(bridgeFXBegin+bridgeFXSpan*(station+.5)/bridgeBursts,side);
 });
-const bridgeBright=new THREE.Color(),bridgeDim=new THREE.Color(),bridgeGlowBright=new THREE.Color();
+const bridgeBright=new THREE.Color(),bridgeDim=new THREE.Color(),bridgeHighlight=new THREE.Color(0xdff8ff);
 const bridgeShowState={id:-1,dist:-1};
 function updateBridgeShow(data){
  const mode=$('bridgeEffect').value;
@@ -740,7 +740,7 @@ function updateBridgeShow(data){
    const highlight=bridgeClamp(1-Math.abs(progress-at)*bridgeLedCount/3.5,0,1);
    const amount=reached*endFade;
    bridgeBright.copy(bridgeColorDark).lerp(color,amount);
-   if(highlight>0&&amount>0)bridgeBright.lerp(new THREE.Color(0xdff8ff),highlight*.60*amount);
+   if(highlight>0&&amount>0)bridgeBright.lerp(bridgeHighlight,highlight*.60*amount);
    bridgeDim.copy(bridgeHaloDark).lerp(color,amount*.87);
    bridgeLedBody.setColorAt(i,bridgeBright);
    bridgeLedGlow.setColorAt(i,bridgeDim);
@@ -764,17 +764,16 @@ function updateBridgeShow(data){
     bridgeSparkPosition[idx+1]=base.y+Math.max(0,age)*(.13+.085*Math.sin(k*1.3))+(active?Math.sin(angle*2+age*.095)*2:0);
     bridgeSparkPosition[idx+2]=base.z+radius*Math.sin(angle);
     const warm=(k%4===0);
-    const c=warm?new THREE.Color(0xffd77f):color;
-    bridgeSparkColor[idx]=c.r*fade;
-    bridgeSparkColor[idx+1]=c.g*fade;
-    bridgeSparkColor[idx+2]=c.b*fade;
+    bridgeSparkColor[idx]=(warm?1:color.r)*fade;
+    bridgeSparkColor[idx+1]=(warm?.84:color.g)*fade;
+    bridgeSparkColor[idx+2]=(warm?.50:color.b)*fade;
    }
   }
   bridgeSparkGeometry.attributes.position.needsUpdate=true;
   bridgeSparkGeometry.attributes.color.needsUpdate=true;
  }
 }
-$('bridgeEffect').addEventListener('change',()=>{updateBridgeShow([sample(0,elapsed,times()),sample(1,elapsed,times())]);});
+$('bridgeEffect').addEventListener('change',()=>{const T=times();if(T)updateBridgeShow([sample(0,elapsed,T),sample(1,elapsed,T)]);});
 
 // Alumbrado perimetral, fuera del trazado; sin sombras costosas.
 const lamps=[];
