@@ -3819,6 +3819,10 @@ body.dm-theater:not(.dm-fit-tournament) .top{
 .dm-pf-red .dm-pf-car.dm-pf-clean-photo{filter:drop-shadow(0 6px 11px #0008) drop-shadow(0 0 8px #ff365e44)}
 .dm-pf-open-btn{position:fixed;right:22px;bottom:22px;z-index:10001;border:1px solid #67baff;border-radius:9px;background:linear-gradient(145deg,#158bfa,#0450aa);color:#fff;box-shadow:0 6px 28px #157dea88;padding:14px 22px;font:900 18px system-ui,sans-serif;cursor:pointer}
 .dm-pf-open-btn[hidden]{display:none!important}
+/* El foto finish de la aplicación principal no puede superponerse al Replay 3D.
+   La foto finish propia del Replay 3D permanece visible dentro de su iframe. */
+body.replay-open #dmPfReplayButton{display:none!important}
+body.replay-open #dmPhotoFinish{visibility:hidden!important;pointer-events:none!important}
 .dm-pf-open-btn:hover{filter:brightness(1.15)}
 
 /* FOTO FINISH · tipografia deportiva mas limpia */
