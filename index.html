@@ -1412,9 +1412,13 @@ function status(t){
   dmPaintSensorLanes();
 }
 function dmPaintSensorLanes(){
- // Mismo efecto que el contrarreloj: sólo opacity .35, sin filtros,
- // rayas nuevas, ni alterar la imagen o los colores de los carriles.
- const waitingDual=raceMode==='single'&&dmSimpleModoElegido==='dual'&&
+ // Mismo efecto que el contrarreloj: sólo opacity .35, sin filtros
+ // ni cambios a las imágenes. Abarca carrera simple 2 autos y Duelo
+ // exclusivamente después de solicitar preparar la carrera del duelo.
+ const waitingSimpleDual=raceMode==='single'&&dmSimpleModoElegido==='dual';
+ const waitingDuel=raceMode==='champ'&&
+   (preparacionPendienteCampeonato||mangaPreparadaCampeonato);
+ const waitingDual=(waitingSimpleDual||waitingDuel)&&
    !solo&&faseCarrera==='posicionamiento';
  if(waitingDual){
    $("blueLane").style.opacity=azulPosicionado?"1":".35";
