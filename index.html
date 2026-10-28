@@ -734,6 +734,8 @@ body.champ-selected #dmSimpleConsole{display:none!important}
 /* Duelo: misma señal amarilla de posicionamiento que carrera simple. */
 #champRaceBtn.dm-duel-waiting{background:#b98214!important;color:#171b22!important;border-color:#e5ab3e!important;opacity:1!important;box-shadow:0 0 14px #dca12d40;cursor:wait}
 #champRaceBtn.dm-duel-waiting:disabled{opacity:1!important}
+#tourGo.dm-tour-waiting{background:#b98214!important;color:#171b22!important;border-color:#e5ab3e!important;opacity:1!important;box-shadow:0 0 14px #dca12d40;cursor:wait}
+#tourGo.dm-tour-waiting:disabled{opacity:1!important}
 .pilot-line{display:grid;grid-template-columns:62px 92px minmax(0,1fr);gap:9px;align-items:center;margin-bottom:8px;padding:6px;border:1px solid #25465c;border-radius:10px;background:#08192b}
 .pilot-line img{width:56px;height:54px;object-fit:contain;filter:drop-shadow(0 0 7px #000)}
 .pilot-line label{font-size:12px;font-weight:900;color:#b5d4e7}
@@ -1423,7 +1425,8 @@ function dmPaintSensorLanes(){
  const waitingSimpleDual=raceMode==='single'&&dmSimpleModoElegido==='dual';
  const waitingDuel=raceMode==='champ'&&
    (preparacionPendienteCampeonato||mangaPreparadaCampeonato);
- const waitingDual=(waitingSimpleDual||waitingDuel)&&
+ const waitingTour=raceMode==='tour'&&dmTourWaitingSensors;
+ const waitingDual=(waitingSimpleDual||waitingDuel||waitingTour)&&
    !solo&&faseCarrera==='posicionamiento';
  const waitingAuto=raceMode==='single'&&dmSimpleModoElegido==='solo'&&
    dmSimpleChoice==='auto'&&solo&&faseCarrera==='posicionamiento';
@@ -3270,12 +3273,16 @@ function dmTourRender(){
  btn.disabled=!next||!connected||busy||raceMode!=='tour';
  if(!next){$('tourExit').textContent='↩ TERMINAR Y VOLVER A CARRERA SIMPLE';$('tourInfo').textContent='🏆 TORNEO FINALIZADO';btn.textContent='🏆 TORNEO FINALIZADO';return}
  const positioned=faseCarrera==='posicionamiento'&&!solo&&azulPosicionado&&rojoPosicionado;
- btn.textContent=positioned?'🏁 INICIAR CUENTA REGRESIVA':'🏁 PREPARAR ENFRENTAMIENTO';
+ const waiting=dmTourWaitingSensors&&faseCarrera==='posicionamiento'&&!positioned;
+ btn.classList.toggle('dm-tour-waiting',!!next&&waiting);
+ btn.textContent=waiting?'🟡 POSICIONÁ LOS AUTOS':positioned&&dmTourWaitingSensors?'🚦 INICIAR CUENTA REGRESIVA':'🏁 PREPARAR ENFRENTAMIENTO';
+ if(waiting)btn.disabled=true;
  $('tourInfo').textContent=dmTour.name+' · '+dmTourStage(next.r)+' · Cruce '+(next.m+1)+' · '+(busy?'Carrera en curso':!connected?'Conectá la micro:bit':faseCarrera==='finalizada'?'Esperando reposo de la micro:bit':'Listo para competir');
  if(faseCarrera==='finalizada')btn.disabled=true;
 }
 function dmTourOnBoardReady(){
  if(raceMode!=='tour'||!dmTour)return;
+ dmTourWaitingSensors=false;
  // Se conserva el cuadro y solo se sincroniza el estado y la próxima pareja.
  if(dmTourNext())dmTourAssignPilots();
  dmTourRender();
@@ -3297,6 +3304,7 @@ $('tourGo').onclick=()=>{
  if(raceMode!=='tour'||!dmTourNext()||!connected||['cuenta','corriendo','finalizada'].includes(faseCarrera))return;
  // Misma rutina comprobada de carrera simple. No se envía Bluetooth desde el torneo.
  if(!(faseCarrera==='posicionamiento' && !solo && azulPosicionado && rojoPosicionado))dmTourAssignPilots();
+ dmTourWaitingSensors=true;
  $('dualBtn').click();dmTourRender();
 };
 $('tourCsv').onclick=()=>{
@@ -3384,6 +3392,7 @@ $('tourPoster').onclick=async()=>{
 };
 // Solo actualizaciones de interfaz: los comandos, sensores y estados no se modifican.
 // El renderRaceMode original corre periódicamente: NO reconstruir el cuadro en ese ciclo.
+let dmTourWaitingSensors=false;
 const dmTourOldRender=renderRaceMode;
 renderRaceMode=function(){dmTourOldRender();if(raceMode==='tour')dmTourButtonState()};
 function dmTourButtonState(){
@@ -3391,7 +3400,10 @@ function dmTourButtonState(){
  const busy=['cuenta','corriendo','finalizada'].includes(faseCarrera);
  b.disabled=!next||!connected||busy||raceMode!=='tour';
  const ready=faseCarrera==='posicionamiento'&&!solo&&azulPosicionado&&rojoPosicionado;
- const label=ready?'🏁 INICIAR CUENTA REGRESIVA':'🏁 PREPARAR ENFRENTAMIENTO';
+ const waiting=dmTourWaitingSensors&&faseCarrera==='posicionamiento'&&!ready;
+ b.classList.toggle('dm-tour-waiting',raceMode==='tour'&&!!next&&waiting);
+ if(waiting)b.disabled=true;
+ const label=waiting?'🟡 POSICIONÁ LOS AUTOS':ready&&dmTourWaitingSensors?'🚦 INICIAR CUENTA REGRESIVA':'🏁 PREPARAR ENFRENTAMIENTO';
  if(next&&b.textContent!==label)b.textContent=label;
 }
 const dmTourOldSensor=actualizarSensor;
