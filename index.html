@@ -128,6 +128,11 @@ button:disabled{opacity:.4;cursor:not-allowed}
     opacity .5s,filter .5s,
     box-shadow .5s,border-color .5s;
 }
+/* Carrera simple dos autos: panel oscuro hasta confirmar cada sensor. */
+.lane.dm-awaiting-car{filter:brightness(.35) saturate(.45);box-shadow:none}
+.lane.dm-awaiting-car .car{opacity:.35;filter:grayscale(.78) brightness(.42);transition:opacity .3s,filter .3s}
+.lane.dm-sensor-ready{filter:none}
+.lane.dm-sensor-ready .car{opacity:1;transition:opacity .3s,filter .3s}
 .lane.redlane{
   border-color:var(--red);
   background:
@@ -1409,6 +1414,15 @@ function sfx(s){
 // ESTADO GENERAL
 function status(t){
   $("statusMessage").textContent=t;
+  dmPaintSensorLanes();
+}
+function dmPaintSensorLanes(){
+ const active=raceMode==='single'&&dmSimpleModoElegido==='dual'&&!solo&&faseCarrera==='posicionamiento';
+ for(const [id,ready] of [['blueLane',azulPosicionado],['redLane',rojoPosicionado]]){
+  const lane=$(id);
+  lane.classList.toggle('dm-awaiting-car',active&&!ready);
+  lane.classList.toggle('dm-sensor-ready',active&&ready);
+ }
 }
 
 function setConnection(ok){
@@ -1481,6 +1495,7 @@ function actualizarSensor(color,posicionado){
   }
 
   actualizarEstadoAutos();
+  dmPaintSensorLanes();
 }
 
 // SEMÁFORO
@@ -2841,6 +2856,7 @@ function renderSimpleConsole(){
  $('dmSimpleReset').disabled=!connected||busy;
 }
 function renderRaceMode(){
+ dmPaintSensorLanes();
  renderSimpleConsole();
  const modoSimpleBloqueado=raceMode==='single' && faseCarrera==='posicionamiento' && dmSimpleModoElegido!=='';
  const bloquearCarrera=faseCarrera==='cuenta'||faseCarrera==='corriendo';
