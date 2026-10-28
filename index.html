@@ -731,6 +731,9 @@ body.champ-selected #dmSimpleConsole{display:none!important}
 @media(max-width:530px){.dm-simple-option{font-size:10px;padding:11px 3px}}
 #champRaceBtn,#dualBtn,#soloBtn{font-size:14px;padding:13px}
 #champRaceBtn[disabled]{opacity:.42}
+/* Duelo: misma señal amarilla de posicionamiento que carrera simple. */
+#champRaceBtn.dm-duel-waiting{background:#b98214!important;color:#171b22!important;border-color:#e5ab3e!important;opacity:1!important;box-shadow:0 0 14px #dca12d40;cursor:wait}
+#champRaceBtn.dm-duel-waiting:disabled{opacity:1!important}
 .pilot-line{display:grid;grid-template-columns:62px 92px minmax(0,1fr);gap:9px;align-items:center;margin-bottom:8px;padding:6px;border:1px solid #25465c;border-radius:10px;background:#08192b}
 .pilot-line img{width:56px;height:54px;object-fit:contain;filter:drop-shadow(0 0 7px #000)}
 .pilot-line label{font-size:12px;font-weight:900;color:#b5d4e7}
@@ -2923,8 +2926,12 @@ function renderRaceMode(){
  if(start){
   const enPosicion=mangaPreparadaCampeonato && faseCarrera==='posicionamiento';
   const esperandoPlaca=!placaListaCampeonato && !enPosicion;
-  start.textContent=esperandoPlaca?'⏳ ESPERANDO MICRO:BIT':enPosicion?'🏁 INICIAR CUENTA REGRESIVA':'🏁 LARGAR CARRERA DEL DUELO';
-  start.disabled=!isChamp||champ.completed||!connected||esperandoCuentaCampeonato||preparacionPendienteCampeonato||esperandoPlaca||faseCarrera==='cuenta'||faseCarrera==='corriendo'||(enPosicion&&(!azulPosicionado||!rojoPosicionado));
+  const faltanAutos=enPosicion&&(!azulPosicionado||!rojoPosicionado);
+  start.classList.toggle('dm-duel-waiting',isChamp&&faltanAutos);
+  start.textContent=esperandoPlaca?'⏳ ESPERANDO MICRO:BIT':
+   faltanAutos?'🟡 POSICIONÁ LOS AUTOS':
+   enPosicion?'🚦 INICIAR CUENTA REGRESIVA':'🏁 LARGAR CARRERA DEL DUELO';
+  start.disabled=!isChamp||champ.completed||!connected||esperandoCuentaCampeonato||preparacionPendienteCampeonato||esperandoPlaca||faseCarrera==='cuenta'||faseCarrera==='corriendo'||faltanAutos;
  }
 }
 // Cambiar de modo no debe depender del estado del cuadro ni reiniciar Bluetooth.
