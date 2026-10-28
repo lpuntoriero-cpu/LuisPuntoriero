@@ -128,11 +128,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
     opacity .5s,filter .5s,
     box-shadow .5s,border-color .5s;
 }
-/* Carrera simple dos autos: panel oscuro hasta confirmar cada sensor. */
-.lane.dm-awaiting-car{filter:brightness(.35) saturate(.45);box-shadow:none}
-.lane.dm-awaiting-car .car{opacity:.35;filter:grayscale(.78) brightness(.42);transition:opacity .3s,filter .3s}
-.lane.dm-sensor-ready{filter:none}
-.lane.dm-sensor-ready .car{opacity:1;transition:opacity .3s,filter .3s}
 .lane.redlane{
   border-color:var(--red);
   background:
@@ -1417,11 +1412,20 @@ function status(t){
   dmPaintSensorLanes();
 }
 function dmPaintSensorLanes(){
- const active=raceMode==='single'&&dmSimpleModoElegido==='dual'&&!solo&&faseCarrera==='posicionamiento';
- for(const [id,ready] of [['blueLane',azulPosicionado],['redLane',rojoPosicionado]]){
-  const lane=$(id);
-  lane.classList.toggle('dm-awaiting-car',active&&!ready);
-  lane.classList.toggle('dm-sensor-ready',active&&ready);
+ // Mismo efecto que el contrarreloj: sólo opacity .35, sin filtros,
+ // rayas nuevas, ni alterar la imagen o los colores de los carriles.
+ const waitingDual=raceMode==='single'&&dmSimpleModoElegido==='dual'&&
+   !solo&&faseCarrera==='posicionamiento';
+ if(waitingDual){
+   $("blueLane").style.opacity=azulPosicionado?"1":".35";
+   $("redLane").style.opacity=rojoPosicionado?"1":".35";
+ }else if(raceMode==='single'&&dmSimpleModoElegido==='solo'&&solo){
+   // Conservar exactamente el oscurecimiento existente del contrarreloj.
+   $("blueLane").style.opacity=dmSoloRojo()?".35":"1";
+   $("redLane").style.opacity=dmSoloRojo()?"1":".35";
+ }else{
+   $("blueLane").style.opacity="1";
+   $("redLane").style.opacity="1";
  }
 }
 
