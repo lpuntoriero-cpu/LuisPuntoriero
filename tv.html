@@ -449,9 +449,9 @@ const t=track.getBoundingClientRect(),f=finish.getBoundingClientRect();
 const ref=blue.getBoundingClientRect();
 // Calibración de la línea de meta: el borde delantero del Tinybit
 // debe coincidir con la línea, no superarla. Se elimina el desplazamiento
-// adicional de 10.4% que adelantaba ambos robots hacia la derecha.
+// adicional anterior de 10.4%; ahora se calibra Tinybit en +3.8%.
 // La corrección específica de los Supra se conserva sin cambios.
-const ajuste=root.dataset.vehicle==='supra'?3.6:0;
+const ajuste=root.dataset.vehicle==='supra'?3.6:3.8;
 return (f.left-t.left-ref.width/2)/t.width*100+ajuste;
 }
 function spark(){flash.classList.remove('on');void flash.offsetWidth;flash.classList.add('on')}
