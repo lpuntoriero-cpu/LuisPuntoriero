@@ -701,11 +701,14 @@ body:has(#tourPanel:not([hidden])) #racePilotsTab{display:none}
 body.champ-selected #dmSimpleConsole{display:none!important}
 .dm-simple-console{display:grid;gap:10px}
 .dm-simple-caption{font-size:11px;letter-spacing:1px;color:#9cc0d8;font-weight:900}
-.dm-simple-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;background:#10263a;padding:4px;border-radius:10px}
+.dm-simple-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;background:#10263a;padding:4px;border-radius:10px}
 .dm-simple-option{padding:12px 5px;border:1px solid transparent;border-radius:8px;background:#142a40;color:#c8deed;font-weight:900}
 .dm-choice-dual{background:linear-gradient(135deg,#0b5f9f 0%,#1690e5 35%,#7a54b8 50%,#d33f63 65%,#b91f42 100%)!important;color:#fff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
 .dm-choice-blue{background:#0861a3!important;color:#fff!important}
 .dm-choice-red{background:#bd2547!important;color:#fff!important}
+.dm-choice-auto{background:linear-gradient(90deg,#0971b8 0%,#168ce2 49.7%,#d33b60 50.3%,#b91f42 100%)!important;color:#fff!important}
+.dm-choice-auto.dm-auto-blue{background:#0861a3!important}
+.dm-choice-auto.dm-auto-red{background:#bd2547!important}
 .dm-simple-option{min-height:57px;line-height:1.15}
 .dm-simple-option{position:relative;transition:opacity .18s,filter .18s,box-shadow .18s,border-color .18s;isolation:isolate}
 .dm-simple-options .dm-simple-option:not(.selected){opacity:.62;filter:saturate(.7) brightness(.75)}
@@ -1084,8 +1087,7 @@ header.dm-racing-header .vehicle-picker[open] .vehicle-pop{z-index:251}
       <div class="dm-simple-caption">ELEGÍ LA MODALIDAD</div>
       <div class="dm-simple-options" role="group" aria-label="Modalidad de carrera">
         <button type="button" class="dm-simple-option dm-choice-dual selected" data-simple-mode="dual">2 AUTOS</button>
-        <button type="button" class="dm-simple-option dm-choice-blue" data-simple-mode="blue">CONTRARRELOJ AZUL</button>
-        <button type="button" class="dm-simple-option dm-choice-red" data-simple-mode="red">CONTRARRELOJ ROJO</button>
+        <button type="button" class="dm-simple-option dm-choice-auto" data-simple-mode="auto">CONTRARRELOJ</button>
       </div>
       <button type="button" id="dmSimpleStart" class="btn green dm-simple-start" disabled>🏁 PREPARAR CARRERA</button>
       <button type="button" id="dmSimpleReset" class="btn dm-simple-reset" disabled>REINICIAR</button>
@@ -1420,9 +1422,15 @@ function dmPaintSensorLanes(){
    (preparacionPendienteCampeonato||mangaPreparadaCampeonato);
  const waitingDual=(waitingSimpleDual||waitingDuel)&&
    !solo&&faseCarrera==='posicionamiento';
+ const waitingAuto=raceMode==='single'&&dmSimpleModoElegido==='solo'&&
+   dmSimpleChoice==='auto'&&solo&&faseCarrera==='posicionamiento';
  if(waitingDual){
    $("blueLane").style.opacity=azulPosicionado?"1":".35";
    $("redLane").style.opacity=rojoPosicionado?"1":".35";
+ }else if(waitingAuto){
+   const lane=dmAutoLane();
+   $("blueLane").style.opacity=lane==='AZUL'?"1":".35";
+   $("redLane").style.opacity=lane==='ROJO'?"1":".35";
  }else if(raceMode==='single'&&dmSimpleModoElegido==='solo'&&solo){
    // Conservar exactamente el oscurecimiento existente del contrarreloj.
    $("blueLane").style.opacity=dmSoloRojo()?".35":"1";
@@ -1470,11 +1478,17 @@ function actualizarEstadoAutos(){
   }
 
   if(solo){
-    status(
-      (dmSoloRojo()?rojoPosicionado:azulPosicionado)
-        ?(dmSoloRojo()?"AUTO ROJO LISTO":"AUTO AZUL LISTO")
-        :(dmSoloRojo()?"FALTA AUTO ROJO":"FALTA AUTO AZUL")
-    );
+    if(raceMode==='single'&&dmSimpleModoElegido==='solo'&&dmSimpleChoice==='auto'&&faseCarrera==='posicionamiento'){
+      const autoLane=dmAutoLane();
+      status(autoLane?'AUTO '+autoLane+' LISTO':
+        (azulPosicionado&&rojoPosicionado?'SOLO UN AUTO POR VEZ':'POSICIONAR UN AUTO'));
+    }else{
+      status(
+        (dmSoloRojo()?rojoPosicionado:azulPosicionado)
+          ?(dmSoloRojo()?"AUTO ROJO LISTO":"AUTO AZUL LISTO")
+          :(dmSoloRojo()?"FALTA AUTO ROJO":"FALTA AUTO AZUL")
+      );
+    }
     return;
   }
 
@@ -1502,8 +1516,13 @@ function actualizarSensor(color,posicionado){
       posicionado?"POSICIONADO":"FALTA AUTO";
   }
 
+  if(raceMode==='single'&&dmSimpleModoElegido==='solo'&&dmSimpleChoice==='auto'){
+    const lane=dmAutoLane();
+    if(lane)$("soloLaneSelect").value=lane;
+  }
   actualizarEstadoAutos();
   dmPaintSensorLanes();
+  if(typeof renderSimpleConsole==='function')renderSimpleConsole();
 }
 
 // SEMÁFORO
@@ -2037,7 +2056,10 @@ function processMessage(raw){
     // Durante la transición de autos listos a cuenta puede llegar un
     // POSICIONAR tardío. No parpadear ni modificar el estado en ese caso.
     if(faseCarrera==="cuenta"||faseCarrera==="corriendo"||esperandoCuentaCampeonato)return;
-    if(azulPosicionado && (solo || rojoPosicionado)){
+    const posicionCorrecta=solo
+      ?(raceMode==='single'&&dmSimpleChoice==='auto'?dmAutoLane()!=='':(dmSoloRojo()?rojoPosicionado:azulPosicionado))
+      :(azulPosicionado&&rojoPosicionado);
+    if(posicionCorrecta){
       status("PILOTOS PREPARADOS");
       return;
     }
@@ -2415,14 +2437,18 @@ $("soloBtn").onclick=()=>{
   audioOn();
   // Igual que en dos autos: la segunda pulsación mantiene el sensor
   // ya confirmado y solicita la cuenta sin preparar la manga otra vez.
-  if(faseCarrera==="posicionamiento" && solo && (dmSoloRojo()?rojoPosicionado:azulPosicionado)){
+  const autoSolo=raceMode==='single'&&dmSimpleChoice==='auto';
+  if(faseCarrera==="posicionamiento" && solo &&
+     (autoSolo?dmAutoLane()!=='':(dmSoloRojo()?rojoPosicionado:azulPosicionado))){
+    if(autoSolo)$("soloLaneSelect").value=dmAutoLane();
     status("PILOTOS PREPARADOS");
-    send(dmSoloRojo()?"SR":"S");
+    send(autoSolo?"SA":dmSoloRojo()?"SR":"S");
     return;
   }
+  if(autoSolo&&faseCarrera==="posicionamiento"&&solo)return;
   startRace(true);
   setRaceSafety();
-  send(dmSoloRojo()?"SR":"S");
+  send(autoSolo?"SA":dmSoloRojo()?"SR":"S");
 };
 
 $("resetBtn").onclick=()=>{
@@ -2445,7 +2471,7 @@ $("resetBtn").onclick=()=>{
 // Largada manual solo cuando la placa ya confirmó todos los sensores.
 function dmReadyToCount(){
  return connected&&faseCarrera==='posicionamiento'&&
-  (solo?(dmSoloRojo()?rojoPosicionado:azulPosicionado):(azulPosicionado&&rojoPosicionado));
+  (solo?(raceMode==='single'&&dmSimpleChoice==='auto'?dmAutoLane()!=='':(dmSoloRojo()?rojoPosicionado:azulPosicionado)):(azulPosicionado&&rojoPosicionado));
 }
 function dmRenderCountButton(){
  const b=document.getElementById('dmStartCount');
@@ -2820,11 +2846,14 @@ let placaListaCampeonato=false; // Solo REPOSO de la micro:bit autoriza nueva ma
 let preparacionPendienteCampeonato=false;
 let mangaPreparadaCampeonato=false;
 let dmSimpleChoice='dual';
+function dmAutoLane(){
+ return azulPosicionado===rojoPosicionado?'':(azulPosicionado?'AZUL':'ROJO');
+}
 document.querySelectorAll('[data-simple-mode]').forEach(button=>{
  button.addEventListener('click',()=>{
   if(raceMode!=='single'||dmSimpleModoElegido||['cuenta','corriendo'].includes(faseCarrera))return;
   dmSimpleChoice=button.dataset.simpleMode;
-  $('soloLaneSelect').value=dmSimpleChoice==='red'?'ROJO':'AZUL';
+  $('soloLaneSelect').value='AZUL';
   $('aviso').textContent='';
   renderRaceMode();
  });
@@ -2832,7 +2861,7 @@ document.querySelectorAll('[data-simple-mode]').forEach(button=>{
 $('dmSimpleStart').onclick=()=>{
  if(raceMode!=='single'||!connected)return;
  if(dmSimpleModoElegido && faseCarrera==='posicionamiento' &&
-    !(dmSimpleChoice==='dual' ? azulPosicionado&&rojoPosicionado : dmSimpleChoice==='red'?rojoPosicionado:azulPosicionado))return;
+    !(dmSimpleChoice==='dual'?azulPosicionado&&rojoPosicionado:dmAutoLane()!==''))return;
  if(dmSimpleChoice==='dual')$('dualBtn').click();
  else $('soloBtn').click();
  renderRaceMode();
@@ -2843,23 +2872,24 @@ function renderSimpleConsole(){
  const busy=['cuenta','corriendo'].includes(faseCarrera);
  const locked=!!dmSimpleModoElegido&&faseCarrera==='posicionamiento';
  document.querySelectorAll('[data-simple-mode]').forEach(b=>{
-   b.classList.toggle('selected',b.dataset.simpleMode===dmSimpleChoice);
-   b.disabled=!active||busy||locked;
+  b.classList.toggle('selected',b.dataset.simpleMode===dmSimpleChoice);
+  b.disabled=!active||busy||locked;
  });
- const supported=true;
+ const autoLane=dmAutoLane();
+ const autoButton=document.querySelector('[data-simple-mode="auto"]');
+ const autoActive=active&&dmSimpleChoice==='auto'&&dmSimpleModoElegido==='solo'&&faseCarrera==='posicionamiento';
+ autoButton.classList.toggle('dm-auto-blue',autoActive&&autoLane==='AZUL');
+ autoButton.classList.toggle('dm-auto-red',autoActive&&autoLane==='ROJO');
  const ready=faseCarrera==='posicionamiento'&&(
   dmSimpleChoice==='dual'&&dmSimpleModoElegido==='dual'&&azulPosicionado&&rojoPosicionado ||
-  (dmSimpleChoice==='blue'||dmSimpleChoice==='red')&&dmSimpleModoElegido==='solo'&&(dmSimpleChoice==='red'?rojoPosicionado:azulPosicionado)
+  dmSimpleChoice==='auto'&&dmSimpleModoElegido==='solo'&&autoLane!==''
  );
  const start=$('dmSimpleStart');
- // Al preparar una manga, el botón se vuelve indicador amarillo sin acción.
- // Sólo permite la segunda pulsación cuando la micro:bit confirmó los sensores.
- start.disabled=!active||!connected||busy||!supported||(locked&&!ready);
+ start.disabled=!active||!connected||busy||(locked&&!ready);
  start.classList.toggle('dm-simple-waiting',locked&&!ready);
- start.textContent=!supported?'MODALIDAD NO DISPONIBLE':
-  busy?'🏎️ CARRERA EN CURSO':
+ start.textContent=busy?'🏎️ CARRERA EN CURSO':
   ready?'🚦 INICIAR CUENTA REGRESIVA':
-  locked?(dmSimpleChoice==='dual'?'🟡 POSICIONÁ LOS AUTOS':dmSimpleChoice==='red'?'🟡 POSICIONÁ EL AUTO ROJO':'🟡 POSICIONÁ EL AUTO AZUL'):
+  locked?(dmSimpleChoice==='dual'?'🟡 POSICIONÁ LOS AUTOS':azulPosicionado&&rojoPosicionado?'🟡 DEJÁ SOLO UN AUTO':'🟡 POSICIONÁ UN AUTO'):
   '🏁 PREPARAR CARRERA';
  $('dmSimpleReset').disabled=!connected||busy;
 }
