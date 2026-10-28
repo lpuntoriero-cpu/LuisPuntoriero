@@ -937,36 +937,7 @@ header.dm-racing-header .vehicle-picker[open]{z-index:250}
 header.dm-racing-header .vehicle-picker[open] .vehicle-pop{z-index:251}
 </style>
 
-<style id="dm-simulator-style">
-/* Simulador de micro:bit: aislado del adaptador Bluetooth real. */
-#dmSimToggle{min-height:43px;padding:9px 12px;font-weight:850;font-size:11px;letter-spacing:.025em;border-radius:10px;border:1px solid #6c8cb6;background:#15293f;color:#bde4ff;cursor:pointer;white-space:nowrap}
-#dmSimToggle[aria-pressed="true"]{color:#08192a;background:#79d8ff;border-color:#a6eaff;box-shadow:0 0 17px #00aeff45}
-body.dm-simulator-active #dmBluetoothPanel{border-color:#52a9ed;background:linear-gradient(130deg,#092f4a,#091a2c)}
-body.dm-simulator-active #dmBluetoothPanel .dm-bt-symbol{background:#164362;color:#c7f1ff}
-body.dm-simulator-active #btText{color:#82d9ff}
-#dmSimPanel[hidden]{display:none!important}
-#dmSimPanel{position:relative;margin:11px auto 8px;width:calc(100% - 32px);max-width:1430px;z-index:12;padding:14px 17px;border:1px solid #5c96c8;border-radius:15px;background:linear-gradient(145deg,#0b2a42f5,#091622f5);box-shadow:0 12px 35px #0008;color:#eaf7ff}
-.dm-sim-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:11px}
-.dm-sim-head strong{font-size:14px;letter-spacing:.045em}
-.dm-sim-pill{padding:4px 8px;color:#8de4ff;border:1px solid #69bde87a;border-radius:99px;font-size:10px;font-weight:900}
-.dm-sim-head .dm-sim-hint{font-size:11px;color:#a9c7de;flex:1;min-width:170px}
-.dm-sim-main{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-.dm-sim-main button{padding:11px 14px;border:1px solid #456b8a;border-radius:9px;background:#18364f;color:#e7f7ff;font-size:12px;font-weight:850;cursor:pointer}
-.dm-sim-main button:hover:not(:disabled){border-color:#a0dbff;background:#205277}
-.dm-sim-main button:disabled{opacity:.42;cursor:not-allowed}
-.dm-sim-main .dm-sim-demo{border-color:#4af1ba;background:linear-gradient(125deg,#126d6e,#197e61);color:white;box-shadow:0 4px 15px #14b98b32}
-.dm-sim-main .dm-sim-sensor{display:flex;align-items:center;gap:7px}
-.dm-sim-dot{width:10px;height:10px;border-radius:50%;background:#5f7684;box-shadow:inset 0 1px 3px #0009}
-.dm-sim-sensor.blue.on .dm-sim-dot{background:#52baff;box-shadow:0 0 13px #2ab8ff}
-.dm-sim-sensor.red.on .dm-sim-dot{background:#ff5a7b;box-shadow:0 0 13px #ff416c}
-.dm-sim-config{margin-top:10px;padding-top:9px;border-top:1px solid #55738a56}
-.dm-sim-config summary{cursor:pointer;font-size:11px;font-weight:800;color:#b4d9f3}
-.dm-sim-values{display:flex;flex-wrap:wrap;gap:11px;margin-top:11px}
-.dm-sim-values label{font-size:11px;color:#b9d7e9;display:flex;align-items:center;gap:6px}
-.dm-sim-values input{width:77px;min-width:0;text-align:center;font-size:12px;padding:7px 5px;color:#fff;background:#10283c;border:1px solid #6489a2;border-radius:7px;font-variant-numeric:tabular-nums}
-#dmSimLog{display:block;min-height:16px;margin-top:9px;font-size:11px;color:#b8d9eb}
-@media(max-width:800px){#dmSimPanel{width:calc(100% - 16px);padding:11px}.dm-sim-main button{flex:1 1 auto}header #dmSimToggle{min-height:38px;padding:9px;font-size:10px}}
-</style>
+
 </head>
 
 <body>
@@ -1001,34 +972,11 @@ body.dm-simulator-active #btText{color:#82d9ff}
       <span class="dm-bt-symbol" aria-hidden="true">ᛒ</span>
       <span class="dm-bt-info"><span class="dm-bt-label">MICRO:BIT · BLUETOOTH</span><span class="dm-bt-state"><span id="btDot" class="dot"></span><span id="btText">DESCONECTADA</span></span></span>
     </div>
-    <button id="dmSimToggle" type="button" aria-pressed="false" title="Probar la micro:bit y los sensores sin hardware">🧪 SIMULAR</button>
     <button id="connectBtn" class="btn primary dm-bt-action" type="button">CONECTAR BLUETOOTH</button>
   </div>
 </header>
 
-<section id="dmSimPanel" aria-label="Simulador virtual de micro:bit" hidden>
-  <div class="dm-sim-head">
-    <strong>🧪 MICRO:BIT VIRTUAL</strong>
-    <span class="dm-sim-pill">SIN BLUETOOTH REAL</span>
-    <span class="dm-sim-hint">Usá la carrera automática, o prepará una carrera y activá los sensores manualmente.</span>
-  </div>
-  <div class="dm-sim-main">
-    <button id="dmSimAuto" type="button" class="dm-sim-demo">▶ SIMULAR CARRERA COMPLETA</button>
-    <button id="dmSimBlue" type="button" class="dm-sim-sensor blue" aria-pressed="false"><span class="dm-sim-dot"></span> SENSOR AZUL: LIBRE</button>
-    <button id="dmSimRed" type="button" class="dm-sim-sensor red" aria-pressed="false"><span class="dm-sim-dot"></span> SENSOR ROJO: LIBRE</button>
-    <button id="dmSimCancel" type="button">↺ REINICIAR PRUEBA</button>
-  </div>
-  <details class="dm-sim-config">
-    <summary>⚙ Configurar tiempos simulados</summary>
-    <div class="dm-sim-values">
-      <label>AZUL · V1 <input id="dmSimB1" type="number" min=".01" step=".01" value="7.20"></label>
-      <label>AZUL · TOTAL <input id="dmSimBT" type="number" min=".02" step=".01" value="14.10"></label>
-      <label>ROJO · V1 <input id="dmSimR1" type="number" min=".01" step=".01" value="7.80"></label>
-      <label>ROJO · TOTAL <input id="dmSimRT" type="number" min=".02" step=".01" value="14.90"></label>
-    </div>
-  </details>
-  <span id="dmSimLog" role="status" aria-live="polite">Listo para probar. Ninguna micro:bit real está conectada.</span>
-</section>
+
 <div id="aviso"></div>
 
 <section class="top">
@@ -1336,8 +1284,6 @@ let writer = null;
 let notifier = null;
 let buffer = "";
 let connected = false;
-// Simulación optativa, sólo activa mediante el botón visible de prueba.
-let dmSimActive=false;
 let solo = false;
 let winnerFirst = "";
 let raceSaved = false;
@@ -1468,14 +1414,7 @@ function status(t){
 function setConnection(ok){
   connected=ok;
 
-  $("btText").textContent=
-    ok?(dmSimActive?"SIMULADA":"CONECTADA"):"DESCONECTADA";
-  $("dmBluetoothPanel").querySelector(".dm-bt-label").textContent=dmSimActive?"MICRO:BIT · VIRTUAL":"MICRO:BIT · BLUETOOTH";
-  $("dmSimToggle").setAttribute("aria-pressed",String(dmSimActive));
-  $("dmSimToggle").textContent=dmSimActive?"🧪 SALIR DE SIMULACIÓN":"🧪 SIMULAR";
-  $("dmSimPanel").hidden=!dmSimActive;
-  document.body.classList.toggle("dm-simulator-active",dmSimActive);
-  $("connectBtn").disabled=dmSimActive;
+  $("btText").textContent=ok?"CONECTADA":"DESCONECTADA";
 
   $("btDot").classList.toggle("on",ok);
   $("dmBluetoothPanel").classList.toggle("dm-connected",ok);
@@ -2322,155 +2261,8 @@ function notify(e){
 }
 
 
-// MICRO:BIT VIRTUAL · utiliza EXACTAMENTE el parser UART de la aplicación.
-// Nunca invoca navigator.bluetooth ni escribe a un dispositivo real.
-const dmSimTimers=new Set();
-let dmSimGeneration=0,dmSimCountdown=false;
-function dmSimClearTimers(){
- dmSimGeneration++;
- for(const id of dmSimTimers)clearTimeout(id);
- dmSimTimers.clear();
- dmSimCountdown=false;
-}
-function dmSimLater(ms,fn){
- const generation=dmSimGeneration;
- const timer=setTimeout(()=>{
-  dmSimTimers.delete(timer);
-  if(dmSimActive&&generation===dmSimGeneration)fn();
- },Math.max(0,ms));
- dmSimTimers.add(timer);
-}
-function dmSimStatus(note){$("dmSimLog").textContent=note;}
-function dmSimUpdateSensors(){
- for(const [id,position,color] of [["dmSimBlue",azulPosicionado,"AZUL"],["dmSimRed",rojoPosicionado,"ROJO"]]){
-  const b=$(id);
-  b.classList.toggle("on",position);
-  b.setAttribute("aria-pressed",String(position));
-  b.lastChild.textContent=" SENSOR "+color+": "+(position?"OCUPADO":"LIBRE");
-  b.disabled=!dmSimActive||faseCarrera!=="posicionamiento"||dmSimCountdown;
- }
- $("dmSimAuto").disabled=!dmSimActive||faseCarrera==="cuenta"||faseCarrera==="corriendo"||dmSimCountdown;
-}
-function dmSimIncoming(message){
- if(!dmSimActive)return;
- processMessage(message);
- setRaceSafety();
- if(typeof renderRaceMode==="function")renderRaceMode();
- dmSimUpdateSensors();
-}
-function dmSimTimes(){
- const v=["dmSimB1","dmSimBT","dmSimR1","dmSimRT"].map(id=>Number($(id).value));
- if(v.some(n=>!Number.isFinite(n)||n<=0)||v[1]<=v[0]||v[3]<=v[2]||Math.max(v[1],v[3])>90){
-  dmSimStatus("Revisá los tiempos: el total debe superar a la vuelta 1 y no exceder 90 s.");
-  return null;
- }
- return v;
-}
-function dmSimBeginCountdown(){
- if(dmSimCountdown||!dmSimActive)return;
- const t=dmSimTimes();if(!t)return;
- dmSimClearTimers();
- dmSimCountdown=true;
- dmSimIncoming("CUENTA");
- dmSimStatus("Semáforo virtual: 8 luces, GO y sensores de llegada simulados.");
- // Cuenta rápida de 8 a 1; los tiempos de vuelta transcurren en tiempo real.
- for(let n=8;n>=1;n--)dmSimLater((8-n)*350,()=>dmSimIncoming("COUNT:"+n));
- dmSimLater(8*350,()=>{
-  dmSimCountdown=false;
-  dmSimIncoming("GO");
-  dmSimStatus("Carrera virtual en curso: esperando parciales y meta…");
-  const ms=t.map(seconds=>Math.round(seconds*1000));
-  dmSimLater(ms[0],()=>dmSimIncoming("VUELTA1:AZUL,"+ms[0]));
-  dmSimLater(ms[2],()=>dmSimIncoming("VUELTA1:ROJO,"+ms[2]));
-  const first=ms[1]<=ms[3]?"Azul":"Rojo",firstMs=Math.min(ms[1],ms[3]);
-  dmSimLater(firstMs,()=>{
-   dmSimIncoming("GANA:"+first+" "+(firstMs/1000).toFixed(2)+" s");
-   dmSimStatus("Primer auto en meta. Esperando al segundo…");
-  });
-  dmSimLater(Math.max(ms[1],ms[3])+100,()=>{
-   dmSimIncoming("RESULTADOS:"+t[1].toFixed(2)+","+t[3].toFixed(2));
-   dmSimIncoming("VUELTAS:"+ms.join(","));
-   dmSimStatus("Carrera terminada. ¡Probá ▶ VER REPETICIÓN para abrir el Replay 3D!");
-   dmSimUpdateSensors();
-  });
- });
-}
-function dmSimCommand(command){
- if(!dmSimActive)return;
- if(command==="B"){
-  dmSimClearTimers();
-  dmSimStatus("Prueba reiniciada. Prepará una carrera nueva.");
-  dmSimUpdateSensors();
-  return;
- }
- if(!["A","S","SR"].includes(command))return; // LED/BLE de iluminación no tienen efecto en el simulador.
- const ready=command==="A"?(azulPosicionado&&rojoPosicionado):command==="SR"?rojoPosicionado:azulPosicionado;
- if(ready){dmSimBeginCountdown();return;}
- dmSimIncoming("POSICIONAR");
- dmSimStatus("Esperando sensor de posicionamiento. Activá AZUL y ROJO y pulsá INICIAR CUENTA REGRESIVA.");
-}
-function dmSimStart(){
- if(dmSimActive)return;
- if(device?.gatt?.connected||connected){
-  $("aviso").textContent="Desconectá la micro:bit real antes de usar la simulación.";
-  return;
- }
- dmSimClearTimers();
- dmSimActive=true;
- setConnection(true);
- status("MODO SIMULADOR · micro:bit virtual");
- dmSimStatus("Simulación conectada. Elegí SIMULAR CARRERA COMPLETA o PREPARAR CARRERA.");
- if(typeof renderRaceMode==="function")renderRaceMode();
- dmSimUpdateSensors();
-}
-function dmSimStop(){
- if(!dmSimActive)return;
- dmSimClearTimers();
- dmSimActive=false;
- stopVisualClocks();
- dmCancelGoTimeout();
- if(faseCarrera==="cuenta"||faseCarrera==="corriendo")faseCarrera="reposo";
- setConnection(false);
- if(typeof renderRaceMode==="function")renderRaceMode();
- status("Simulador desconectado");
-}
-$("dmSimToggle").addEventListener("click",()=>dmSimActive?dmSimStop():dmSimStart());
-for(const [id,color] of [["dmSimBlue","AZUL"],["dmSimRed","ROJO"]]){
- $(id).addEventListener("click",()=>{
-  if(!dmSimActive||faseCarrera!=="posicionamiento"||dmSimCountdown)return;
-  const positioned=color==="AZUL"?azulPosicionado:rojoPosicionado;
-  dmSimIncoming(color+":"+(positioned?"LIBRE":"OK"));
-  if(azulPosicionado&&rojoPosicionado)dmSimIncoming("AUTOS LISTOS");
-  dmSimStatus("Sensor "+color+" "+(positioned?"liberado":"ocupado")+". "+(azulPosicionado&&rojoPosicionado?"Ya podés iniciar la cuenta.":"Falta posicionar."));
- });
-}
-$("dmSimAuto").addEventListener("click",()=>{
- if(!dmSimActive||!dmSimTimes())return;
- if(faseCarrera==="cuenta"||faseCarrera==="corriendo")return;
- dmSimClearTimers();
- if(raceMode!=="single")$("raceModeSingle").click();
- // El mismo botón utilizado con Bluetooth, sin saltarse la preparación normal.
- $("dualBtn").click();
- dmSimStatus("Prueba automática: preparando la carrera y los sensores…");
- dmSimLater(350,()=>dmSimIncoming("AZUL:OK"));
- dmSimLater(700,()=>dmSimIncoming("ROJO:OK"));
- dmSimLater(800,()=>dmSimIncoming("AUTOS LISTOS"));
- dmSimLater(1050,()=>{
-  $("dualBtn").click();
- });
-});
-$("dmSimCancel").addEventListener("click",()=>{
- if(!dmSimActive)return;
- dmSimClearTimers();
- $("resetBtn").click();
- dmSimIncoming("STATUS:Simulador preparado");
- dmSimStatus("Listo para una nueva prueba.");
- dmSimUpdateSensors();
-});
-
 // BLUETOOTH
 async function connect(){
-  if(dmSimActive)return;
   audioOn();
 
   if(!navigator.bluetooth){
@@ -2544,7 +2336,6 @@ function disconnect(){
 }
 
 async function send(s){
-  if(dmSimActive){dmSimCommand(s);return;}
   if((faseCarrera==="cuenta"||faseCarrera==="corriendo") && /^(?:C:|P1:|P16:|R1:|E1:)/.test(s)) return;
   if(
     !writer||
@@ -2572,7 +2363,6 @@ async function send(s){
 
 // BOTONES DE CARRERA
 $("connectBtn").onclick=()=>{
-  if(dmSimActive)return;
   if(device&&device.gatt.connected){
     disconnect();
   }else{
