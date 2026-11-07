@@ -40,6 +40,16 @@
       console.warn('Enlace con Smart City:', e);
     }
   }
+  // La maqueta refleja el tipo seleccionado incluso antes de largar la carrera.
+  function sendVehicle() {
+    if (!window.opener || window.opener.closed) return;
+    try {
+      window.opener.postMessage({ type: 'DM_SMARTCITY_VEHICLE_V1', vehicle: vehicleType() }, targetOrigin);
+    } catch (e) {
+      console.warn('Enlace de vehículo con Smart City:', e);
+    }
+  }
+  document.getElementById('vehicleType')?.addEventListener('change', sendVehicle);
   function publishLatest() {
     const race = buildRace();
     if (!race) return;
@@ -75,9 +85,11 @@
         const stored = JSON.parse(localStorage.getItem(KEY) || 'null');
         if (stored) sendRace(stored);
       } catch (e) {}
+      sendVehicle();
     }
   });
   if (window.opener && !window.opener.closed) {
     window.opener.postMessage({ type: 'DM_SMARTCITY_READY_V1' }, targetOrigin);
+    sendVehicle();
   }
 })();
